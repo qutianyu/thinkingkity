@@ -1,0 +1,11 @@
+Name,Email,Role,Department,StartDate,Salary
+Alice Johnson,alice@example.com,Engineer,Engineering,2024-01-15,95000
+Bob Smith,bob@example.com,Designer,Design,2024-02-01,85000
+Charlie Brown,charlie@example.com,Manager,Product,2023-06-10,120000
+Diana Prince,diana@example.com,Engineer,Engineering,2024-03-20,92000
+Eve Wilson,eve@example.com,Analyst,Data,2024-04-05,88000
+Frank Miller,frank@example.com,Engineer,Engineering,2023-09-12,105000
+Grace Lee,grace@example.com,Designer,Design,2024-05-18,82000
+Henry Davis,henry@example.com,Manager,Engineering,2023-01-30,130000
+Iris Chen,iris@example.com,Analyst,Data,2024-06-22,90000
+Jack Turner,jack@example.com,Engineer,Engineering,2024-07-01,91000

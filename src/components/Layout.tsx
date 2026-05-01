@@ -1,0 +1,222 @@
+import { useState, useEffect, useRef, useMemo } from "react";
+import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
+import { Settings } from "lucide-react";
+import { Sidebar } from "./sidebar/Sidebar";
+import { EditorArea } from "./editor/EditorArea";
+import { QuickSwitcher } from "./common/QuickSwitcher";
+import { Settings as SettingsModal } from "./settings/Settings";
+import { useVaultStore } from "@/stores/vaultStore";
+import { useFileTreeStore } from "@/stores/fileTreeStore";
+import { useEditorStore } from "@/stores/editorStore";
+
+const AUTO_SAVE_INTERVAL = 5000;
+
+type FileType = "markdown" | "csv" | "json" | "code" | "text" | "image" | "pdf" | "unknown";
+
+function getFileType(path: string | null): FileType {
+  if (!path) return "unknown";
+  const lower = path.toLowerCase();
+  if (lower.endsWith(".md")) return "markdown";
+  if (lower.endsWith(".csv")) return "csv";
+  if (lower.endsWith(".json")) return "json";
+  if (lower.endsWith(".txt")) return "text";
+  if (/\.(js|ts|jsx|tsx|py|java|rs|c|cpp|h|hpp|css|scss|html|xml|yaml|yml|toml|sh|bash|sql|go|rb|php|swift|kt|dart|r|m|mm|pl|lua|vim|zig|hs|ml|scala|clj|ex|exs|erl|v|sv|vhd)$/.test(lower)) return "code";
+  if (/\.(jpg|jpeg|png|gif|svg|webp|bmp|ico)$/.test(lower)) return "image";
+  if (lower.endsWith(".pdf")) return "pdf";
+  return "unknown";
+}
+
+function stripMarkdown(text: string): string {
+  // Status counts should describe readable prose, not Markdown delimiters.
+  return text
+    .replace(/```[\s\S]*?```/g, "")
+    .replace(/~~~[\s\S]*?~~~/g, "")
+    .replace(/`[^`\n]+`/g, "")
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, "")
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, "$1")
+    .replace(/^#{1,6}\s+/gm, "")
+    .replace(/(\*{1,3}|_{1,3})(.*?)\1/g, "$2")
+    .replace(/~~(.*?)~~/g, "$1")
+    .replace(/^>\s+/gm, "")
+    .replace(/^[-*_]{3,}\s*$/gm, "")
+    .replace(/^[\s]*[-*+]\s+/gm, "")
+    .replace(/^[\s]*\d+\.\s+/gm, "")
+    .replace(/<[^>]+>/g, "")
+    .replace(/https?:\/\/\S+/g, "");
+}
+
+function countWords(text: string): number {
+  const cjkCount = (
+    text.match(
+      /[\u3400-\u9fff\uf900-\ufaff\u{20000}-\u{2a6df}\u3040-\u309f\u30a0-\u30ff\uac00-\ud7af]/gu,
+    ) ?? []
+  ).length;
+  const wordCount = (
+    text.match(/[A-Za-z\u00c0-\u024f0-9]+(?:[-'][A-Za-z\u00c0-\u024f0-9]+)*/g) ?? []
+  ).length;
+  return cjkCount + wordCount;
+}
+
+function countLines(text: string): number {
+  if (!text) return 0;
+  let count = 1;
+  for (let i = 0; i < text.length; i++) {
+    if (text[i] === "\n") count++;
+  }
+  return count;
+}
+
+function parseCsvRowsCols(content: string): { rows: number; cols: number } {
+  // Lightweight CSV dimensions are enough for the footer and avoid loading the grid parser.
+  if (!content.trim()) return { rows: 0, cols: 0 };
+  const lines = content.split(/\r?\n/).filter((l) => l.trim());
+  let maxCols = 0;
+  for (const line of lines) {
+    let colCount = 0;
+    let inQuotes = false;
+    for (let i = 0; i < line.length; i++) {
+      if (line[i] === '"') {
+        inQuotes = !inQuotes;
+      } else if (line[i] === "," && !inQuotes) {
+        colCount++;
+      }
+    }
+    colCount++;
+    maxCols = Math.max(maxCols, colCount);
+  }
+  return { rows: lines.length, cols: maxCols };
+}
+
+function getStatusInfo(content: string, path: string | null):
+  | { key: "words"; value: number; lines: number }
+  | { key: "lines"; value: number }
+  | { key: "csv"; rows: number; cols: number }
+  | null {
+  // Different file families expose different status metrics in the footer.
+  if (!path) return null;
+  const type = getFileType(path);
+  switch (type) {
+    case "markdown": {
+      let text = content.replace(/^(---\r?\n[\s\S]*?\r?\n---)(?:\r?\n)?/, "");
+      const lines = countLines(text);
+      text = stripMarkdown(text);
+      return { key: "words", value: countWords(text), lines };
+    }
+    case "csv": {
+      const { rows, cols } = parseCsvRowsCols(content);
+      return { key: "csv", rows, cols };
+    }
+    case "json":
+    case "code":
+    case "text": {
+      return { key: "lines", value: countLines(content) };
+    }
+    case "image":
+    case "pdf":
+    case "unknown":
+      return null;
+  }
+}
+
+export function Layout() {
+  const { t } = useTranslation();
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [showQuickSwitcher, setShowQuickSwitcher] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const vaultPath = useVaultStore((s) => s.vaultPath);
+  const fileCount = useFileTreeStore((s) => s.fileCount);
+  const activeTabPath = useEditorStore((s) => s.activeTabPath);
+  const activeContent = useEditorStore((s) =>
+    s.activeTabPath ? s.fileContents.get(s.activeTabPath) ?? "" : "",
+  );
+  const statusInfo = useMemo(
+    () => getStatusInfo(activeContent, activeTabPath),
+    [activeContent, activeTabPath],
+  );
+  const navigate = useNavigate();
+  const savingRef = useRef(false);
+  const loadRecentVaults = useVaultStore((s) => s.loadRecentVaults);
+
+  useEffect(() => {
+    loadRecentVaults();
+  }, []);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      if (savingRef.current) return;
+      const { tabs, saveFile } = useEditorStore.getState();
+      const dirtyTabs = tabs.filter((t) => t.isDirty);
+      if (dirtyTabs.length === 0) return;
+      savingRef.current = true;
+      Promise.all(
+        dirtyTabs.map((tab) => saveFile(tab.path)),
+      ).finally(() => {
+        savingRef.current = false;
+      });
+    }, AUTO_SAVE_INTERVAL);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Redirect to home if no vault is open
+  useEffect(() => {
+    if (!vaultPath) {
+      navigate("/", { replace: true });
+    }
+  }, [vaultPath, navigate]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "p") {
+        e.preventDefault();
+        setShowQuickSwitcher(true);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  if (!vaultPath) return null;
+
+  return (
+    <div className="app-root flex flex-col h-full bg-[var(--color-bg-app)]">
+      <div className="app-workspace flex flex-1 overflow-hidden">
+        <Sidebar
+          collapsed={sidebarCollapsed}
+          onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
+        />
+        <EditorArea />
+      </div>
+      {showQuickSwitcher && (
+        <QuickSwitcher onClose={() => setShowQuickSwitcher(false)} />
+      )}
+      <div className="app-bottom-bar">
+        <span className="bottom-file-count">
+          <span>{fileCount} {t(fileCount === 1 ? "status.file" : "status.files")}</span>
+          {statusInfo && (
+            <>
+              <span className="bottom-status-separator">·</span>
+              {statusInfo.key === "words" && (
+                <span>{statusInfo.value} {t(statusInfo.value === 1 ? "status.word" : "status.words")} · {statusInfo.lines} {t(statusInfo.lines === 1 ? "status.line" : "status.lines")}</span>
+              )}
+              {statusInfo.key === "lines" && (
+                <span>{statusInfo.value} {t(statusInfo.value === 1 ? "status.line" : "status.lines")}</span>
+              )}
+              {statusInfo.key === "csv" && (
+                <span>{statusInfo.rows} {t(statusInfo.rows === 1 ? "status.row" : "status.rows")} · {statusInfo.cols} {t(statusInfo.cols === 1 ? "status.column" : "status.columns")}</span>
+              )}
+            </>
+          )}
+        </span>
+        <button
+          onClick={() => setShowSettings(true)}
+          className="bottom-settings-button"
+          title="Settings"
+        >
+          <Settings size={13} />
+        </button>
+      </div>
+      {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
+    </div>
+  );
+}

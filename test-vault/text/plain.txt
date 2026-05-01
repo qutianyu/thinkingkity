@@ -1,0 +1,50 @@
+============================================
+          THINKINGKITY PLAIN TEXT DEMO
+============================================
+
+This is a plain text file that demonstrates the
+text editor capabilities of ThinkingKity.
+
+Plain text files (.txt) are opened in a CodeMirror
+editor with basic text mode. No syntax highlighting
+is applied, but you still get:
+
+  - Line numbers
+  - Word wrap
+  - Standard keyboard shortcuts
+  - Light/dark theme support
+
+USAGE EXAMPLES:
+---------------
+
+1. Quick notes
+2. Log files
+3. README drafts before formatting
+4. Configuration notes
+5. Scratchpad for temporary content
+
+
+ASCII ART CORNER
+-----------------
+
+    /\___/\
+   (  o o  )
+   /   V   \
+   \  ___  /
+    \_____/
+
+    Meow! 🐱
+
+
+VERSION HISTORY
+---------------
+
+v0.1.0 - Initial release
+  - Basic file browsing
+  - Markdown editing
+  - Code highlighting
+
+v0.2.0 (planned)
+  - Git integration
+  - Plugin system
+  - Graph view

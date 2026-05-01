@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sample Page — ThinkingKity Demo</title>
+  <style>
+    :root {
+      --color-accent: #3b82f6;
+      --color-bg: #f9fafb;
+      --color-text: #1f2937;
+    }
+    body {
+      font-family: system-ui, sans-serif;
+      background: var(--color-bg);
+      color: var(--color-text);
+      margin: 0;
+      padding: 2rem;
+      line-height: 1.7;
+    }
+    .hero {
+      text-align: center;
+      padding: 3rem 1rem;
+    }
+    .hero h1 {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .hero p {
+      font-size: 1.1rem;
+      color: #6b7280;
+    }
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 1.5rem;
+      max-width: 960px;
+      margin: 0 auto;
+    }
+    .card {
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    .card h3 {
+      margin: 0 0 0.5rem;
+    }
+    .card p {
+      margin: 0;
+      color: #6b7280;
+      font-size: 0.95rem;
+    }
+    footer {
+      text-align: center;
+      margin-top: 3rem;
+      color: #9ca3af;
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+
+  <section class="hero">
+    <h1>Welcome to ThinkingKity</h1>
+    <p>Your local-first knowledge base, built for speed.</p>
+  </section>
+
+  <section class="features">
+    <div class="card">
+      <h3>📝 Markdown</h3>
+      <p>Rich WYSIWYG editing with frontmatter support and outline navigation.</p>
+    </div>
+    <div class="card">
+      <h3>💻 Code</h3>
+      <p>Syntax highlighting for 30+ languages with autocompletion.</p>
+    </div>
+    <div class="card">
+      <h3>📊 CSV</h3>
+      <p>Spreadsheet-style editor with row/column operations.</p>
+    </div>
+    <div class="card">
+      <h3>🤖 AI</h3>
+      <p>Integrated assistant with persistent sessions and file context.</p>
+    </div>
+  </section>
+
+  <footer>
+    ThinkingKity v0.1.0 · Built with Tauri + React
+  </footer>
+
+</body>
+</html>

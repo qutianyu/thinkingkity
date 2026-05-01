@@ -1,0 +1,38 @@
+{
+  "app": {
+    "name": "ThinkingKity",
+    "version": "0.1.0",
+    "environment": "development"
+  },
+  "features": {
+    "markdownEditor": true,
+    "codeEditor": true,
+    "csvEditor": true,
+    "aiAssistant": true,
+    "imageViewer": true,
+    "pdfViewer": true
+  },
+  "editor": {
+    "fontSize": 14,
+    "tabSize": 2,
+    "lineNumbers": true,
+    "wordWrap": true,
+    "minimap": false
+  },
+  "theme": {
+    "mode": "system",
+    "accentColor": "#3b82f6",
+    "fontFamily": "system-ui"
+  },
+  "languages": [
+    "en-US",
+    "zh-CN",
+    "zh-TW",
+    "fr-FR",
+    "ko-KR",
+    "ja-JP",
+    "ru-RU",
+    "de-DE",
+    "es-ES"
+  ]
+}

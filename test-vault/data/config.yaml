@@ -1,0 +1,54 @@
+# ThinkingKity Sample Configuration — YAML
+
+app:
+  name: ThinkingKity
+  version: 0.1.0
+  debug: true
+
+editor:
+  font_size: 14
+  tab_size: 2
+  line_numbers: true
+  word_wrap: true
+  rulers:
+    - 80
+    - 120
+
+theme:
+  mode: system          # system | dark | light
+  accent_color: "#3b82f6"
+  font_family: system-ui
+
+ai:
+  provider: anthropic    # openai | anthropic
+  default_model: claude-sonnet-4-20250514
+  context_window: 200000
+  parameters:
+    temperature: 0.7
+    max_tokens: 4096
+    top_p: null
+
+keybindings:
+  - key: "Ctrl+P"
+    action: quick_switch
+  - key: "Ctrl+S"
+    action: save_file
+  - key: "Ctrl+N"
+    action: new_note
+
+languages:
+  - en-US
+  - zh-CN
+  - zh-TW
+  - fr-FR
+  - ko-KR
+  - ja-JP
+  - ru-RU
+  - de-DE
+  - es-ES
+
+display_types:
+  documents: [md, csv, json, txt, pdf]
+  images:    [jpg, jpeg, png, gif, svg, webp, bmp, ico]
+  code:      [ts, tsx, js, jsx, py, java, c, h, cpp, hpp, go, rs,
+              css, scss, less, html, htm, xml, sql, sh, bash, zsh]
