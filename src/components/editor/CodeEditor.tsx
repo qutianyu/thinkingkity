@@ -13,6 +13,9 @@ import { xml } from "@codemirror/lang-xml";
 import { yaml } from "@codemirror/lang-yaml";
 import { markdown } from "@codemirror/lang-markdown";
 import { go } from "@codemirror/lang-go";
+import { StreamLanguage } from "@codemirror/language";
+import { toml } from "@codemirror/legacy-modes/mode/toml";
+import { properties } from "@codemirror/legacy-modes/mode/properties";
 import { oneDark } from "@codemirror/theme-one-dark";
 import { autocompletion } from "@codemirror/autocomplete";
 import type { Extension } from "@codemirror/state";
@@ -58,10 +61,15 @@ function languageExtension(language: string): Extension {
     case "go":
       return go();
     case "yaml":
-    case "toml":
       return yaml();
+    case "toml":
+      return StreamLanguage.define(toml);
+    case "ini":
+    case "properties":
+      return StreamLanguage.define(properties);
     case "markdown":
-    case "mdx":
+      return markdown();
+    case "mermaid":
       return markdown();
     default:
       return [];

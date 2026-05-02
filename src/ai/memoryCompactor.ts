@@ -68,6 +68,7 @@ export async function compactSessionMemoryIfNeeded(options: {
   const nextMemory = await streamProviderChat({
     ai,
     messages: compactMessages,
+    source: "memory-compact",
     onToken: () => undefined,
   });
 

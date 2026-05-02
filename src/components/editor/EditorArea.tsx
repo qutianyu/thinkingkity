@@ -6,8 +6,9 @@ import Papa from "papaparse";
 import { Code2, FileText, PanelRightClose, PanelRightOpen } from "lucide-react";
 import { AiChatDock } from "@/ai";
 import { useEditorStore } from "@/stores/editorStore";
-import { isImageFile, isJsonFile, isPdfFile, isTextFile, isCodeFile, getCodeLanguage, pathBasename } from "@/lib/tauriCommands";
+import { isImageFile, isJsonFile, isPdfFile, isTextFile, isCodeFile, isMarkdownFile, isMermaidFile, getCodeLanguage, pathBasename } from "@/lib/tauriCommands";
 import { CodeEditor } from "./CodeEditor";
+import { MermaidEditor } from "./MermaidEditor";
 import { MilkdownEditor } from "@/md";
 import { TabBar } from "./TabBar";
 import { EmptyState } from "../common/EmptyState";
@@ -173,8 +174,9 @@ export function EditorArea() {
   const frontmatterParts = splitFrontmatter(activeContent);
   const frontmatterFields = parseFrontmatter(frontmatterParts.frontmatter);
   const isCsv = activeTabPath?.toLowerCase().endsWith(".csv") ?? false;
-  const isMarkdown = activeTabPath?.toLowerCase().endsWith(".md") ?? false;
+  const isMarkdown = activeTabPath ? isMarkdownFile(activeTabPath) : false;
   const isJson = activeTabPath ? isJsonFile(activeTabPath) : false;
+  const isMermaid = activeTabPath ? isMermaidFile(activeTabPath) : false;
   const isText = activeTabPath ? isTextFile(activeTabPath) : false;
   const isCode = activeTabPath ? isCodeFile(activeTabPath) : false;
   const codeLang = activeTabPath ? getCodeLanguage(activeTabPath) : "text";
@@ -185,7 +187,7 @@ export function EditorArea() {
     [frontmatterParts.body],
   );
   const editorScrollRef = useRef<HTMLDivElement>(null);
-  const usesCodeEditor = isJson || isText || isCode || (isMarkdown && mode === "source");
+  const usesCodeEditor = isJson || isText || isCode || isMermaid || (isMarkdown && mode === "source");
 
   const handleRichChange = useCallback(
     (markdown: string) => {
@@ -277,6 +279,11 @@ export function EditorArea() {
           <div className={`editor-content ${isCsv ? "editor-content-csv" : isImage || isPdf ? "h-full min-h-0" : usesCodeEditor ? "code-editor-content" : "max-w-[1280px] mx-auto"}`}>
           {activeTabPath && isCsv ? (
             <CsvGridEditor
+              content={activeContent}
+              onChange={(content) => updateContent(activeTabPath, content)}
+            />
+          ) : activeTabPath && isMermaid ? (
+            <MermaidEditor
               content={activeContent}
               onChange={(content) => updateContent(activeTabPath, content)}
             />

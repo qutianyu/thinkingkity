@@ -6,7 +6,7 @@ import type { FileEntry } from "@/types";
 import { useFileTreeStore } from "@/stores/fileTreeStore";
 import { useEditorStore } from "@/stores/editorStore";
 import { useFileOperations } from "@/hooks/useFileOperations";
-import { isImageFile, isJsonFile, isPdfFile, isTextFile, isCodeFile, revealInExplorer } from "@/lib/tauriCommands";
+import { isImageFile, isJsonFile, isPdfFile, isTextFile, isCodeFile, isMarkdownFile, isMermaidFile, revealInExplorer } from "@/lib/tauriCommands";
 import { getIconEntry } from "@/lib/fileIcons";
 import { FileTypePicker, CodeTypePicker } from "./FileActions";
 
@@ -46,14 +46,15 @@ export function FileTreeNode({ entry, depth, dropTarget, onPointerDown }: FileTr
   } | null>(null);
   const isExpanded = expandedPaths.has(entry.path);
   const lowerName = entry.name.toLowerCase();
-  const isMd = lowerName.endsWith(".md");
+  const isMd = isMarkdownFile(entry.path);
   const isCsv = lowerName.endsWith(".csv");
   const isJson = isJsonFile(entry.path);
   const isText = isTextFile(entry.path);
   const isImageFileEntry = isImageFile(entry.path);
   const isPdf = isPdfFile(entry.path);
   const isCode = isCodeFile(entry.path);
-  const isOpenable = isMd || isCsv || isJson || isText || isCode || isImageFileEntry || isPdf;
+  const isMermaid = isMermaidFile(entry.path);
+  const isOpenable = isMd || isCsv || isJson || isText || isCode || isMermaid || isImageFileEntry || isPdf;
   const isActive = activeTabPath === entry.path;
   const dragSourcePath = useFileTreeStore((s) => s.dragSourcePath);
 

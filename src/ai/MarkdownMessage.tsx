@@ -94,11 +94,68 @@ function flushList(blocks: ReactNode[], list: string[], ordered: boolean, key: n
   return key + 1;
 }
 
+function normalizeTables(markdown: string): string {
+  // Models sometimes stream a whole Markdown table as one physical line:
+  // | A | B | |---|---| | C | D |
+  // Split only at row boundaries, which appear as an end pipe followed by a new start pipe.
+  return markdown.replace(/\|\s+(?=\|(?:\s*:?-{3,}:?\s*\||\s*\S))/g, "|\n");
+}
+
+function isTableRow(line: string): boolean {
+  const trimmed = line.trim();
+  return trimmed.startsWith("|") && trimmed.endsWith("|") && trimmed.includes("|", 1);
+}
+
+function isTableSeparator(line: string): boolean {
+  const cells = line.trim().slice(1, -1).split("|").map((cell) => cell.trim());
+  return cells.length > 0 && cells.every((cell) => /^:?-{3,}:?$/.test(cell));
+}
+
+function parseTableRow(line: string): string[] {
+  return line.trim().slice(1, -1).split("|").map((cell) => cell.trim());
+}
+
+function flushTable(blocks: ReactNode[], table: string[], key: number): number {
+  if (table.length === 0) return key;
+  if (table.length < 2 || !isTableSeparator(table[1])) {
+    blocks.push(<p key={key}>{renderInline(table.join(" "))}</p>);
+    table.length = 0;
+    return key + 1;
+  }
+  const header = parseTableRow(table[0]);
+  const rows = table.slice(2).filter(isTableRow).map(parseTableRow);
+  blocks.push(
+    <div key={key} className="ai-markdown-table-wrap">
+      <table>
+        <thead>
+          <tr>
+            {header.map((cell, index) => (
+              <th key={index}>{renderInline(cell)}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row, rowIndex) => (
+            <tr key={rowIndex}>
+              {header.map((_, cellIndex) => (
+                <td key={cellIndex}>{renderInline(row[cellIndex] ?? "")}</td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>,
+  );
+  table.length = 0;
+  return key + 1;
+}
+
 export function MarkdownMessage({ content }: MarkdownMessageProps) {
-  const lines = content.split(/\r?\n/);
+  const lines = normalizeTables(content).split(/\r?\n/);
   const blocks: ReactNode[] = [];
   const paragraph: string[] = [];
   const list: string[] = [];
+  const table: string[] = [];
   let orderedList = false;
   let inCodeBlock = false;
   let codeLanguage = "";
@@ -136,6 +193,14 @@ export function MarkdownMessage({ content }: MarkdownMessageProps) {
     if (!line.trim()) {
       key = flushParagraph(blocks, paragraph, key);
       key = flushList(blocks, list, orderedList, key);
+      key = flushTable(blocks, table, key);
+      continue;
+    }
+
+    if (isTableRow(line)) {
+      key = flushParagraph(blocks, paragraph, key);
+      key = flushList(blocks, list, orderedList, key);
+      table.push(line);
       continue;
     }
 
@@ -143,6 +208,7 @@ export function MarkdownMessage({ content }: MarkdownMessageProps) {
     if (heading) {
       key = flushParagraph(blocks, paragraph, key);
       key = flushList(blocks, list, orderedList, key);
+      key = flushTable(blocks, table, key);
       const level = Math.min(heading[1].length, 4);
       const HeadingTag = `h${level}` as "h1" | "h2" | "h3" | "h4";
       blocks.push(<HeadingTag key={key}>{renderInline(heading[2].replace(/\s+#*$/, ""))}</HeadingTag>);
@@ -154,6 +220,7 @@ export function MarkdownMessage({ content }: MarkdownMessageProps) {
     if (quote) {
       key = flushParagraph(blocks, paragraph, key);
       key = flushList(blocks, list, orderedList, key);
+      key = flushTable(blocks, table, key);
       blocks.push(<blockquote key={key}>{renderInline(quote[1])}</blockquote>);
       key += 1;
       continue;
@@ -163,6 +230,7 @@ export function MarkdownMessage({ content }: MarkdownMessageProps) {
     const ordered = line.match(/^\s*\d+[.)]\s+(.+)$/);
     if (unordered || ordered) {
       key = flushParagraph(blocks, paragraph, key);
+      key = flushTable(blocks, table, key);
       const nextOrdered = Boolean(ordered);
       if (list.length > 0 && orderedList !== nextOrdered) {
         key = flushList(blocks, list, orderedList, key);
@@ -173,11 +241,13 @@ export function MarkdownMessage({ content }: MarkdownMessageProps) {
     }
 
     key = flushList(blocks, list, orderedList, key);
+    key = flushTable(blocks, table, key);
     paragraph.push(line.trim());
   }
 
   key = flushParagraph(blocks, paragraph, key);
-  flushList(blocks, list, orderedList, key);
+  key = flushList(blocks, list, orderedList, key);
+  flushTable(blocks, table, key);
 
   if (inCodeBlock) {
     blocks.push(

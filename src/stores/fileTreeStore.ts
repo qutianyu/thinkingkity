@@ -36,7 +36,7 @@ function isFileAllowedByDisplayType(entry: FileEntry): boolean {
 
 type DropPosition = "before" | "inside" | "after";
 
-const CONTENT_SEARCH_EXTENSIONS = [".md", ".mdx", ".csv", ".log"];
+const CONTENT_SEARCH_EXTENSIONS = [".md", ".markdown", ".csv", ".mermaid", ".log"];
 const SEARCH_SNIPPET_CONTEXT = 48;
 const SEARCH_SNIPPET_MAX_LENGTH = 140;
 

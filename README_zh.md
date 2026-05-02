@@ -65,10 +65,10 @@ npm run tauri:build
 | 平台 | 路径 |
 |------|------|
 | macOS | `src-tauri/target/release/bundle/macos/ThinkingKity.app/` |
-| macOS (DMG) | `src-tauri/target/release/bundle/dmg/ThinkingKity_0.1.1_aarch64.dmg` |
-| Windows | `src-tauri/target/release/bundle/msi/ThinkingKity_0.1.1_x64.msi` |
-| Linux (deb) | `src-tauri/target/release/bundle/deb/thinkingkity_0.1.1_amd64.deb` |
-| Linux (AppImage) | `src-tauri/target/release/bundle/appimage/thinkingkity_0.1.1_amd64.AppImage` |
+| macOS (DMG) | `src-tauri/target/release/bundle/dmg/ThinkingKity_{version}_aarch64.dmg` |
+| Windows | `src-tauri/target/release/bundle/msi/ThinkingKity_{version}_x64.msi` |
+| Linux (deb) | `src-tauri/target/release/bundle/deb/thinkingkity_{version}_amd64.deb` |
+| Linux (AppImage) | `src-tauri/target/release/bundle/appimage/thinkingkity_{version}_amd64.AppImage` |
 
 独立二进制文件（不含安装器包装）在 `src-tauri/target/release/thinkingkity`。
 

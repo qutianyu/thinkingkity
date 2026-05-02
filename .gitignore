@@ -1,6 +1,7 @@
 node_modules/
 dist/
 dist-ssr/
+remark/
 
 # Tauri
 src-tauri/target/
@@ -43,3 +44,4 @@ OPENCODE.md
 
 # Debug builds
 *.map
+

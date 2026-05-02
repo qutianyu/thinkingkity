@@ -4,8 +4,11 @@ import chatSystemZhTw from "./prompts/chat-system.zh-TW.txt?raw";
 import memoryCompactEn from "./prompts/memory-compact.en-US.txt?raw";
 import memoryCompactZhCn from "./prompts/memory-compact.zh-CN.txt?raw";
 import memoryCompactZhTw from "./prompts/memory-compact.zh-TW.txt?raw";
+import documentGenerateEn from "./prompts/document-generate.en-US.txt?raw";
+import documentGenerateZhCn from "./prompts/document-generate.zh-CN.txt?raw";
+import documentGenerateZhTw from "./prompts/document-generate.zh-TW.txt?raw";
 
-export type AiPromptKind = "chatSystem" | "memoryCompact";
+export type AiPromptKind = "chatSystem" | "memoryCompact" | "documentGenerate";
 
 const PROMPTS: Record<AiPromptKind, Record<string, string>> = {
   chatSystem: {
@@ -17,6 +20,11 @@ const PROMPTS: Record<AiPromptKind, Record<string, string>> = {
     "en-US": memoryCompactEn,
     "zh-CN": memoryCompactZhCn,
     "zh-TW": memoryCompactZhTw,
+  },
+  documentGenerate: {
+    "en-US": documentGenerateEn,
+    "zh-CN": documentGenerateZhCn,
+    "zh-TW": documentGenerateZhTw,
   },
 };
 

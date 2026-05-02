@@ -242,12 +242,12 @@ export function toggleArticleContextRef(
   session: AiSessionData,
   ref: AiArticleContextRef,
 ): AiSessionData {
-  const existing = session.attached_context.some((item) => item.path === ref.path);
+  const existing = session.attached_context.some((item) => item.path === ref.path && item.type === ref.type);
   return {
     ...session,
     updated_at: nowIso(),
     attached_context: existing
-      ? session.attached_context.filter((item) => item.path !== ref.path)
+      ? session.attached_context.filter((item) => item.path !== ref.path || item.type !== ref.type)
       : [...session.attached_context, ref],
   };
 }

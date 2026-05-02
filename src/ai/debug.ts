@@ -1,14 +1,19 @@
 import type { AiConfig } from "./config";
 import type { AiChatMessage } from "./types";
 
+declare global {
+  interface Window {
+    __THINKINGKITY_AI_CONTEXT_LOGS__?: unknown[];
+  }
+}
+
 export function logLlmContext(
   ai: AiConfig,
   messages: AiChatMessage[],
   source: string,
 ): void {
-  if (!import.meta.env.DEV) return;
-
   const payload = {
+    logged_at: new Date().toISOString(),
     source,
     provider: ai.provider,
     base_url: ai.base_url,
@@ -24,10 +29,16 @@ export function logLlmContext(
     })),
   };
 
-  console.groupCollapsed(
-    `[ThinkingKity AI] LLM context -> ${source} (${messages.length} messages)`,
-  );
-  console.log(payload);
-  console.log(JSON.stringify(payload, null, 2));
+  if (typeof window !== "undefined") {
+    window.__THINKINGKITY_AI_CONTEXT_LOGS__ = [
+      ...(window.__THINKINGKITY_AI_CONTEXT_LOGS__ ?? []),
+      payload,
+    ].slice(-20);
+  }
+
+  const label = `[ThinkingKity AI] LLM context -> ${source} (${messages.length} messages)`;
+  console.groupCollapsed(label);
+  console.info(payload);
+  console.info(JSON.stringify(payload, null, 2));
   console.groupEnd();
 }

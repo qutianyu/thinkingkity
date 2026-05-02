@@ -64,6 +64,13 @@ export async function readFile(path: string): Promise<string> {
   return fallbackFS.get(path) ?? "";
 }
 
+export async function readFileBase64(path: string): Promise<string> {
+  if (IS_TAURI) {
+    return invoke<string>("read_file_base64", { path });
+  }
+  return fallbackFS.get(path) ?? "";
+}
+
 export async function writeFile(path: string, content: string): Promise<void> {
   if (IS_TAURI) {
     return invoke("write_file", { path, content });
@@ -77,6 +84,23 @@ export async function writeFile(path: string, content: string): Promise<void> {
       fallbackFS.set(dirPath, "");
     }
   }
+}
+
+export async function writeVaultMarkdownFile(
+  vaultPath: string,
+  relativePath: string,
+  content: string,
+): Promise<string> {
+  if (IS_TAURI) {
+    return invoke<string>("write_vault_markdown_file", {
+      vaultPath,
+      relativePath,
+      content,
+    });
+  }
+  const target = pathJoin(vaultPath, relativePath);
+  await writeFile(target, content);
+  return target;
 }
 
 export async function createFile(path: string): Promise<void> {
@@ -182,6 +206,15 @@ export function isJsonFile(path: string): boolean {
   return path.toLowerCase().endsWith(".json");
 }
 
+export function isMarkdownFile(path: string): boolean {
+  const lower = path.toLowerCase();
+  return lower.endsWith(".md") || lower.endsWith(".markdown");
+}
+
+export function isMermaidFile(path: string): boolean {
+  return path.toLowerCase().endsWith(".mermaid");
+}
+
 export function isTextFile(path: string): boolean {
   return path.toLowerCase().endsWith(".txt");
 }
@@ -235,9 +268,10 @@ const CODE_EXTENSIONS: Record<string, string> = {
   ".sv": "systemverilog",
   ".vhd": "vhdl",
   ".md": "markdown",
-  ".mdx": "markdown",
   ".log": "text",
   ".env": "text",
+  ".properties": "text",
+  ".mermaid": "mermaid",
   ".gitignore": "text",
   ".dockerignore": "text",
   ".csv": "csv",
@@ -248,7 +282,8 @@ const CODE_EXTENSIONS: Record<string, string> = {
 export function isCodeFile(path: string): boolean {
   // Unknown short extensions are treated as code so uncommon languages still open in CodeMirror.
   const lower = path.toLowerCase();
-  if (lower.endsWith(".md") || lower.endsWith(".mdx")) return false;
+  if (isMarkdownFile(path)) return false;
+  if (isMermaidFile(path)) return false;
   if (lower.endsWith(".csv")) return false;
   if (lower.endsWith(".json")) return false;
   if (lower.endsWith(".txt")) return false;

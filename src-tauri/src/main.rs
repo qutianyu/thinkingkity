@@ -14,7 +14,10 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             commands::read_directory,
             commands::read_file,
+            commands::read_file_base64,
             commands::write_file,
+            commands::write_vault_markdown_file,
+            commands::browse_page_with_playwright,
             commands::create_file,
             commands::create_folder,
             commands::copy_file,

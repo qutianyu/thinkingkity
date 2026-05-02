@@ -35,8 +35,17 @@ const DISPLAY_TYPE_GROUPS = [
     labelKey: "settings.displayGroupDocuments",
     types: [
       { ext: "md", label: ".md" },
+      { ext: "markdown", label: ".markdown" },
       { ext: "csv", label: ".csv" },
       { ext: "json", label: ".json" },
+      { ext: "yaml", label: ".yaml" },
+      { ext: "yml", label: ".yml" },
+      { ext: "toml", label: ".toml" },
+      { ext: "ini", label: ".ini" },
+      { ext: "conf", label: ".conf" },
+      { ext: "env", label: ".env" },
+      { ext: "properties", label: ".properties" },
+      { ext: "mermaid", label: ".mermaid" },
       { ext: "txt", label: ".txt" },
       { ext: "pdf", label: ".pdf" },
     ],
@@ -256,16 +265,20 @@ export function Settings({ onClose }: SettingsProps) {
           </div>
 
           {/* Theme */}
-          <div className="settings-card flex items-center gap-3">
+          <div className="settings-card flex items-start gap-3">
             <div className="w-9 h-9 rounded-[var(--radius-md)] bg-[var(--color-accent-bg)] flex items-center justify-center shrink-0">
               <Moon size={18} className="text-[var(--color-primary)]" />
             </div>
-            <h3 className="text-[15px] font-semibold shrink-0">{t("settings.theme")}</h3>
-            <div className="flex-1" />
+            <div className="min-w-0 flex-1">
+              <h3 className="text-[15px] font-semibold">{t("settings.theme")}</h3>
+              <p className="mt-1 text-[12px] leading-5 text-[var(--color-text-muted)]">
+                {t("settings.themeReadabilityNotice")}
+              </p>
+            </div>
             <select
               value={preference}
               onChange={(e) => changeMode(e.target.value as VaultMode)}
-              className="input-base w-auto max-w-[120px]"
+              className="input-base w-auto max-w-[120px] shrink-0"
             >
               <option value="system">{t("settings.system")}</option>
               <option value="dark">{t("settings.dark")}</option>

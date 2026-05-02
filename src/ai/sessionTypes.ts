@@ -1,11 +1,21 @@
 import type { AiChatMessage } from "./types";
 
-export interface AiArticleContextRef {
+export interface AiFileContextRef {
   type: "file";
   path: string;
   title: string;
   added_at?: string;
 }
+
+export interface AiDirectoryContextRef {
+  type: "directory";
+  path: string;
+  title: string;
+  recursive: boolean;
+  added_at?: string;
+}
+
+export type AiArticleContextRef = AiFileContextRef | AiDirectoryContextRef;
 
 // Persisted chat message. User messages may carry the one-shot files submitted with that turn.
 export interface AiSessionMessage extends AiChatMessage {

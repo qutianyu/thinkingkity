@@ -1,7 +1,7 @@
 export interface RenderHtmlImagesOptions {
   activeTabPath: string | null;
   vaultPath: string | null;
-  resolveAssetUrl?: (path: string) => string;
+  resolveAssetUrl?: (path: string) => Promise<string>;
 }
 
 export function escapeHtmlAttribute(value: string): string {
@@ -98,10 +98,10 @@ function isAbsolutePath(path: string): boolean {
   return path.startsWith("/") || /^[A-Za-z]:[\\/]/.test(path);
 }
 
-function resolveImageSrcForRender(
+async function resolveImageSrcForRender(
   src: string,
   { activeTabPath, vaultPath, resolveAssetUrl }: RenderHtmlImagesOptions,
-): string {
+): Promise<string> {
   if (!src || isExternalImageSrc(src)) return src;
   if (isAbsolutePath(src)) return resolveAssetUrl ? resolveAssetUrl(src) : src;
 
@@ -113,15 +113,15 @@ function resolveImageSrcForRender(
   return resolveAssetUrl ? resolveAssetUrl(absolutePath) : absolutePath;
 }
 
-export function renderHtmlImages(root: HTMLElement, options: RenderHtmlImagesOptions): void {
+export async function renderHtmlImages(root: HTMLElement, options: RenderHtmlImagesOptions): Promise<void> {
   // Milkdown keeps raw HTML as inline atoms; replace image atoms with real previews.
   const nodes = root.querySelectorAll<HTMLElement>('.milkdown .ProseMirror span[data-type="html"][data-value]');
-  nodes.forEach((node) => {
+  const promises = Array.from(nodes).map(async (node) => {
     const value = node.dataset.value || "";
     const image = readImageHtml(value);
     if (!image) return;
 
-    const renderedSrc = resolveImageSrcForRender(image.src, options);
+    const renderedSrc = await resolveImageSrcForRender(image.src, options);
     const renderedKey = `${value}\n${renderedSrc}`;
     if (node.dataset.renderedImage === renderedKey) return;
 
@@ -136,6 +136,7 @@ export function renderHtmlImages(root: HTMLElement, options: RenderHtmlImagesOpt
     img.draggable = false;
     node.appendChild(img);
   });
+  await Promise.all(promises);
 }
 
 export function uniqueFileName(fileName: string, existingNames: Set<string>): string {

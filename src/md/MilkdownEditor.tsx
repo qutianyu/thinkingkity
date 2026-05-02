@@ -22,7 +22,9 @@ import {
 } from "@milkdown/prose/tables";
 import { nord } from "@milkdown/theme-nord";
 import { blockHandlePlugin, setBlockHandleCallbacks } from "./BlockHandlePlugin";
-import { prism } from "@milkdown/plugin-prism";
+import { prism, prismConfig } from "@milkdown/plugin-prism";
+import toml from "refractor/toml";
+import properties from "refractor/properties";
 import { InsertMenu } from "./InsertMenu";
 import { linkClickPlugin } from "./LinkClickPlugin";
 import {
@@ -34,7 +36,7 @@ import {
   renderHtmlImages,
   uniqueFileName,
 } from "./markdownUtils";
-import { copyFile, createFolder, getAssetUrl, isTauri, readDirectory } from "@/lib/tauriCommands";
+import { copyFile, createFolder, isTauri, readDirectory, readFileBase64 } from "@/lib/tauriCommands";
 import { useDialogStore } from "@/stores/dialogStore";
 import { useEditorStore } from "@/stores/editorStore";
 import { useFileTreeStore } from "@/stores/fileTreeStore";
@@ -83,6 +85,9 @@ const CODE_LANGUAGES = [
   "html",
   "css",
   "json",
+  "yaml",
+  "toml",
+  "properties",
   "bash",
 ];
 
@@ -362,6 +367,14 @@ function MilkdownEditorInner({ content, onChange }: MilkdownEditorProps) {
       .config((ctx) => {
         ctx.set(rootCtx, root);
         ctx.set(defaultValueCtx, content);
+        ctx.update(prismConfig.key, (config) => ({
+          ...config,
+          configureRefractor: (refractor) => {
+            if (!refractor.registered("toml")) refractor.register(toml);
+            if (!refractor.registered("properties")) refractor.register(properties);
+            return refractor;
+          },
+        }));
         ctx.get(listenerCtx).markdownUpdated((_, markdown) => {
           onChangeRef.current(markdown);
         });
@@ -432,7 +445,7 @@ function MilkdownEditorInner({ content, onChange }: MilkdownEditorProps) {
     const render = () => renderHtmlImages(root, {
       activeTabPath,
       vaultPath,
-      resolveAssetUrl: isTauri() ? getAssetUrl : undefined,
+      resolveAssetUrl: isTauri() ? readFileBase64 : undefined,
     });
     const frame = requestAnimationFrame(render);
     const observer = new MutationObserver(() => {

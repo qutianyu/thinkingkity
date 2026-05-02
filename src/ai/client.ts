@@ -67,7 +67,9 @@ interface StreamProviderOptions {
   ai: AiConfig;
   messages: AiChatMessage[];
   onToken: (token: string) => void;
+  onThinking?: (token: string) => void;
   signal?: AbortSignal;
+  source?: string;
 }
 
 function assertAiReady(ai: AiConfig): void {
@@ -127,6 +129,7 @@ async function streamOpenAiCompatible({
   ai,
   messages,
   onToken,
+  onThinking,
   signal,
 }: StreamProviderOptions): Promise<string> {
   const baseUrl = ai.base_url.replace(/\/+$/, "");
@@ -156,7 +159,12 @@ async function streamOpenAiCompatible({
     if (data === "[DONE]") return;
     try {
       const json = JSON.parse(data);
-      const token = json.choices?.[0]?.delta?.content;
+      const delta = json.choices?.[0]?.delta;
+      const thinkingToken = delta?.reasoning_content ?? delta?.reasoning ?? delta?.thinking;
+      if (typeof thinkingToken === "string" && thinkingToken.length > 0) {
+        onThinking?.(thinkingToken);
+      }
+      const token = delta?.content;
       if (typeof token !== "string" || token.length === 0) return;
       // Update both the caller and accumulated return value from the same token stream.
       content += token;
@@ -173,9 +181,12 @@ async function streamAnthropic({
   ai,
   messages,
   onToken,
+  onThinking,
   signal,
 }: StreamProviderOptions): Promise<string> {
   const baseUrl = ai.base_url.replace(/\/+$/, "");
+  const supportsExtendedThinking = /claude-(3-7|sonnet-4|opus-4|haiku-4)/i.test(ai.model);
+  const maxTokens = supportsExtendedThinking ? 8192 : 4096;
   const system = messages
     .filter((message) => message.role === "system")
     .map((message) => message.content)
@@ -190,8 +201,12 @@ async function streamAnthropic({
     },
     body: JSON.stringify({
       model: ai.model,
-      max_tokens: 4096,
+      max_tokens: maxTokens,
       stream: true,
+      ...(supportsExtendedThinking ? { temperature: 1 } : {}),
+      ...(supportsExtendedThinking
+        ? { thinking: { type: "enabled", budget_tokens: 2048 } }
+        : {}),
       ...(system ? { system } : {}),
       messages: chatMessages.map((message) => ({
         role: message.role,
@@ -209,10 +224,13 @@ async function streamAnthropic({
   await readSse(res, (data) => {
     try {
       const json = JSON.parse(data);
-      // Anthropic streams content deltas separately from control events.
-      const token = json.type === "content_block_delta"
-        ? json.delta?.text
-        : undefined;
+      const delta = json.type === "content_block_delta" ? json.delta : undefined;
+      const thinkingToken = delta?.type === "thinking_delta" ? delta.thinking : undefined;
+      if (typeof thinkingToken === "string" && thinkingToken.length > 0) {
+        onThinking?.(thinkingToken);
+      }
+      // Anthropic streams final answer text as text_delta events.
+      const token = delta?.type === "text_delta" ? delta.text : undefined;
       if (typeof token !== "string" || token.length === 0) return;
       content += token;
       onToken(token);
@@ -226,7 +244,7 @@ async function streamAnthropic({
 
 export async function streamProviderChat(options: StreamProviderOptions): Promise<string> {
   assertAiReady(options.ai);
-  logLlmContext(options.ai, options.messages, "streamProviderChat");
+  logLlmContext(options.ai, options.messages, options.source ?? "streamProviderChat");
   // Keep provider branching isolated so UI code only deals with one streaming contract.
   if (options.ai.provider === "anthropic") {
     return streamAnthropic(options);
@@ -242,6 +260,8 @@ export async function streamAiChat(
     ai,
     messages: request.messages,
     onToken: request.onToken,
+    onThinking: request.onThinking,
     signal: request.signal,
+    source: request.source,
   });
 }

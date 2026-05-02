@@ -1,15 +1,18 @@
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
-import { Bot, Check, FileText, Plus, Search, Send, Square, Trash2, X } from "lucide-react";
+import { Bot, Check, FilePlus, FileText, Folder, Globe, Plus, Search, Send, Square, Trash2, X } from "lucide-react";
 import { useEditorStore } from "@/stores/editorStore";
 import { useVaultStore } from "@/stores/vaultStore";
+import { useFileTreeStore } from "@/stores/fileTreeStore";
+import { pathJoin } from "@/lib/tauriCommands";
 import { useAiStore } from "./aiStore";
-import { streamAiChat } from "./client";
 import { searchArticleContexts } from "./articleSearch";
-import { buildChatMessages, getVaultRelativePath } from "./contextBuilder";
+import { getVaultRelativePath } from "./contextBuilder";
 import { MarkdownMessage } from "./MarkdownMessage";
 import { compactSessionMemoryIfNeeded } from "./memoryCompactor";
+import { DocumentDraftModal } from "./DocumentDraftModal";
+import { runAiGraph } from "./graph/runAiGraph";
 import {
   appendUserAndAssistantPlaceholders,
   createAiSession,
@@ -24,6 +27,17 @@ import {
   updateSessionMessageContent,
 } from "./sessionManager";
 import type { AiArticleContextRef, AiSessionData, AiSessionManagerData } from "./sessionTypes";
+import type { AiKnowledgeToolCall } from "./toolTypes";
+
+interface PendingToolRequest {
+  call: AiKnowledgeToolCall;
+  session: AiSessionData;
+  manager: AiSessionManagerData;
+  assistantMessageId: string;
+  contextRefs: AiArticleContextRef[];
+  running: boolean;
+  error?: string;
+}
 
 export function AiChatDock() {
   const { t, i18n } = useTranslation();
@@ -40,14 +54,26 @@ export function AiChatDock() {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [streaming, setStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [documentModalOpen, setDocumentModalOpen] = useState(false);
+  const [pendingToolRequest, setPendingToolRequest] = useState<PendingToolRequest | null>(null);
+  const [thinkingByMessageId, setThinkingByMessageId] = useState<Record<string, string[]>>({});
   const ai = useAiStore((s) => s.ai);
   const vaultPath = useVaultStore((s) => s.vaultPath);
   const activeTabPath = useEditorStore((s) => s.activeTabPath);
   const ref = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const toolConfirmationRef = useRef<((allowed: boolean) => void) | null>(null);
 
   const messages = session?.messages ?? [];
+
+  const canGenerateDocument = Boolean(
+    vaultPath
+    && session
+    && !streaming
+    && session.messages.some((m) => m.role === "user" && m.content.trim())
+    && session.messages.some((m) => m.role === "assistant" && m.content.trim()),
+  );
   const sessions = manager?.sessions ?? [];
   // Active editor file can be attached without going through the search picker.
   const activeRelativePath = vaultPath && activeTabPath
@@ -140,6 +166,11 @@ export function AiChatDock() {
   }, [articleQuery, contextPickerOpen, open, vaultPath]);
 
   const stopStreaming = () => {
+    if (toolConfirmationRef.current) {
+      toolConfirmationRef.current(false);
+      toolConfirmationRef.current = null;
+      setPendingToolRequest(null);
+    }
     abortRef.current?.abort();
     abortRef.current = null;
     setStreaming(false);
@@ -229,6 +260,60 @@ export function AiChatDock() {
     setArticleResults([]);
   };
 
+  const appendAssistantThinking = (messageId: string, token: string) => {
+    setThinkingByMessageId((current) => {
+      const parts = current[messageId] ?? [""];
+      const next = [...parts];
+      next[next.length - 1] = `${next[next.length - 1] ?? ""}${token}`;
+      return {
+        ...current,
+        [messageId]: next,
+      };
+    });
+  };
+
+  const describeToolRequest = (call: AiKnowledgeToolCall): string => {
+    if (call.tool === "fetch_url" || call.tool === "browse_page") {
+      return [
+        call.tool === "browse_page" ? t("aiChat.toolBrowseRequested") : t("aiChat.toolFetchRequested"),
+        "",
+        `URL: ${call.url}`,
+        call.purpose ? `${t("aiChat.toolPurpose")}: ${call.purpose}` : "",
+      ].filter(Boolean).join("\n");
+    }
+    return t("aiChat.toolRequested");
+  };
+
+  const cancelToolRequest = async () => {
+    if (toolConfirmationRef.current) {
+      toolConfirmationRef.current(false);
+      toolConfirmationRef.current = null;
+      setPendingToolRequest(null);
+      return;
+    }
+    if (!vaultPath || !pendingToolRequest) return;
+    const nextSession = updateSessionMessageContent(
+      pendingToolRequest.session,
+      pendingToolRequest.assistantMessageId,
+      t("aiChat.toolCancelled"),
+    );
+    setSession(nextSession);
+    setPendingToolRequest(null);
+    try {
+      setManager(await saveAiSession(vaultPath, nextSession, pendingToolRequest.manager));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t("aiChat.errors.requestFailed"));
+    }
+  };
+
+  const confirmToolRequest = async () => {
+    if (toolConfirmationRef.current) {
+      setPendingToolRequest((current) => current ? { ...current, running: true, error: undefined } : current);
+      toolConfirmationRef.current(true);
+      toolConfirmationRef.current = null;
+    }
+  };
+
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
     const text = input.trim();
@@ -256,17 +341,54 @@ export function AiChatDock() {
       nextManager = await saveAiSession(vaultPath, pendingSession, manager);
       setManager(nextManager);
 
-      // Build the LLM request from the submitted context, not the now-cleared composer queue.
-      await streamAiChat(ai, {
-        messages: await buildChatMessages(vaultPath, pendingSession, memory, i18n.language, submittedContextRefs),
+      const result = await runAiGraph({
+        ai,
+        vaultPath,
+        session: pendingSession,
+        memory,
+        language: i18n.language,
+        userText: text,
+        articleRefs: submittedContextRefs,
         signal: controller.signal,
-        onToken: (token) => {
-          assistantContent += token;
-          setSession((current) =>
-            current ? updateSessionMessageContent(current, assistantMessageId, assistantContent) : current,
-          );
+        confirmToolCall: (call) => new Promise((resolve) => {
+          toolConfirmationRef.current = resolve;
+          const messageSession = updateSessionMessageContent(pendingSession, assistantMessageId, describeToolRequest(call));
+          setSession(messageSession);
+          setPendingToolRequest({
+            call,
+            session: messageSession,
+            manager: nextManager,
+            assistantMessageId,
+            contextRefs: submittedContextRefs,
+            running: false,
+          });
+        }),
+        onEvent: (graphEvent) => {
+          if (graphEvent.type === "thinking" && graphEvent.node === "final_answer") {
+            appendAssistantThinking(assistantMessageId, graphEvent.value);
+          }
+          if (graphEvent.type === "token" && graphEvent.node === "final_answer") {
+            assistantContent = graphEvent.value;
+            setSession((current) =>
+              current ? updateSessionMessageContent(current, assistantMessageId, assistantContent) : current,
+            );
+          }
+          if (graphEvent.type === "tool_result") {
+            console.info("[ThinkingKity AI] tool result", graphEvent.result);
+            setPendingToolRequest(null);
+            const message = graphEvent.result.ok
+              ? t("aiChat.toolFetchedGenerating")
+              : `${t("aiChat.toolFetchFailed")}: ${graphEvent.result.error ?? "Unknown error"}`;
+            setSession((current) =>
+              current ? updateSessionMessageContent(current, assistantMessageId, message) : current,
+            );
+          }
+          if (graphEvent.type === "error") {
+            setError(graphEvent.error);
+          }
         },
       });
+      assistantContent = result.finalAnswer;
 
       nextSession = updateSessionMessageContent(pendingSession, assistantMessageId, assistantContent);
       nextManager = await saveAiSession(vaultPath, nextSession, nextManager);
@@ -393,15 +515,25 @@ export function AiChatDock() {
                   </div>
                 </div>
               )}
-            <button
-              type="button"
-              className="ai-chat-panel-close"
-              onClick={() => setOpen(false)}
-              title={t("tab.close")}
-              aria-label={t("tab.close")}
-            >
-              <X size={15} />
-            </button>
+              <button
+                type="button"
+                className="ai-chat-panel-close"
+                onClick={() => setDocumentModalOpen(true)}
+                disabled={!canGenerateDocument}
+                title={t("aiChat.generateDocument")}
+                aria-label={t("aiChat.generateDocument")}
+              >
+                <FilePlus size={15} />
+              </button>
+              <button
+                type="button"
+                className="ai-chat-panel-close"
+                onClick={() => setOpen(false)}
+                title={t("tab.close")}
+                aria-label={t("tab.close")}
+              >
+                <X size={15} />
+              </button>
             </div>
           </div>
           <div ref={scrollRef} className="ai-chat-panel-body">
@@ -420,6 +552,15 @@ export function AiChatDock() {
                     <div className="ai-chat-message-role">
                       {message.role === "user" ? t("aiChat.userRole") : t("aiChat.assistantRole")}
                     </div>
+                    {message.role === "assistant" && thinkingByMessageId[message.id]?.length > 0 && (
+                      <div className="ai-chat-thinking">
+                        {thinkingByMessageId[message.id].map((item, index) => (
+                          <div key={index} className="ai-chat-thinking-block">
+                            {item}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                     <div className="ai-chat-message-content">
                       {message.content
                         ? <MarkdownMessage content={message.content} />
@@ -429,7 +570,7 @@ export function AiChatDock() {
                       <div className="ai-chat-message-contexts" aria-label={t("aiChat.attachedFileContext")}>
                         {message.context_refs.map((item) => (
                           <span key={item.path} className="ai-chat-message-context" title={item.path}>
-                            <FileText size={12} />
+                            {item.type === "directory" ? <Folder size={12} /> : <FileText size={12} />}
                             <span>{item.title}</span>
                           </span>
                         ))}
@@ -441,6 +582,43 @@ export function AiChatDock() {
             )}
             {error && <div className="ai-chat-error">{error}</div>}
           </div>
+          {pendingToolRequest && (
+            <div className="ai-tool-confirm" role="dialog" aria-label={t("aiChat.toolConfirmTitle")}>
+              <div className="ai-tool-confirm-title">
+                <Globe size={15} />
+                <span>{t("aiChat.toolConfirmTitle")}</span>
+              </div>
+              <div className="ai-tool-confirm-body">
+                <div className="ai-tool-confirm-url">{pendingToolRequest.call.url}</div>
+                {pendingToolRequest.call.purpose && (
+                  <div className="ai-tool-confirm-purpose">{pendingToolRequest.call.purpose}</div>
+                )}
+                {pendingToolRequest.error && <div className="ai-chat-error">{pendingToolRequest.error}</div>}
+              </div>
+              <div className="ai-tool-confirm-actions">
+                <button
+                  type="button"
+                  className="ai-tool-confirm-cancel"
+                  onClick={cancelToolRequest}
+                  disabled={pendingToolRequest.running}
+                >
+                  {t("aiChat.toolCancel")}
+                </button>
+                <button
+                  type="button"
+                  className="ai-tool-confirm-allow"
+                  onClick={confirmToolRequest}
+                  disabled={pendingToolRequest.running}
+                >
+                  {pendingToolRequest.running
+                    ? t("aiChat.toolFetching")
+                    : pendingToolRequest.call.tool === "browse_page"
+                      ? t("aiChat.toolAllowBrowse")
+                      : t("aiChat.toolAllowFetch")}
+                </button>
+              </div>
+            </div>
+          )}
           <form className="ai-chat-composer" onSubmit={handleSubmit}>
             {session && (
               <div className="ai-context-bar">
@@ -455,6 +633,7 @@ export function AiChatDock() {
                         disabled={streaming}
                         title={item.path}
                       >
+                        {item.type === "directory" ? <Folder size={12} /> : null}
                         <span>{item.title}</span>
                         <X size={12} />
                       </button>
@@ -521,7 +700,7 @@ export function AiChatDock() {
                         <div className="ai-context-result-empty">{t("aiChat.noFilesFound")}</div>
                       ) : (
                         articleResults.map((item) => {
-                          const selected = session.attached_context.some((ref) => ref.path === item.path);
+                          const selected = session.attached_context.some((ref) => ref.path === item.path && ref.type === item.type);
                           return (
                             <button
                               key={item.path}
@@ -535,7 +714,10 @@ export function AiChatDock() {
                                 {selected && <Check size={13} />}
                               </span>
                               <span className="ai-context-result-text">
-                                <span className="ai-context-result-title">{item.title}</span>
+                                <span className="ai-context-result-title">
+                                  {item.type === "directory" && <Folder size={12} />}
+                                  <span>{item.title}</span>
+                                </span>
                                 <span className="ai-context-result-path">{item.path}</span>
                               </span>
                             </button>
@@ -585,6 +767,22 @@ export function AiChatDock() {
           </form>
         </aside>,
         document.body,
+      )}
+      {vaultPath && session && (
+        <DocumentDraftModal
+          open={documentModalOpen}
+          vaultPath={vaultPath}
+          session={session}
+          memory={memory}
+          language={i18n.language}
+          onClose={() => setDocumentModalOpen(false)}
+          onSaveSuccess={async (relativePath) => {
+            setDocumentModalOpen(false);
+            const fullPath = pathJoin(vaultPath, relativePath);
+            await useFileTreeStore.getState().refreshTree(vaultPath);
+            await useEditorStore.getState().openFile(fullPath);
+          }}
+        />
       )}
     </div>
   );

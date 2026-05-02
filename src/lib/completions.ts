@@ -948,7 +948,6 @@ const allCompletions: LanguageCompletions = {
   toml: yamlKeywords,
   json: jsonKeywords,
   markdown: markdownKeywords,
-  mdx: markdownKeywords,
 };
 
 function completionSourceFor(language: string) {

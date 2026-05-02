@@ -104,7 +104,11 @@ export function useFileOperations() {
       });
       if (!name) return;
       const filePath = pathJoin(parentPath, name + (name.endsWith(`.${ext}`) ? "" : `.${ext}`));
-      await createFile(filePath);
+      if (ext === "mermaid") {
+        await writeFile(filePath, "flowchart TD\n  A[Start] --> B[End]\n");
+      } else {
+        await createFile(filePath);
+      }
       if (vaultPath) await refreshTree(vaultPath);
     },
     [vaultPath, refreshTree, showPrompt, t],

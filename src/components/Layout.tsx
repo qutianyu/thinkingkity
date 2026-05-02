@@ -17,11 +17,11 @@ type FileType = "markdown" | "csv" | "json" | "code" | "text" | "image" | "pdf" 
 function getFileType(path: string | null): FileType {
   if (!path) return "unknown";
   const lower = path.toLowerCase();
-  if (lower.endsWith(".md")) return "markdown";
+  if (lower.endsWith(".md") || lower.endsWith(".markdown")) return "markdown";
   if (lower.endsWith(".csv")) return "csv";
   if (lower.endsWith(".json")) return "json";
   if (lower.endsWith(".txt")) return "text";
-  if (/\.(js|ts|jsx|tsx|py|java|rs|c|cpp|h|hpp|css|scss|html|xml|yaml|yml|toml|sh|bash|sql|go|rb|php|swift|kt|dart|r|m|mm|pl|lua|vim|zig|hs|ml|scala|clj|ex|exs|erl|v|sv|vhd)$/.test(lower)) return "code";
+  if (/\.(js|ts|jsx|tsx|py|java|rs|c|cpp|h|hpp|css|scss|html|xml|yaml|yml|toml|ini|conf|env|properties|mermaid|sh|bash|sql|go|rb|php|swift|kt|dart|r|m|mm|pl|lua|vim|zig|hs|ml|scala|clj|ex|exs|erl|v|sv|vhd)$/.test(lower)) return "code";
   if (/\.(jpg|jpeg|png|gif|svg|webp|bmp|ico)$/.test(lower)) return "image";
   if (lower.endsWith(".pdf")) return "pdf";
   return "unknown";

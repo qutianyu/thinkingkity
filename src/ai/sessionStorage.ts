@@ -87,13 +87,24 @@ function isSessionData(value: unknown): value is AiSessionData {
 function normalizeArticleRef(value: unknown): AiArticleContextRef | null {
   if (!value || typeof value !== "object") return null;
   const raw = value as Partial<AiArticleContextRef>;
-  if (raw.type !== "file" || typeof raw.path !== "string" || !raw.path) return null;
-  return {
-    type: "file",
-    path: raw.path,
-    title: typeof raw.title === "string" && raw.title ? raw.title : pathBasename(raw.path),
-    added_at: typeof raw.added_at === "string" ? raw.added_at : undefined,
-  };
+  if (raw.type === "file" && typeof raw.path === "string" && raw.path) {
+    return {
+      type: "file",
+      path: raw.path,
+      title: typeof raw.title === "string" && raw.title ? raw.title : pathBasename(raw.path),
+      added_at: typeof raw.added_at === "string" ? raw.added_at : undefined,
+    };
+  }
+  if (raw.type === "directory" && typeof raw.path === "string" && raw.path) {
+    return {
+      type: "directory",
+      path: raw.path,
+      title: typeof raw.title === "string" && raw.title ? raw.title : pathBasename(raw.path),
+      recursive: raw.recursive !== false,
+      added_at: typeof raw.added_at === "string" ? raw.added_at : undefined,
+    };
+  }
+  return null;
 }
 
 function normalizeSessionData(value: unknown, fallback: AiSessionData): AiSessionData {

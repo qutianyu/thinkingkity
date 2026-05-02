@@ -16,6 +16,11 @@ import {
   SiGnubash,
   SiJson,
   SiMarkdown,
+  SiMermaid,
+  SiYaml,
+  SiToml,
+  SiDotenv,
+  SiEditorconfig,
 } from "@icons-pack/react-simple-icons";
 
 import type { ComponentType, SVGProps } from "react";
@@ -50,7 +55,15 @@ const EXT_ICON_MAP: Record<string, IconEntry> = {
   ".zsh": { component: SiGnubash, color: "#4EAA25" },
   ".json": { component: SiJson, color: "#5B5B5B" },
   ".md": { component: SiMarkdown, color: "#083FA1" },
-  ".mdx": { component: SiMarkdown, color: "#083FA1" },
+  ".markdown": { component: SiMarkdown, color: "#083FA1" },
+  ".yaml": { component: SiYaml, color: "#CB171E" },
+  ".yml": { component: SiYaml, color: "#CB171E" },
+  ".toml": { component: SiToml, color: "#9C4221" },
+  ".ini": { component: SiEditorconfig, color: "#6B7280" },
+  ".conf": { component: SiEditorconfig, color: "#6B7280" },
+  ".env": { component: SiDotenv, color: "#ECD53F" },
+  ".properties": { component: SiEditorconfig, color: "#6B7280" },
+  ".mermaid": { component: SiMermaid, color: "#FF3670" },
 };
 
 export function getIconEntry(path: string): IconEntry | null {

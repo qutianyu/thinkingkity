@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/nicedoc/tauri/refs/heads/dev/crates/tauri-config-schema/schema.json",
   "productName": "ThinkingKity",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "identifier": "com.thinkingkity.app",
   "build": {
     "frontendDist": "../dist",
@@ -21,10 +21,10 @@
       }
     ],
     "security": {
-      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://api.openai.com https://api.anthropic.com; img-src 'self' asset: https: data: blob:",
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://api.openai.com https://api.anthropic.com ipc: http://ipc.localhost; img-src 'self' asset: http://asset.localhost https: data: blob:",
       "assetProtocol": {
         "enable": true,
-        "scope": ["$HOME/**", "$APPDATA/**", "$DESKTOP/**", "$DOCUMENT/**"]
+        "scope": ["$HOME/**/*", "$HOME/**", "$DESKTOP/**/*", "$DOCUMENT/**/*", "$TEMP/**/*"]
       }
     }
   },

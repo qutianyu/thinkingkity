@@ -10,5 +10,7 @@ export interface AiChatMessage {
 export interface AiChatRequest {
   messages: AiChatMessage[];
   onToken: (token: string) => void;
+  onThinking?: (token: string) => void;
   signal?: AbortSignal;
+  source?: string;
 }

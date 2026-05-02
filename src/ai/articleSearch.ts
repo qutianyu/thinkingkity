@@ -1,30 +1,12 @@
-import { isImageFile, isPdfFile, pathBasename, readDirectory } from "@/lib/tauriCommands";
-import { CODE_TYPES, DOC_TYPES } from "@/lib/codeTypes";
+import { pathBasename, readDirectory } from "@/lib/tauriCommands";
 import { isVaultSystemEntry } from "@/lib/vaultConfig";
 import type { AiArticleContextRef } from "./sessionTypes";
 import { getVaultRelativePath } from "./contextBuilder";
+import { canUseAsAiTextContext, shouldSkipAiContextDirectory } from "./contextFileRules";
 
 const MAX_RESULTS = 30;
-const EXTRA_CONTEXT_EXTENSIONS = [
-  ".md",
-  ".mdx",
-  ".log",
-];
-const CONTEXT_EXTENSIONS = Array.from(new Set([
-  ...DOC_TYPES.map((type) => `.${type.ext}`),
-  ...CODE_TYPES.flatMap((type) => type.exts.map((ext) => `.${ext}`)),
-  ...EXTRA_CONTEXT_EXTENSIONS,
-]));
-
 function nowIso(): string {
   return new Date().toISOString();
-}
-
-function canUseAsContextFile(path: string): boolean {
-  // Binary formats are skipped because the context builder reads files as text.
-  if (isImageFile(path) || isPdfFile(path)) return false;
-  const lower = path.toLowerCase();
-  return CONTEXT_EXTENSIONS.some((ext) => lower.endsWith(ext));
 }
 
 async function searchRecursive(
@@ -42,6 +24,19 @@ async function searchRecursive(
     if (isVaultSystemEntry(entry)) continue;
 
     if (entry.is_dir) {
+      const relativePath = getVaultRelativePath(vaultPath, entry.path);
+      const haystack = `${entry.name}\n${relativePath}`.toLowerCase();
+      if (haystack.includes(lowerQuery)) {
+        results.push({
+          type: "directory",
+          path: relativePath,
+          title: pathBasename(entry.path),
+          recursive: true,
+          added_at: nowIso(),
+        });
+        if (results.length >= MAX_RESULTS) return;
+      }
+      if (shouldSkipAiContextDirectory(entry.name)) continue;
       try {
         // Search should stay resilient when a subfolder is unreadable.
         await searchRecursive(vaultPath, entry.path, query, results);
@@ -51,7 +46,7 @@ async function searchRecursive(
       continue;
     }
 
-    if (!canUseAsContextFile(entry.path)) continue;
+    if (!canUseAsAiTextContext(entry.path)) continue;
 
     const relativePath = getVaultRelativePath(vaultPath, entry.path);
     const haystack = `${entry.name}\n${relativePath}`.toLowerCase();

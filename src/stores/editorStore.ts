@@ -4,6 +4,7 @@ import {
   readFile,
   writeFile,
   getAssetUrl,
+  readFileBase64,
   isImageFile,
   isPdfFile,
 } from "@/lib/tauriCommands";
@@ -44,7 +45,9 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     }
     try {
       let content: string;
-      if (isImageFile(path) || isPdfFile(path)) {
+      if (isImageFile(path)) {
+        content = await readFileBase64(path);
+      } else if (isPdfFile(path)) {
         content = getAssetUrl(path);
       } else {
         content = await readFile(path);

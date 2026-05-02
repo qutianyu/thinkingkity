@@ -5,10 +5,11 @@ use std::path::PathBuf;
 const MAX_VAULTS: usize = 5;
 const APP_DIR: &str = "thinkingkity";
 const VAULTS_FILE: &str = "vaults.json";
-const TEST_VAULT_DIR: &str = "test-vault";
+const DEMO_VAULT_DIR: &str = "demo-vault";
+const LEGACY_TEST_VAULT_DIR: &str = "test-vault";
 
-/// Test vault files embedded at compile time. Each entry is (relative_path, content).
-/// relative_path is relative to the test-vault root, e.g. "notes/getting-started.md".
+/// Demo vault files embedded at compile time. Each entry is (relative_path, content).
+/// relative_path is relative to the demo vault root, e.g. "notes/getting-started.md".
 type TestFile = (&'static str, &'static str);
 
 fn test_vault_files() -> Vec<TestFile> {
@@ -75,8 +76,12 @@ fn get_vaults_file_path() -> Result<PathBuf, String> {
     Ok(get_global_config_dir()?.join(VAULTS_FILE))
 }
 
-fn get_test_vault_path() -> Result<PathBuf, String> {
-    Ok(get_global_config_dir()?.join(TEST_VAULT_DIR))
+fn get_demo_vault_path() -> Result<PathBuf, String> {
+    Ok(get_global_config_dir()?.join(DEMO_VAULT_DIR))
+}
+
+fn get_legacy_test_vault_path() -> Result<PathBuf, String> {
+    Ok(get_global_config_dir()?.join(LEGACY_TEST_VAULT_DIR))
 }
 
 fn normalize_vaults(raw: Vec<String>) -> Vec<String> {
@@ -139,27 +144,30 @@ pub fn write_global_vaults(vaults: Vec<String>) -> Result<(), String> {
 
 #[tauri::command]
 pub fn ensure_test_vault() -> Result<String, String> {
-    let test_vault = get_test_vault_path()?;
+    let demo_vault = get_demo_vault_path()?;
+    let legacy_test_vault = get_legacy_test_vault_path()?;
+    let legacy_path_str = legacy_test_vault.to_string_lossy().to_string();
 
     // If the directory already exists, don't overwrite user changes.
-    if test_vault.is_dir() {
-        let path_str = test_vault.to_string_lossy().to_string();
+    if demo_vault.is_dir() {
+        let path_str = demo_vault.to_string_lossy().to_string();
         // Still ensure it's in vaults.json.
         let mut data = read_vaults_file()?;
         data.vaults = normalize_vaults(
             std::iter::once(path_str.clone())
                 .chain(data.vaults.clone())
+                .filter(|p| p != &legacy_path_str)
                 .collect(),
         );
         write_vaults_file(&data)?;
         return Ok(path_str);
     }
 
-    fs::create_dir_all(&test_vault)
-        .map_err(|e| format!("Failed to create test vault dir: {}", e))?;
+    fs::create_dir_all(&demo_vault)
+        .map_err(|e| format!("Failed to create demo vault dir: {}", e))?;
 
     for (relative_path, content) in test_vault_files() {
-        let dest = test_vault.join(relative_path);
+        let dest = demo_vault.join(relative_path);
         if let Some(parent) = dest.parent() {
             fs::create_dir_all(parent)
                 .map_err(|e| format!("Failed to create parent dir: {}", e))?;
@@ -168,13 +176,14 @@ pub fn ensure_test_vault() -> Result<String, String> {
             .map_err(|e| format!("Failed to write {}: {}", relative_path, e))?;
     }
 
-    let path_str = test_vault.to_string_lossy().to_string();
+    let path_str = demo_vault.to_string_lossy().to_string();
 
-    // Add test vault to the front of the vaults list.
+    // Add demo vault to the front of the vaults list and remove the old bundled test-vault entry.
     let mut data = read_vaults_file()?;
     data.vaults = normalize_vaults(
         std::iter::once(path_str.clone())
             .chain(data.vaults.clone())
+            .filter(|p| p != &legacy_path_str)
             .collect(),
     );
     write_vaults_file(&data)?;

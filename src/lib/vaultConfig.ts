@@ -1,6 +1,7 @@
 import type { FileEntry } from "@/types";
 import { createFolder, readFile, writeFile, pathJoin } from "@/lib/tauriCommands";
 import { normalizeAiConfig, type AiConfig } from "@/ai";
+import { ensureVaultToolFiles } from "@/ai/tools/toolPolicy";
 
 export const THINKINGKITY_DIR = ".thinkingkity";
 const CONFIG_FILE = "config.json";
@@ -8,10 +9,10 @@ const CONFIG_FILE = "config.json";
 export type VaultMode = "system" | "dark" | "light";
 
 export const ALL_DISPLAY_TYPES = [
-  "md", "csv", "json", "txt",
+  "md", "markdown", "csv", "json", "yaml", "yml", "toml", "ini", "cfg", "conf", "env", "properties", "mermaid", "txt", "log", "gitignore", "dockerignore",
   "jpg", "jpeg", "png", "gif", "svg", "webp", "bmp", "ico",
   "pdf",
-  "java", "py", "ts", "tsx", "js", "jsx", "c", "h", "cpp", "hpp", "go", "rs", "css", "scss", "less", "html", "htm", "xml", "sql", "sh", "bash", "zsh",
+  "java", "py", "ts", "tsx", "js", "jsx", "c", "h", "cpp", "hpp", "cs", "go", "rs", "rb", "php", "swift", "kt", "dart", "css", "scss", "less", "html", "htm", "xml", "sql", "sh", "bash", "zsh", "r", "lua", "vim", "zig", "hs", "ml", "scala", "clj", "ex", "exs", "erl", "v", "sv", "vhd",
 ];
 
 export interface VaultConfig {
@@ -87,6 +88,7 @@ export async function ensureVaultConfig(
   if (shouldWrite) {
     await writeVaultConfig(vaultPath, config);
   }
+  await ensureVaultToolFiles(vaultPath);
 
   return config;
 }
