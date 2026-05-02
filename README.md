@@ -1,5 +1,7 @@
 # ThinkingKity
 
+<img src="./logo.png" alt="ThinkingKity" width="128" />
+
 > 📖 [中文版](./README_zh.md)
 
 A local-first desktop knowledge base built with Tauri v2 and React 19. Open any folder as a "vault" — like Obsidian — and edit Markdown, code, CSV, and more with specialized editors. Includes an integrated AI assistant with persistent chat sessions.

@@ -1,5 +1,7 @@
 # ThinkingKity
 
+<img src="./logo.png" alt="ThinkingKity" width="128" />
+
 > 📖 [English version](./README.md)
 
 基于 Tauri v2 和 React 19 构建的本地优先桌面知识库。打开任意文件夹作为「vault」——类似 Obsidian——使用专用编辑器编辑 Markdown、代码、CSV 等文件。集成 AI 助手，支持持久化对话记录。
