@@ -8,41 +8,7 @@ const VAULTS_FILE: &str = "vaults.json";
 const DEMO_VAULT_DIR: &str = "demo-vault";
 const LEGACY_TEST_VAULT_DIR: &str = "test-vault";
 
-/// Demo vault files embedded at compile time. Each entry is (relative_path, content).
-/// relative_path is relative to the demo vault root, e.g. "notes/getting-started.md".
-type TestFile = (&'static str, &'static str);
-
-fn test_vault_files() -> Vec<TestFile> {
-    vec![
-        ("README.md", include_str!("../../test-vault/README.md")),
-        // notes
-        ("notes/getting-started.md", include_str!("../../test-vault/notes/getting-started.md")),
-        ("notes/todo.md", include_str!("../../test-vault/notes/todo.md")),
-        ("notes/cheatsheet.md", include_str!("../../test-vault/notes/cheatsheet.md")),
-        // code - languages
-        ("code/hello.py", include_str!("../../test-vault/code/hello.py")),
-        ("code/app.ts", include_str!("../../test-vault/code/app.ts")),
-        ("code/hello.java", include_str!("../../test-vault/code/hello.java")),
-        ("code/hello.rs", include_str!("../../test-vault/code/hello.rs")),
-        ("code/hello.go", include_str!("../../test-vault/code/hello.go")),
-        ("code/main.c", include_str!("../../test-vault/code/main.c")),
-        ("code/utils.js", include_str!("../../test-vault/code/utils.js")),
-        ("code/style.css", include_str!("../../test-vault/code/style.css")),
-        ("code/queries.sql", include_str!("../../test-vault/code/queries.sql")),
-        ("code/deploy.sh", include_str!("../../test-vault/code/deploy.sh")),
-        // code - web
-        ("code/web/App.tsx", include_str!("../../test-vault/code/web/App.tsx")),
-        ("code/web/index.html", include_str!("../../test-vault/code/web/index.html")),
-        ("code/web/data.xml", include_str!("../../test-vault/code/web/data.xml")),
-        // data
-        ("data/sample.csv", include_str!("../../test-vault/data/sample.csv")),
-        ("data/config.json", include_str!("../../test-vault/data/config.json")),
-        ("data/config.yaml", include_str!("../../test-vault/data/config.yaml")),
-        ("data/config.toml", include_str!("../../test-vault/data/config.toml")),
-        // text
-        ("text/plain.txt", include_str!("../../test-vault/text/plain.txt")),
-    ]
-}
+include!("generated_demo_vault.rs");
 
 #[derive(Debug, Serialize, Deserialize)]
 struct VaultsData {
@@ -143,7 +109,7 @@ pub fn write_global_vaults(vaults: Vec<String>) -> Result<(), String> {
 }
 
 #[tauri::command]
-pub fn ensure_test_vault() -> Result<String, String> {
+pub fn ensure_demo_vault() -> Result<String, String> {
     let demo_vault = get_demo_vault_path()?;
     let legacy_test_vault = get_legacy_test_vault_path()?;
     let legacy_path_str = legacy_test_vault.to_string_lossy().to_string();
@@ -166,7 +132,7 @@ pub fn ensure_test_vault() -> Result<String, String> {
     fs::create_dir_all(&demo_vault)
         .map_err(|e| format!("Failed to create demo vault dir: {}", e))?;
 
-    for (relative_path, content) in test_vault_files() {
+    for (relative_path, content) in demo_vault_files() {
         let dest = demo_vault.join(relative_path);
         if let Some(parent) = dest.parent() {
             fs::create_dir_all(parent)
@@ -178,7 +144,7 @@ pub fn ensure_test_vault() -> Result<String, String> {
 
     let path_str = demo_vault.to_string_lossy().to_string();
 
-    // Add demo vault to the front of the vaults list and remove the old bundled test-vault entry.
+    // Add demo vault to the front of the vaults list and remove the old bundled demo-vault entry.
     let mut data = read_vaults_file()?;
     data.vaults = normalize_vaults(
         std::iter::once(path_str.clone())

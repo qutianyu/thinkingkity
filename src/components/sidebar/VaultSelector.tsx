@@ -2,12 +2,14 @@ import { useTranslation } from "react-i18next";
 import { FolderOpen, Check, ChevronDown, X } from "lucide-react";
 import { useVaultStore } from "@/stores/vaultStore";
 import { useFileTreeStore } from "@/stores/fileTreeStore";
+import { useEditorStore } from "@/stores/editorStore";
 import { useThemeStore } from "@/stores/themeStore";
 import { DEFAULT_AI_CONFIG, useAiStore } from "@/ai";
 import { isTauri } from "@/lib/tauriCommands";
 import { pathBasename } from "@/lib/tauriCommands";
 import { ensureVaultConfig, ALL_DISPLAY_TYPES } from "@/lib/vaultConfig";
-import { ensureTestVault } from "@/lib/globalVaults";
+import { DEFAULT_SYNC_CONFIG, useSyncStore } from "@/sync";
+import { ensureDemoVault } from "@/lib/globalVaults";
 import { useState, useRef, useEffect } from "react";
 
 export function VaultSelector() {
@@ -32,20 +34,23 @@ export function VaultSelector() {
   }, []);
 
   useEffect(() => {
-    ensureTestVault().then(() => loadRecentVaults());
+    ensureDemoVault().then(() => loadRecentVaults());
   }, []);
 
   const openVaultPath = async (path: string) => {
+    useEditorStore.getState().closeAll();
     const config = await ensureVaultConfig(path, {
       language: i18n.language || "zh-CN",
       mode: preference,
       display_type: ALL_DISPLAY_TYPES,
       ai: DEFAULT_AI_CONFIG,
+      sync: DEFAULT_SYNC_CONFIG,
     });
     await i18n.changeLanguage(config.language);
     setPreference(config.mode);
     setDisplayType(config.display_type);
     setAi(config.ai);
+    useSyncStore.getState().setConfig(config.sync);
     setVault(path);
     await refreshTree(path);
   };

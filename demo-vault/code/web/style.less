@@ -1,0 +1,61 @@
+// Less example: variables, mixins, guards & color functions
+
+@primary: #6366f1;
+@base-radius: 6px;
+@shadow: 0 2px 8px fade(#000, 10%);
+
+.button-variant(@bg, @text: #fff) when (lightness(@bg) > 50%) {
+  background: @bg;
+  color: darken(@text, 30%);
+  border: 1px solid darken(@bg, 10%);
+}
+.button-variant(@bg, @text: #fff) when (default()) {
+  background: @bg;
+  color: @text;
+  border: 1px solid @bg;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: @base-radius;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &-primary {
+    .button-variant(@primary);
+  }
+
+  &-secondary {
+    .button-variant(#e2e8f0);
+  }
+
+  &-danger {
+    .button-variant(#ef4444);
+  }
+
+  &-lg {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    border-radius: @base-radius * 1.5;
+  }
+}
+
+// Nested rules with &
+.card {
+  background: white;
+  border-radius: @base-radius;
+  box-shadow: @shadow;
+
+  & &-title {
+    font-weight: 600;
+    padding: 1rem 1rem 0;
+  }
+
+  & &-body {
+    padding: 1rem;
+  }
+}

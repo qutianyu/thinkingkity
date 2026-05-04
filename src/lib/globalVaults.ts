@@ -33,10 +33,10 @@ export async function saveGlobalVaults(vaults: string[]): Promise<void> {
   } catch { /* ignore */ }
 }
 
-export async function ensureTestVault(): Promise<string | null> {
+export async function ensureDemoVault(): Promise<string | null> {
   if (isTauri()) {
     try {
-      return await invoke<string>("ensure_test_vault");
+      return await invoke<string>("ensure_demo_vault");
     } catch {
       return null;
     }

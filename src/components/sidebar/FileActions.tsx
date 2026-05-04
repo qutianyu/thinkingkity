@@ -26,13 +26,15 @@ function FileIcon({ ext }: { ext: string }) {
   if (lucide) {
     return <span className="file-type-chip-icon flex items-center justify-center">{lucide}</span>;
   }
-  return <span className="file-type-chip-icon-placeholder" />;
+  return <span className="file-type-chip-icon flex items-center justify-center">
+			<FileText size={16} className="text-[var(--color-text-muted)]" />
+		</span>;
 }
 
 export function FileActions() {
   const { t } = useTranslation();
   const vaultPath = useVaultStore((s) => s.vaultPath);
-  const { handleNewJsonFile, handleNewCodeFile, handleNewFolder } = useFileOperations();
+  const { handleNewFile, handleNewJsonFile, handleNewCodeFile, handleNewFolder } = useFileOperations();
   const [open, setOpen] = useState(false);
   const [fileTypePicker, setFileTypePicker] = useState<{
     x: number;
@@ -70,6 +72,16 @@ export function FileActions() {
 
       {open && (
         <div className="context-menu absolute right-0 top-full mt-1.5 z-30 min-w-[200px]">
+          <button
+            onClick={() => {
+              handleNewFile(vaultPath);
+              setOpen(false);
+            }}
+            className="menu-item"
+          >
+            <FilePlus size={15} className="text-[var(--color-file-md)]" />
+            {t("sidebar.newMarkdownFile")}
+          </button>
           <button
             onClick={(e) => {
               const rect = e.currentTarget.getBoundingClientRect();

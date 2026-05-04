@@ -10,7 +10,7 @@
 
 - **Vault 文件管理** — 打开本地文件夹，侧边栏树形浏览，拖拽排序，文件名和内容搜索。
 - **Markdown 富文本编辑器** — 基于 Milkdown 的所见即所得编辑，支持 YAML frontmatter 编辑和源码/富文切换。
-- **代码编辑器** — CodeMirror 6 驱动，语法高亮、自动补全，支持 30+ 种编程语言。
+- **代码编辑器** — CodeMirror 6 驱动，语法高亮、自动补全，支持 20+ 种语言：JavaScript、TypeScript、Python、Java、C/C++、Rust、Go、HTML、CSS、SCSS、Sass、Less、XML、Vue、JSON、YAML、TOML、SQL、Lua、R、Groovy、Markdown 等。
 - **CSV 表格编辑器** — 基于 Handsontable，支持增删行列、复制粘贴、填充柄。
 - **Mermaid 图表编辑器** — 支持 `.mermaid` 文件的分栏编辑，左侧源码右侧实时预览渲染图表。
 - **图片与 PDF 查看** — 内置图片查看器（含尺寸信息）和 PDF 阅读器。
@@ -20,7 +20,7 @@
 - **9 种语言** — English, 简体中文, 繁體中文, Français, 한국어, 日本語, Русский, Deutsch, Español。
 - **深色/浅色主题** — 跟随系统，也可手动切换，设置按 Vault 保存。
 - **快速切换器** — `Ctrl/Cmd+P` 模糊搜索并打开文件。
-- **按 Vault 配置文件过滤** — 在侧边栏中选择显示或隐藏特定文件类型。
+- **自定义文件类型过滤** — 自由添加或移除文件后缀，精确控制侧边栏中显示的文件类型。
 
 ## 技术栈
 
@@ -104,9 +104,13 @@ src/
 └── types/               # 共享 TypeScript 类型
 
 src-tauri/
+├── build.rs             # 编译时自动扫描 demo-vault 生成嵌入文件列表
 └── src/
-    ├── main.rs          # Tauri 应用入口
-    └── commands.rs      # 文件系统命令（读写/创建/删除/浏览）
+    ├── main.rs           # Tauri 应用入口 + 命令注册
+    ├── commands.rs       # 文件系统命令（读写/创建/删除/浏览）
+    └── global_config.rs  # 全局 Vault 列表 + demo vault 初始化
+
+demo-vault/               # 内置示例 Vault（通过 build.rs 自动嵌入）
 
 scripts/
 └── playwright-browse.mjs # AI 网页浏览用的无头 Playwright 脚本
@@ -158,6 +162,12 @@ AI 助手基于 LangGraph 智能体，可规划多步骤任务并执行工具。
     "base_url": "https://api.openai.com/v1",
     "api_key": "",
     "model": ""
+  },
+  "sync": {
+    "method": "none",
+    "direction": "push",
+    "webdav": { "url": "", "username": "", "password": "" },
+    "git": { "remoteUrl": "", "branch": "main" }
   }
 }
 ```

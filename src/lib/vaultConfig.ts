@@ -2,24 +2,41 @@ import type { FileEntry } from "@/types";
 import { createFolder, readFile, writeFile, pathJoin } from "@/lib/tauriCommands";
 import { normalizeAiConfig, type AiConfig } from "@/ai";
 import { ensureVaultToolFiles } from "@/ai/tools/toolPolicy";
+import { DEFAULT_SYNC_CONFIG, type SyncConfig } from "@/sync";
 
 export const THINKINGKITY_DIR = ".thinkingkity";
 const CONFIG_FILE = "config.json";
 
 export type VaultMode = "system" | "dark" | "light";
 
-export const ALL_DISPLAY_TYPES = [
-  "md", "markdown", "csv", "json", "yaml", "yml", "toml", "ini", "cfg", "conf", "env", "properties", "mermaid", "txt", "log", "gitignore", "dockerignore",
-  "jpg", "jpeg", "png", "gif", "svg", "webp", "bmp", "ico",
-  "pdf",
-  "java", "py", "ts", "tsx", "js", "jsx", "c", "h", "cpp", "hpp", "cs", "go", "rs", "rb", "php", "swift", "kt", "dart", "css", "scss", "less", "html", "htm", "xml", "sql", "sh", "bash", "zsh", "r", "lua", "vim", "zig", "hs", "ml", "scala", "clj", "ex", "exs", "erl", "v", "sv", "vhd",
+interface DisplayTypeGroup {
+  labelKey: string;
+  types: string[];
+}
+
+const DISPLAY_TYPE_GROUPS: DisplayTypeGroup[] = [
+  {
+    labelKey: "settings.displayGroupDocuments",
+    types: ["md", "markdown", "csv", "json", "yaml", "yml", "toml", "ini", "cfg", "conf", "env", "properties", "mermaid", "txt", "log", "pdf"],
+  },
+  {
+    labelKey: "settings.displayGroupImages",
+    types: ["jpg", "jpeg", "png", "gif", "svg", "webp", "ico"],
+  },
+  {
+    labelKey: "settings.displayGroupCode",
+    types: ["java", "py", "ts", "tsx", "js", "jsx", "c", "h", "cpp", "hpp", "cs", "go", "rs", "rb", "css", "scss", "sass", "less", "html", "htm", "xml", "vue", "sql", "sh", "bash", "zsh", "r", "lua", "groovy"],
+  },
 ];
+
+export const ALL_DISPLAY_TYPES = DISPLAY_TYPE_GROUPS.flatMap((g) => g.types);
 
 export interface VaultConfig {
   language: string;
   mode: VaultMode;
   display_type: string[];
   ai: AiConfig;
+  sync: SyncConfig;
 }
 
 export function getVaultConfigDir(vaultPath: string): string {
@@ -45,6 +62,52 @@ function normalizeDisplayType(raw: unknown, fallback: string[]): string[] {
   return valid.length > 0 ? valid : fallback;
 }
 
+function normalizeSyncConfig(
+  raw: unknown,
+  defaults: SyncConfig,
+): SyncConfig {
+  if (!raw || typeof raw !== "object") return defaults;
+  const s = raw as Partial<SyncConfig>;
+
+  const method: SyncConfig["method"] =
+    s.method === "webdav" || s.method === "git" || s.method === "none"
+      ? s.method
+      : defaults.method;
+
+  const direction: SyncConfig["direction"] =
+    s.direction === "pull" ? "pull" : defaults.direction;
+
+  const webdavRaw = s.webdav as Record<string, unknown> | undefined;
+  const webdav = {
+    url:
+      typeof webdavRaw?.url === "string" && webdavRaw.url
+        ? webdavRaw.url
+        : defaults.webdav.url,
+    username:
+      typeof webdavRaw?.username === "string"
+        ? webdavRaw.username
+        : defaults.webdav.username,
+    password:
+      typeof webdavRaw?.password === "string"
+        ? webdavRaw.password
+        : defaults.webdav.password,
+  };
+
+  const gitRaw = s.git as Record<string, unknown> | undefined;
+  const git = {
+    remoteUrl:
+      typeof gitRaw?.remoteUrl === "string"
+        ? gitRaw.remoteUrl
+        : defaults.git.remoteUrl,
+    branch:
+      typeof gitRaw?.branch === "string" && gitRaw.branch
+        ? gitRaw.branch
+        : defaults.git.branch,
+  };
+
+  return { method, direction, webdav, git };
+}
+
 function normalizeConfig(value: unknown, defaults: VaultConfig): VaultConfig {
   // Vault config is local JSON and can be edited by hand; normalize every field.
   if (!value || typeof value !== "object") return defaults;
@@ -56,6 +119,7 @@ function normalizeConfig(value: unknown, defaults: VaultConfig): VaultConfig {
     mode: normalizeMode(raw.mode, defaults.mode),
     display_type: normalizeDisplayType(raw.display_type, defaults.display_type),
     ai: normalizeAiConfig(raw.ai, defaults.ai),
+    sync: normalizeSyncConfig(raw.sync, defaults.sync),
   };
 }
 

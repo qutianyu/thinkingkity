@@ -35,6 +35,8 @@ import {
   joinPath,
   renderHtmlImages,
   uniqueFileName,
+  brToHardbreak,
+  hardbreakToBr,
 } from "./markdownUtils";
 import { copyFile, createFolder, isTauri, readDirectory, readFileBase64 } from "@/lib/tauriCommands";
 import { useDialogStore } from "@/stores/dialogStore";
@@ -57,7 +59,8 @@ type MenuAction =
   | "orderedList"
   | "codeBlock"
   | "blockquote"
-  | "divider";
+  | "divider"
+  | "lineBreak";
 
 type EditorContext =
   | {
@@ -261,6 +264,11 @@ function executeInsertAction(view: any, action: MenuAction) {
       if (node) tr = tr.replaceSelectionWith(node);
       break;
     }
+    case "lineBreak": {
+      const hardBreak = schema.nodes.hardbreak?.create();
+      if (hardBreak) tr = tr.replaceSelectionWith(hardBreak);
+      break;
+    }
   }
 
   view.dispatch(tr);
@@ -366,7 +374,7 @@ function MilkdownEditorInner({ content, onChange }: MilkdownEditorProps) {
     return Editor.make()
       .config((ctx) => {
         ctx.set(rootCtx, root);
-        ctx.set(defaultValueCtx, content);
+        ctx.set(defaultValueCtx, brToHardbreak(content));
         ctx.update(prismConfig.key, (config) => ({
           ...config,
           configureRefractor: (refractor) => {
@@ -376,7 +384,8 @@ function MilkdownEditorInner({ content, onChange }: MilkdownEditorProps) {
           },
         }));
         ctx.get(listenerCtx).markdownUpdated((_, markdown) => {
-          onChangeRef.current(markdown);
+          const cleaned = hardbreakToBr(markdown);
+          onChangeRef.current(cleaned);
         });
       })
       .use(nord as any)

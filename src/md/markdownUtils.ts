@@ -139,8 +139,37 @@ export async function renderHtmlImages(root: HTMLElement, options: RenderHtmlIma
   await Promise.all(promises);
 }
 
+export function brToHardbreak(markdown: string): string {
+  const parts = markdown.split(/(```[\s\S]*?```|~~~[\s\S]*?~~~)/g);
+  let result = "";
+  for (let i = 0; i < parts.length; i++) {
+    if (i % 2 === 1) {
+      result += parts[i];
+    } else {
+      let part = parts[i].replace(/^[ \t]*<br\s*\/?>[ \t]*$/gm, "");
+      part = part.replace(/<br\s*\/?>/gi, "\\\n");
+      result += part;
+    }
+  }
+  return result;
+}
+
+export function hardbreakToBr(markdown: string): string {
+  const parts = markdown.split(/(```[\s\S]*?```|~~~[\s\S]*?~~~)/g);
+  let result = "";
+  for (let i = 0; i < parts.length; i++) {
+    if (i % 2 === 1) {
+      result += parts[i];
+    } else {
+      result += parts[i].replace(/\\\n/g, "<br />\n");
+    }
+  }
+  result = result.replace(/^[ \t]*<br\s*\/?>[ \t]*$/gm, "");
+  result = result.replace(/\n{3,}/g, "\n\n");
+  return result;
+}
+
 export function uniqueFileName(fileName: string, existingNames: Set<string>): string {
-  // Pasted images should never overwrite an existing vault asset.
   if (!existingNames.has(fileName)) return fileName;
   const dotIndex = fileName.lastIndexOf(".");
   const stem = dotIndex > 0 ? fileName.slice(0, dotIndex) : fileName;

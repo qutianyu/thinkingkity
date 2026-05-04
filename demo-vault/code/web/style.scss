@@ -1,0 +1,47 @@
+// SCSS example: variables, nesting, mixins & loops
+
+$primary: #3b82f6;
+$spacing: 1rem;
+$breakpoints: (
+  sm: 640px,
+  md: 768px,
+  lg: 1024px,
+);
+
+@mixin card($radius: 8px) {
+  border-radius: $radius;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  padding: $spacing;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+
+  .card {
+    @include card;
+    background: white;
+
+    &-header {
+      font-weight: 600;
+      color: $primary;
+    }
+
+    &-body {
+      margin-top: $spacing * 0.5;
+    }
+
+    &:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+  }
+}
+
+// Each loop for responsive utilities
+@each $name, $width in $breakpoints {
+  .hide-#{$name} {
+    @media (max-width: $width) {
+      display: none;
+    }
+  }
+}

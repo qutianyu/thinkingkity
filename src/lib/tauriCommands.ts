@@ -7,9 +7,9 @@ const IS_TAURI = typeof window !== "undefined" && "__TAURI_INTERNALS__" in windo
 const fallbackFS: Map<string, string> = new Map();
 
 export function seedFallbackFs(files: Record<string, string>, vaultPath: string): void {
-  // Pre-populate the browser fallback filesystem with test vault content.
+  // Pre-populate the browser fallback filesystem with demo vault content.
   for (const [rawPath, content] of Object.entries(files)) {
-    // Strip leading segment (e.g. /test-vault/...) and remap to the given vaultPath.
+    // Strip leading segment (e.g. /demo-vault/...) and remap to the given vaultPath.
     const slashIdx = rawPath.indexOf("/", 1);
     const relative = slashIdx >= 0 ? rawPath.slice(slashIdx) : "";
     if (!relative) continue;
@@ -110,6 +110,17 @@ export async function createFile(path: string): Promise<void> {
   fallbackFS.set(path, "");
 }
 
+export async function getVaultSize(path: string): Promise<number> {
+  if (IS_TAURI) {
+    return invoke<number>("get_vault_size", { path });
+  }
+  let total = 0;
+  for (const [, content] of fallbackFS) {
+    total += content.length;
+  }
+  return total;
+}
+
 export async function createFolder(path: string): Promise<void> {
   if (IS_TAURI) {
     return invoke("create_folder", { path });
@@ -191,7 +202,7 @@ export async function revealInExplorer(path: string): Promise<void> {
   await revealItemInDir(path);
 }
 
-const IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".gif", ".svg", ".webp", ".bmp", ".ico"];
+const IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".gif", ".svg", ".webp", ".ico"];
 
 export function isImageFile(path: string): boolean {
   const lower = path.toLowerCase();
@@ -234,17 +245,14 @@ const CODE_EXTENSIONS: Record<string, string> = {
   ".cs": "csharp",
   ".go": "go",
   ".rb": "ruby",
-  ".php": "php",
-  ".swift": "swift",
-  ".kt": "kotlin",
-  ".dart": "dart",
   ".sql": "sql",
   ".sh": "shell",
   ".bash": "shell",
   ".zsh": "shell",
   ".css": "css",
-  ".scss": "css",
-  ".less": "css",
+  ".scss": "scss",
+  ".sass": "sass",
+  ".less": "less",
   ".html": "html",
   ".xml": "xml",
   ".yaml": "yaml",
@@ -255,25 +263,13 @@ const CODE_EXTENSIONS: Record<string, string> = {
   ".conf": "ini",
   ".r": "r",
   ".lua": "lua",
-  ".vim": "vim",
-  ".zig": "zig",
-  ".hs": "haskell",
-  ".ml": "ocaml",
-  ".scala": "scala",
-  ".clj": "clojure",
-  ".ex": "elixir",
-  ".exs": "elixir",
-  ".erl": "erlang",
-  ".v": "verilog",
-  ".sv": "systemverilog",
-  ".vhd": "vhdl",
+  ".groovy": "groovy",
+  ".vue": "vue",
   ".md": "markdown",
   ".log": "text",
   ".env": "text",
   ".properties": "text",
   ".mermaid": "mermaid",
-  ".gitignore": "text",
-  ".dockerignore": "text",
   ".csv": "csv",
   ".json": "json",
   ".txt": "text",
@@ -302,8 +298,41 @@ export function isCodeFile(path: string): boolean {
 
 export function getCodeLanguage(path: string): string {
   const lower = path.toLowerCase();
+  const basename = lower.split("/").pop()?.split("\\").pop() ?? lower;
+  if (basename === "dockerfile") return "dockerfile";
   for (const [ext, lang] of Object.entries(CODE_EXTENSIONS)) {
     if (lower.endsWith(ext)) return lang;
   }
   return "text";
+}
+
+// ── Sync commands ──────────────────────────────────────────────
+
+export interface SyncResult {
+  success: boolean;
+  message: string;
+  files_changed: number;
+  errors: string[];
+}
+
+export async function syncGitInit(
+  vaultPath: string,
+  remoteUrl: string,
+  branch: string,
+): Promise<SyncResult> {
+  if (IS_TAURI) {
+    return invoke<SyncResult>("sync_git_init", { vaultPath, remoteUrl, branch });
+  }
+  return { success: false, message: "Not available in browser mode.", files_changed: 0, errors: [] };
+}
+
+export async function syncGitSync(
+  vaultPath: string,
+  remoteUrl: string,
+  branch: string,
+): Promise<SyncResult> {
+  if (IS_TAURI) {
+    return invoke<SyncResult>("sync_git_sync", { vaultPath, remoteUrl, branch });
+  }
+  return { success: false, message: "Not available in browser mode.", files_changed: 0, errors: [] };
 }

@@ -9,6 +9,7 @@ import {
   readDirectory,
   readFile,
   renameFile,
+  getVaultSize,
 } from "@/lib/tauriCommands";
 import { isVaultSystemEntry } from "@/lib/vaultConfig";
 import { useVaultStore } from "@/stores/vaultStore";
@@ -44,6 +45,7 @@ interface FileTreeState {
   nodes: FileEntry[];
   treeVersion: number;
   fileCount: number;
+  vaultSize: number;
   expandedPaths: Set<string>;
   loading: boolean;
   searchQuery: string;
@@ -218,6 +220,7 @@ export const useFileTreeStore = create<FileTreeState>((set, get) => ({
   nodes: [],
   treeVersion: 0,
   fileCount: 0,
+  vaultSize: 0,
   expandedPaths: new Set(),
   loading: false,
   searchQuery: "",
@@ -232,10 +235,11 @@ export const useFileTreeStore = create<FileTreeState>((set, get) => ({
   refreshTree: async (rootPath: string) => {
     set({ loading: true });
     try {
-      const [nodes, fileCount, sort] = await Promise.all([
+      const [nodes, fileCount, sort, vaultSize] = await Promise.all([
         readDirectory(rootPath),
         countFilesRecursive(rootPath),
         readVaultSort(rootPath),
+        getVaultSize(rootPath),
       ]);
       const filtered = (nodes as FileEntry[]).filter(
         (entry) => !isVaultSystemEntry(entry) && isFileAllowedByDisplayType(entry),
@@ -243,6 +247,7 @@ export const useFileTreeStore = create<FileTreeState>((set, get) => ({
       set({
         nodes: getSortedEntries(filtered, rootPath, sort, rootPath),
         fileCount,
+        vaultSize,
         sort,
         treeVersion: get().treeVersion + 1,
         loading: false,

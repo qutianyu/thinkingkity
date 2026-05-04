@@ -1,0 +1,20 @@
+graph TD
+    A[Start: User clicks Sync] --> B{Remote branch exists?}
+    B -->|Yes| C[git pull --rebase origin main]
+    B -->|No| D[Skip pull, will create branch]
+    C --> E{Pull succeeded?}
+    E -->|Yes| F[Merge remote changes]
+    E -->|No - conflict| G[Abort rebase]
+    G --> H[Local takes precedence]
+    H --> F
+    D --> F
+    F --> I[git add -A]
+    I --> J{Anything to commit?}
+    J -->|Yes| K[git commit -m 'thinkingkity vault sync']
+    J -->|No| L[Already up to date]
+    K --> M[git push origin main]
+    M --> N{Push succeeded?}
+    N -->|Yes| O[Sync complete]
+    N -->|No| P[git push --force origin main]
+    P --> O
+    L --> O

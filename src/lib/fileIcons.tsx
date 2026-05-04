@@ -20,7 +20,12 @@ import {
   SiYaml,
   SiToml,
   SiDotenv,
-  SiEditorconfig,
+  SiVuedotjs,
+  SiLua,
+  SiR,
+  SiApachegroovy,
+  SiDocker,
+  SiRuby,
 } from "@icons-pack/react-simple-icons";
 
 import type { ComponentType, SVGProps } from "react";
@@ -59,15 +64,25 @@ const EXT_ICON_MAP: Record<string, IconEntry> = {
   ".yaml": { component: SiYaml, color: "#CB171E" },
   ".yml": { component: SiYaml, color: "#CB171E" },
   ".toml": { component: SiToml, color: "#9C4221" },
-  ".ini": { component: SiEditorconfig, color: "#6B7280" },
-  ".conf": { component: SiEditorconfig, color: "#6B7280" },
   ".env": { component: SiDotenv, color: "#ECD53F" },
-  ".properties": { component: SiEditorconfig, color: "#6B7280" },
   ".mermaid": { component: SiMermaid, color: "#FF3670" },
+  ".vue": { component: SiVuedotjs, color: "#4FC08D" },
+  ".lua": { component: SiLua, color: "#000080" },
+  ".r": { component: SiR, color: "#276DC3" },
+  ".groovy": { component: SiApachegroovy, color: "#4298B8" },
+  ".sass": { component: SiSass, color: "#CC6699" },
+  ".rb": { component: SiRuby, color: "#CC342D" },
+};
+
+const BASENAME_ICON_MAP: Record<string, IconEntry> = {
+  "dockerfile": { component: SiDocker, color: "#2496ED" },
 };
 
 export function getIconEntry(path: string): IconEntry | null {
   const lower = path.toLowerCase();
+  const basename = lower.split("/").pop()?.split("\\").pop() ?? lower;
+  const basenameEntry = BASENAME_ICON_MAP[basename];
+  if (basenameEntry) return basenameEntry;
   for (const [ext, entry] of Object.entries(EXT_ICON_MAP)) {
     if (lower.endsWith(ext)) return entry;
   }

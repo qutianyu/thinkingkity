@@ -13,9 +13,17 @@ import { xml } from "@codemirror/lang-xml";
 import { yaml } from "@codemirror/lang-yaml";
 import { markdown } from "@codemirror/lang-markdown";
 import { go } from "@codemirror/lang-go";
+import { sass } from "@codemirror/lang-sass";
+import { less } from "@codemirror/lang-less";
+import { vue } from "@codemirror/lang-vue";
 import { StreamLanguage } from "@codemirror/language";
 import { toml } from "@codemirror/legacy-modes/mode/toml";
 import { properties } from "@codemirror/legacy-modes/mode/properties";
+import { lua } from "@codemirror/legacy-modes/mode/lua";
+import { r } from "@codemirror/legacy-modes/mode/r";
+import { groovy } from "@codemirror/legacy-modes/mode/groovy";
+import { dockerFile } from "@codemirror/legacy-modes/mode/dockerfile";
+import { sass as sassMode } from "@codemirror/legacy-modes/mode/sass";
 import { oneDark } from "@codemirror/theme-one-dark";
 import { autocompletion } from "@codemirror/autocomplete";
 import type { Extension } from "@codemirror/state";
@@ -51,13 +59,19 @@ function languageExtension(language: string): Extension {
     case "hpp":
       return cpp();
     case "css":
-    case "scss":
-    case "less":
       return css();
+    case "scss":
+      return StreamLanguage.define(sassMode);
+    case "sass":
+      return sass();
+    case "less":
+      return less();
     case "html":
       return html();
     case "xml":
       return xml();
+    case "vue":
+      return vue();
     case "go":
       return go();
     case "yaml":
@@ -67,6 +81,14 @@ function languageExtension(language: string): Extension {
     case "ini":
     case "properties":
       return StreamLanguage.define(properties);
+    case "lua":
+      return StreamLanguage.define(lua);
+    case "r":
+      return StreamLanguage.define(r);
+    case "groovy":
+      return StreamLanguage.define(groovy);
+    case "dockerfile":
+      return StreamLanguage.define(dockerFile);
     case "markdown":
       return markdown();
     case "mermaid":

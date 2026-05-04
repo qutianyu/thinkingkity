@@ -8,6 +8,7 @@ src-tauri/target/
 src-tauri/gen/
 src-tauri/Cargo.lock
 src-tauri/.taurignore
+src-tauri/src/generated_demo_vault.rs
 
 # Environment files
 .env
@@ -42,6 +43,9 @@ docs/
 CLAUDE.md
 AGENTS.md
 OPENCODE.md
+
+# Tests
+test-results/
 
 # Debug builds
 *.map

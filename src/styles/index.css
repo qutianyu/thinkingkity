@@ -228,7 +228,7 @@ h3 { font-size: 1.25rem; font-weight: 600; line-height: 1.4; }
 
 .bottom-settings-button {
   position: absolute;
-  right: 4px;
+  right: 14px;
   bottom: 4px;
   display: inline-flex;
   align-items: center;
@@ -245,6 +245,29 @@ h3 { font-size: 1.25rem; font-weight: 600; line-height: 1.4; }
 }
 
 .bottom-settings-button:hover {
+  background: var(--color-bg-hover);
+  color: var(--color-text-primary);
+}
+
+.bottom-sync-button {
+  position: absolute;
+  right: 38px;
+  bottom: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: color var(--transition-fast), background var(--transition-fast);
+}
+
+.bottom-sync-button:hover {
   background: var(--color-bg-hover);
   color: var(--color-text-primary);
 }
@@ -284,7 +307,6 @@ h3 { font-size: 1.25rem; font-weight: 600; line-height: 1.4; }
   align-items: center;
   gap: 9px;
   min-width: 0;
-  flex: 1;
   padding: 5px 6px;
   border: 0;
   border-radius: var(--radius-md);
@@ -299,7 +321,7 @@ h3 { font-size: 1.25rem; font-weight: 600; line-height: 1.4; }
 }
 
 .sidebar-search-section {
-  padding: 0 12px 10px;
+  padding: 5px 12px 10px;
 }
 
 .search-box {
@@ -343,6 +365,24 @@ h3 { font-size: 1.25rem; font-weight: 600; line-height: 1.4; }
 
 .search-box-input::placeholder {
   color: var(--color-text-muted);
+}
+
+.search-box-add {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: color var(--transition-fast), background var(--transition-fast);
+}
+
+.search-box-add:hover {
+  background: var(--color-bg-hover);
+  color: var(--color-text-primary);
 }
 
 .search-box-clear {

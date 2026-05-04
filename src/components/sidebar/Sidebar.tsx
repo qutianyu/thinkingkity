@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { PanelLeftClose, PanelLeft, Search, X } from "lucide-react";
+import { PanelLeftClose, PanelLeft, Search, X, Plus } from "lucide-react";
 import { FileActions } from "./FileActions";
 import { FileTree } from "./FileTree";
 import { useFileTreeStore } from "@/stores/fileTreeStore";
 import { useEditorStore } from "@/stores/editorStore";
 import { useVaultStore } from "@/stores/vaultStore";
+import { useFileOperations } from "@/hooks/useFileOperations";
 
 interface SidebarProps {
   collapsed: boolean;
@@ -22,6 +23,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const searchFiles = useFileTreeStore((s) => s.searchFiles);
   const clearSearch = useFileTreeStore((s) => s.clearSearch);
   const openFile = useEditorStore((s) => s.openFile);
+  const { handleNewFile } = useFileOperations();
   const [localQuery, setLocalQuery] = useState("");
 
   useEffect(() => {
@@ -116,6 +118,13 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
             placeholder={t("sidebar.search")}
             className="search-box-input"
           />
+          <button
+            onClick={() => vaultPath && handleNewFile(vaultPath)}
+            className="search-box-add"
+            title={t("sidebar.newMarkdownFile")}
+          >
+            <Plus size={16} />
+          </button>
           {isSearching && (
             <button
               onClick={() => {

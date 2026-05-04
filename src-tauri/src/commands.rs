@@ -222,6 +222,31 @@ pub fn write_vault_markdown_file(
     Ok(target.to_string_lossy().to_string())
 }
 
+fn dir_size_recursive(path: &Path) -> u64 {
+    let mut total: u64 = 0;
+    let Ok(entries) = std::fs::read_dir(path) else {
+        return 0;
+    };
+    for entry in entries.flatten() {
+        let Ok(file_type) = entry.file_type() else { continue };
+        if file_type.is_dir() {
+            total += dir_size_recursive(&entry.path());
+        } else {
+            total += entry.metadata().map(|m| m.len()).unwrap_or(0);
+        }
+    }
+    total
+}
+
+#[tauri::command]
+pub fn get_vault_size(path: &str) -> Result<u64, String> {
+    let dir = resolve_path(path)?;
+    if !dir.is_dir() {
+        return Err(format!("Not a directory: {}", path));
+    }
+    Ok(dir_size_recursive(&dir))
+}
+
 fn validate_public_http_url(raw: &str) -> Result<String, String> {
     let lower = raw.trim().to_lowercase();
     if !(lower.starts_with("http://") || lower.starts_with("https://")) {

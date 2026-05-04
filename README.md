@@ -10,7 +10,7 @@ A local-first desktop knowledge base built with Tauri v2 and React 19. Open any 
 
 - **Vault-based file management** — Open any local folder, browse with a sidebar tree, drag-and-drop to reorder, search by filename and content.
 - **Rich Markdown editor** — WYSIWYG editing powered by Milkdown, with YAML frontmatter editing and source/code toggle.
-- **Code editor** — CodeMirror 6 with syntax highlighting, autocompletion, and language support for 30+ languages.
+- **Code editor** — CodeMirror 6 with syntax highlighting and autocompletion for 20+ languages: JavaScript, TypeScript, Python, Java, C/C++, Rust, Go, HTML, CSS, SCSS, Sass, Less, XML, Vue, JSON, YAML, TOML, SQL, Lua, R, Groovy, Markdown, and more.
 - **CSV spreadsheet editor** — Handsontable-based grid editor with add/remove row/column, copy/paste, and fill handle.
 - **Mermaid diagram editor** — Split-pane editor with live preview for `.mermaid` files. Edit source code on the left, see rendered diagrams on the right.
 - **Image & PDF viewer** — Built-in viewers for images (with dimensions) and PDFs.
@@ -20,7 +20,7 @@ A local-first desktop knowledge base built with Tauri v2 and React 19. Open any 
 - **9 languages** — English, 简体中文, 繁體中文, Français, 한국어, 日本語, Русский, Deutsch, Español.
 - **Dark & light themes** — System-following, with manual override per vault.
 - **Quick switcher** — `Ctrl/Cmd+P` to fuzzy-find and open any file.
-- **Per-vault display filters** — Show or hide file types in the sidebar.
+- **Custom file type filters** — Freely add or remove file extensions to control which types appear in the sidebar.
 
 ## Tech Stack
 
@@ -104,9 +104,13 @@ src/
 └── types/               # Shared TypeScript types
 
 src-tauri/
+├── build.rs             # Auto-generates demo vault file list at compile time
 └── src/
-    ├── main.rs          # Tauri app entry
-    └── commands.rs      # File system commands (read/write/create/delete/broswe)
+    ├── main.rs           # Tauri app entry + command registration
+    ├── commands.rs       # File system commands (read/write/create/delete/browse)
+    └── global_config.rs  # Global vault list + demo vault provisioning
+
+demo-vault/               # Bundled demo vault with examples (auto-embedded via build.rs)
 
 scripts/
 └── playwright-browse.mjs # Headless Playwright browser script for AI web browsing
@@ -158,6 +162,12 @@ Each vault stores its settings in `<vault>/.thinkingkity/config.json`:
     "base_url": "https://api.openai.com/v1",
     "api_key": "",
     "model": ""
+  },
+  "sync": {
+    "method": "none",
+    "direction": "push",
+    "webdav": { "url": "", "username": "", "password": "" },
+    "git": { "remoteUrl": "", "branch": "main" }
   }
 }
 ```

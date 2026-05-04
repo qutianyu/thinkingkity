@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { Image, Link, Table, FileText, List, ListOrdered, Code, Quote, Minus } from "lucide-react";
+import { Image, Link, Table, FileText, List, ListOrdered, Code, Quote, Minus, CornerDownLeft } from "lucide-react";
 
 type MenuAction =
   | "image"
@@ -11,7 +11,8 @@ type MenuAction =
   | "orderedList"
   | "codeBlock"
   | "blockquote"
-  | "divider";
+  | "divider"
+  | "lineBreak";
 
 type MenuLabelKey =
   | "heading"
@@ -22,7 +23,8 @@ type MenuLabelKey =
   | "table"
   | "codeBlock"
   | "blockquote"
-  | "divider";
+  | "divider"
+  | "lineBreak";
 
 interface InsertMenuProps {
   position: { top: number; left: number } | null;
@@ -40,6 +42,7 @@ const menuItems: { action: MenuAction; labelKey: MenuLabelKey; icon: React.React
   { action: "codeBlock", labelKey: "codeBlock", icon: <Code size={15} /> },
   { action: "blockquote", labelKey: "blockquote", icon: <Quote size={15} /> },
   { action: "divider", labelKey: "divider", icon: <Minus size={15} /> },
+  { action: "lineBreak", labelKey: "lineBreak", icon: <CornerDownLeft size={15} /> },
 ];
 
 export function InsertMenu({ position, onAction, onClose }: InsertMenuProps) {

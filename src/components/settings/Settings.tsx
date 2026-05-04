@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { X, Moon, Languages, Eye, EyeOff, ChevronDown, Bot, Loader2, CheckCircle2, XCircle } from "lucide-react";
+import { X, Plus, Moon, Languages, Eye, EyeOff, ChevronDown, Bot, Loader2, CheckCircle2, XCircle } from "lucide-react";
 import { useThemeStore } from "@/stores/themeStore";
 import { useVaultStore } from "@/stores/vaultStore";
 import { ensureVaultConfig, writeVaultConfig, ALL_DISPLAY_TYPES, type VaultMode } from "@/lib/vaultConfig";
@@ -13,6 +13,7 @@ import {
   type AiConfig,
   type AiProvider,
 } from "@/ai";
+import { SyncSettings, useSyncStore, type SyncConfig } from "@/sync";
 
 interface SettingsProps {
   onClose: () => void;
@@ -30,67 +31,6 @@ const LANGUAGE_OPTIONS = [
   { value: "es-ES", label: "Español" },
 ];
 
-const DISPLAY_TYPE_GROUPS = [
-  {
-    labelKey: "settings.displayGroupDocuments",
-    types: [
-      { ext: "md", label: ".md" },
-      { ext: "markdown", label: ".markdown" },
-      { ext: "csv", label: ".csv" },
-      { ext: "json", label: ".json" },
-      { ext: "yaml", label: ".yaml" },
-      { ext: "yml", label: ".yml" },
-      { ext: "toml", label: ".toml" },
-      { ext: "ini", label: ".ini" },
-      { ext: "conf", label: ".conf" },
-      { ext: "env", label: ".env" },
-      { ext: "properties", label: ".properties" },
-      { ext: "mermaid", label: ".mermaid" },
-      { ext: "txt", label: ".txt" },
-      { ext: "pdf", label: ".pdf" },
-    ],
-  },
-  {
-    labelKey: "settings.displayGroupImages",
-    types: [
-      { ext: "jpg", label: ".jpg" },
-      { ext: "jpeg", label: ".jpeg" },
-      { ext: "png", label: ".png" },
-      { ext: "gif", label: ".gif" },
-      { ext: "svg", label: ".svg" },
-      { ext: "webp", label: ".webp" },
-      { ext: "bmp", label: ".bmp" },
-      { ext: "ico", label: ".ico" },
-    ],
-  },
-  {
-    labelKey: "settings.displayGroupCode",
-    types: [
-      { ext: "ts", label: ".ts" },
-      { ext: "tsx", label: ".tsx" },
-      { ext: "js", label: ".js" },
-      { ext: "jsx", label: ".jsx" },
-      { ext: "py", label: ".py" },
-      { ext: "java", label: ".java" },
-      { ext: "c", label: ".c" },
-      { ext: "h", label: ".h" },
-      { ext: "cpp", label: ".cpp" },
-      { ext: "hpp", label: ".hpp" },
-      { ext: "go", label: ".go" },
-      { ext: "rs", label: ".rs" },
-      { ext: "css", label: ".css" },
-      { ext: "scss", label: ".scss" },
-      { ext: "less", label: ".less" },
-      { ext: "html", label: ".html" },
-      { ext: "htm", label: ".htm" },
-      { ext: "xml", label: ".xml" },
-      { ext: "sql", label: ".sql" },
-      { ext: "sh", label: ".sh" },
-      { ext: "bash", label: ".bash" },
-      { ext: "zsh", label: ".zsh" },
-    ],
-  },
-];
 
 export function Settings({ onClose }: SettingsProps) {
   const { t, i18n } = useTranslation();
@@ -107,6 +47,7 @@ export function Settings({ onClose }: SettingsProps) {
   const setApiKey = useAiStore((s) => s.setApiKey);
   const setModel = useAiStore((s) => s.setModel);
   const [localDisplayType, setLocalDisplayType] = useState<string[]>(displayType);
+  const [newExt, setNewExt] = useState("");
   const [displayTypeExpanded, setDisplayTypeExpanded] = useState(false);
   const [aiExpanded, setAiExpanded] = useState(false);
   const [showApiKey, setShowApiKey] = useState(false);
@@ -136,6 +77,7 @@ export function Settings({ onClose }: SettingsProps) {
         mode: preference,
         display_type: ALL_DISPLAY_TYPES,
         ai: DEFAULT_AI_CONFIG,
+        sync: useSyncStore.getState().config,
       });
       await writeVaultConfig(vaultPath, { ...current, ...next });
     } catch (e) {
@@ -153,15 +95,24 @@ export function Settings({ onClose }: SettingsProps) {
     await saveVaultConfig({ mode });
   };
 
-  const toggleDisplayType = useCallback(async (ext: string) => {
-    const next = localDisplayType.includes(ext)
-      ? localDisplayType.filter((t) => t !== ext)
-      : [...localDisplayType, ext];
+  const removeExt = useCallback(async (ext: string) => {
+    const next = localDisplayType.filter((t) => t !== ext);
     setLocalDisplayType(next);
     setDisplayType(next);
     await saveVaultConfig({ display_type: next });
     if (vaultPath) await refreshTree(vaultPath);
   }, [localDisplayType, vaultPath, refreshTree, setDisplayType]);
+
+  const addExt = useCallback(async () => {
+    const ext = newExt.trim().toLowerCase().replace(/^\./, "");
+    if (!ext || localDisplayType.includes(ext)) return;
+    const next = [...localDisplayType, ext];
+    setLocalDisplayType(next);
+    setDisplayType(next);
+    await saveVaultConfig({ display_type: next });
+    if (vaultPath) await refreshTree(vaultPath);
+    setNewExt("");
+  }, [newExt, localDisplayType, vaultPath, refreshTree, setDisplayType]);
 
   const saveAiConfig = async (nextAi?: AiConfig) => {
     const config = nextAi ?? useAiStore.getState().ai;
@@ -211,12 +162,10 @@ export function Settings({ onClose }: SettingsProps) {
     }
   };
 
-  const selectAll = useCallback(async () => {
-    setLocalDisplayType(ALL_DISPLAY_TYPES);
-    setDisplayType(ALL_DISPLAY_TYPES);
-    await saveVaultConfig({ display_type: ALL_DISPLAY_TYPES });
-    if (vaultPath) await refreshTree(vaultPath);
-  }, [vaultPath, refreshTree, setDisplayType]);
+  const saveSyncConfig = async () => {
+    const syncConfig = useSyncStore.getState().config;
+    await saveVaultConfig({ sync: syncConfig });
+  };
 
   return (
     <>
@@ -299,7 +248,7 @@ export function Settings({ onClose }: SettingsProps) {
                 <h3 className="text-[15px] font-semibold">{t("settings.displayType")}</h3>
                 {!displayTypeExpanded && (
                   <p className="text-[13px] text-[var(--color-text-muted)]">
-                    {t("settings.displayTypeCount", { count: localDisplayType.length, total: ALL_DISPLAY_TYPES.length })}
+                    {t("settings.displayTypeCount", { count: localDisplayType.length })}
                   </p>
                 )}
               </div>
@@ -311,39 +260,47 @@ export function Settings({ onClose }: SettingsProps) {
               />
             </button>
             {displayTypeExpanded && (
-              <div className="mt-4 space-y-3">
-                <div className="flex items-center justify-between">
-                  <p className="text-[13px] text-[var(--color-text-muted)]">
-                    {t("settings.displayTypeDescription")}
-                  </p>
+              <div className="mt-4 flex flex-col gap-3">
+                <p className="text-[13px] text-[var(--color-text-muted)]">
+                  {t("settings.displayTypeDescription")}
+                </p>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={newExt}
+                    onChange={(e) => setNewExt(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") addExt();
+                    }}
+                    placeholder={t("settings.displayTypePlaceholder")}
+                    className="flex-1 h-8 px-2.5 text-[13px] rounded-[var(--radius-sm)] bg-[var(--color-bg-app)] border border-[var(--color-border-light)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-primary)]"
+                  />
                   <button
-                    onClick={selectAll}
-                    className="text-[12px] text-[var(--color-primary)] hover:underline shrink-0"
+                    onClick={addExt}
+                    className="h-8 px-3 min-w-[68px] justify-center text-[12px] rounded-[var(--radius-sm)] bg-[var(--color-primary)] text-white hover:opacity-90 shrink-0 inline-flex items-center gap-1"
                   >
-                    {t("settings.selectAll")}
+                    <Plus size={14} />
+                    {t("settings.add")}
                   </button>
                 </div>
-                {DISPLAY_TYPE_GROUPS.map((group) => (
-                  <div key={group.labelKey}>
-                    <p className="text-[12px] font-medium text-[var(--color-text-muted)] mb-2">
-                      {t(group.labelKey)}
-                    </p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {group.types.map((type) => {
-                        const active = localDisplayType.includes(type.ext);
-                        return (
-                          <button
-                            key={type.ext}
-                            onClick={() => toggleDisplayType(type.ext)}
-                            className={`display-type-chip ${active ? "display-type-chip-active" : ""}`}
-                          >
-                            {type.label}
-                          </button>
-                        );
-                      })}
-                    </div>
+                {localDisplayType.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5">
+                    {localDisplayType.map((ext) => (
+                      <span
+                        key={ext}
+                        className="display-type-chip display-type-chip-active inline-flex items-center gap-0.5"
+                      >
+                        .{ext}
+                        <button
+                          onClick={() => removeExt(ext)}
+                          className="ml-0.5 hover:text-[var(--color-text-primary)]"
+                        >
+                          <X size={12} />
+                        </button>
+                      </span>
+                    ))}
                   </div>
-                ))}
+                )}
               </div>
             )}
           </div>
@@ -458,6 +415,9 @@ export function Settings({ onClose }: SettingsProps) {
             </div>
             )}
           </div>
+
+          {/* Sync */}
+          <SyncSettings onSave={saveSyncConfig} />
         </div>
       </div>
     </>

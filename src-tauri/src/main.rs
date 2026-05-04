@@ -3,6 +3,8 @@
 
 mod commands;
 mod global_config;
+mod sync_common;
+mod sync_git;
 
 fn main() {
     tauri::Builder::default()
@@ -23,9 +25,12 @@ fn main() {
             commands::copy_file,
             commands::rename_file,
             commands::delete_file,
+            commands::get_vault_size,
+            sync_git::sync_git_init,
+            sync_git::sync_git_sync,
             global_config::read_global_vaults,
             global_config::write_global_vaults,
-            global_config::ensure_test_vault,
+            global_config::ensure_demo_vault,
         ])
         .run(tauri::generate_context!())
         .unwrap_or_else(|e| {

@@ -6,6 +6,7 @@ import { Sidebar } from "./sidebar/Sidebar";
 import { EditorArea } from "./editor/EditorArea";
 import { QuickSwitcher } from "./common/QuickSwitcher";
 import { Settings as SettingsModal } from "./settings/Settings";
+import { SyncButton, SyncToast } from "@/sync";
 import { useVaultStore } from "@/stores/vaultStore";
 import { useFileTreeStore } from "@/stores/fileTreeStore";
 import { useEditorStore } from "@/stores/editorStore";
@@ -119,6 +120,14 @@ function getStatusInfo(content: string, path: string | null):
   }
 }
 
+function formatVaultSize(bytes: number): string {
+  if (bytes === 0) return "0 B";
+  const units = ["B", "KB", "MB", "GB", "TB"];
+  const i = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
+  const value = bytes / Math.pow(1024, i);
+  return `${i === 0 ? value : value.toFixed(1)} ${units[i]}`;
+}
+
 export function Layout() {
   const { t } = useTranslation();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -126,6 +135,7 @@ export function Layout() {
   const [showSettings, setShowSettings] = useState(false);
   const vaultPath = useVaultStore((s) => s.vaultPath);
   const fileCount = useFileTreeStore((s) => s.fileCount);
+  const vaultSize = useFileTreeStore((s) => s.vaultSize);
   const activeTabPath = useEditorStore((s) => s.activeTabPath);
   const activeContent = useEditorStore((s) =>
     s.activeTabPath ? s.fileContents.get(s.activeTabPath) ?? "" : "",
@@ -192,7 +202,8 @@ export function Layout() {
       )}
       <div className="app-bottom-bar">
         <span className="bottom-file-count">
-          <span>{fileCount} {t(fileCount === 1 ? "status.file" : "status.files")}</span>
+          <span>{formatVaultSize(vaultSize)}</span>
+          <span style={{ marginLeft: 8 }}>{fileCount} {t(fileCount === 1 ? "status.file" : "status.files")}</span>
           {statusInfo && (
             <>
               <span className="bottom-status-separator">·</span>
@@ -208,6 +219,7 @@ export function Layout() {
             </>
           )}
         </span>
+        <SyncButton />
         <button
           onClick={() => setShowSettings(true)}
           className="bottom-settings-button"
@@ -217,6 +229,7 @@ export function Layout() {
         </button>
       </div>
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
+      <SyncToast />
     </div>
   );
 }

@@ -19,6 +19,10 @@ export const CODE_TYPES: CodeType[] = [
   { exts: ["xml"], labelKey: "sidebar.newXml", titleKey: "dialog.newXmlTitle", descKey: "dialog.newXmlDescription" },
   { exts: ["sql"], labelKey: "sidebar.newSql", titleKey: "dialog.newSqlTitle", descKey: "dialog.newSqlDescription" },
   { exts: ["sh", "bash", "zsh"], labelKey: "sidebar.newShell", titleKey: "dialog.newShellTitle", descKey: "dialog.newShellDescription" },
+  { exts: ["vue"], labelKey: "sidebar.newVue", titleKey: "dialog.newVueTitle", descKey: "dialog.newVueDescription" },
+  { exts: ["lua"], labelKey: "sidebar.newLua", titleKey: "dialog.newLuaTitle", descKey: "dialog.newLuaDescription" },
+  { exts: ["r"], labelKey: "sidebar.newR", titleKey: "dialog.newRTitle", descKey: "dialog.newRDescription" },
+  { exts: ["groovy"], labelKey: "sidebar.newGroovy", titleKey: "dialog.newGroovyTitle", descKey: "dialog.newGroovyDescription" },
 ];
 
 export interface TypeChip {

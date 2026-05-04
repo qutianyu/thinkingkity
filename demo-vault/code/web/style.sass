@@ -1,0 +1,48 @@
+// Sass (indented syntax) example
+
+$font-stack: system-ui, -apple-system, sans-serif
+$bg: #f8fafc
+
+body
+  font: 100% $font-stack
+  background: $bg
+  margin: 0
+
+nav
+  display: flex
+  align-items: center
+  padding: 1rem 2rem
+  background: #1e293b
+
+  .logo
+    font-size: 1.25rem
+    font-weight: 700
+    color: #f1f5f9
+
+  ul
+    display: flex
+    gap: 1.5rem
+    margin-left: auto
+    list-style: none
+
+    li a
+      color: #94a3b8
+      text-decoration: none
+
+      &:hover
+        color: #e2e8f0
+
+=flex-center
+  display: flex
+  justify-content: center
+  align-items: center
+
+.hero
+  +flex-center
+  flex-direction: column
+  min-height: 60vh
+  text-align: center
+
+  h1
+    font-size: 2.5rem
+    color: #0f172a

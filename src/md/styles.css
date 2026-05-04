@@ -233,7 +233,21 @@
 }
 
 .milkdown .ProseMirror p {
-  margin: 0.6em 0;
+  margin: 0.25em 0;
+}
+
+.milkdown .ProseMirror p:first-child {
+  margin-top: 0;
+}
+
+.milkdown .ProseMirror p:last-child {
+  margin-bottom: 0;
+}
+
+.milkdown .ProseMirror span[data-type="hardbreak"][data-is-inline="true"] {
+  display: block;
+  height: 0;
+  overflow: hidden;
 }
 
 .milkdown .ProseMirror code {

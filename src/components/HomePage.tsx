@@ -1,15 +1,18 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { FolderOpen, X } from "lucide-react";
 import { useVaultStore } from "@/stores/vaultStore";
 import { useFileTreeStore } from "@/stores/fileTreeStore";
+import { useEditorStore } from "@/stores/editorStore";
 import { useThemeStore } from "@/stores/themeStore";
 import { DEFAULT_AI_CONFIG, useAiStore } from "@/ai";
 import { isTauri } from "@/lib/tauriCommands";
 import { pathBasename } from "@/lib/tauriCommands";
 import { ensureVaultConfig, ALL_DISPLAY_TYPES } from "@/lib/vaultConfig";
-import { ensureTestVault } from "@/lib/globalVaults";
+import { DEFAULT_SYNC_CONFIG, useSyncStore } from "@/sync";
+import { ensureDemoVault } from "@/lib/globalVaults";
+import { VaultPickerModal } from "@/components/common/VaultPickerModal";
 
 export function HomePage() {
   const { t, i18n } = useTranslation();
@@ -19,22 +22,26 @@ export function HomePage() {
   const preference = useThemeStore((s) => s.preference);
   const setPreference = useThemeStore((s) => s.setPreference);
   const setAi = useAiStore((s) => s.setAi);
+  const [showVaultPicker, setShowVaultPicker] = useState(false);
 
   useEffect(() => {
-    ensureTestVault().then(() => loadRecentVaults());
+    ensureDemoVault().then(() => loadRecentVaults());
   }, []);
 
   const openVaultPath = async (path: string) => {
+    useEditorStore.getState().closeAll();
     const config = await ensureVaultConfig(path, {
       language: i18n.language || "zh-CN",
       mode: preference,
       display_type: ALL_DISPLAY_TYPES,
       ai: DEFAULT_AI_CONFIG,
+      sync: DEFAULT_SYNC_CONFIG,
     });
     await i18n.changeLanguage(config.language);
     setPreference(config.mode);
     setDisplayType(config.display_type);
     setAi(config.ai);
+    useSyncStore.getState().setConfig(config.sync);
     setVault(path);
     await refreshTree(path);
     navigate("/editor");
@@ -49,7 +56,7 @@ export function HomePage() {
           await openVaultPath(selected as string);
         }
       } else {
-        await openVaultPath("/demo-vault");
+        setShowVaultPicker(true);
       }
     } catch (e) {
       console.error("Failed to open vault:", e);

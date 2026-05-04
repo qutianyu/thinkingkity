@@ -539,8 +539,8 @@ export function AiChatDock() {
           <div ref={scrollRef} className="ai-chat-panel-body">
             {messages.length === 0 ? (
               <div className="ai-chat-empty">
-                <Bot size={22} />
-                <span>{loading ? t("aiChat.loadingSession") : t("aiChat.empty")}</span>
+                <Bot size={22} className="text-[var(--color-primary)]" />
+                <span className="text-[13px] text-[var(--color-text-muted)]">{loading ? t("aiChat.loadingSession") : t("aiChat.empty")}</span>
               </div>
             ) : (
               <div className="ai-chat-messages">

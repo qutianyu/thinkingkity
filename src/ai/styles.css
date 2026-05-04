@@ -510,15 +510,6 @@
   justify-content: center;
   width: 100%;
   min-height: 220px;
-  border: 1px dashed var(--color-border);
-  border-radius: var(--radius-md);
-  color: var(--color-text-muted);
-  font-size: 13px;
-  text-align: center;
-}
-
-.ai-chat-empty svg {
-  color: var(--color-primary);
 }
 
 .ai-chat-messages {
