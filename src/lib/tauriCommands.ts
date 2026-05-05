@@ -2,88 +2,82 @@ import { invoke, convertFileSrc } from "@tauri-apps/api/core";
 import type { FileEntry } from "@/types";
 
 const IS_TAURI = typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
+// Relative paths work in both dev (Vite proxies /api) and production (same origin).
+const SERVER_BASE = IS_TAURI ? "" : "";
 
-// Fallback: simple in-memory file system for browser-only dev
-const fallbackFS: Map<string, string> = new Map();
-
-export function seedFallbackFs(files: Record<string, string>, vaultPath: string): void {
-  // Pre-populate the browser fallback filesystem with demo vault content.
-  for (const [rawPath, content] of Object.entries(files)) {
-    // Strip leading segment (e.g. /demo-vault/...) and remap to the given vaultPath.
-    const slashIdx = rawPath.indexOf("/", 1);
-    const relative = slashIdx >= 0 ? rawPath.slice(slashIdx) : "";
-    if (!relative) continue;
-    const targetPath = `${vaultPath}${relative}`;
-    fallbackFS.set(targetPath, content);
-
-    // Ensure parent directory entries exist so readDirectory works correctly.
-    const parts = targetPath.split("/");
-    for (let i = 1; i < parts.length; i++) {
-      const dirPath = parts.slice(0, i + 1).join("/");
-      if (!fallbackFS.has(dirPath)) {
-        fallbackFS.set(dirPath, "");
-      }
-    }
+async function apiGet(path: string): Promise<Response> {
+  const res = await fetch(`${SERVER_BASE}${path}`);
+  if (!res.ok) {
+    const body = await res.text();
+    let msg = body;
+    try { msg = JSON.parse(body).error || body; } catch { /* use raw text */ }
+    throw new Error(msg);
   }
+  return res;
 }
 
-function fallbackReadDir(_path: string): FileEntry[] {
-  // Browser-only mode uses an in-memory tree so the UI can run without Tauri.
-  const entries: FileEntry[] = [];
-  const prefix = _path.endsWith("/") ? _path : _path + "/";
-  const seen = new Set<string>();
-  for (const key of fallbackFS.keys()) {
-    if (key.startsWith(prefix)) {
-      const relative = key.slice(prefix.length);
-      const slashIdx = relative.indexOf("/");
-      const name = slashIdx === -1 ? relative : relative.slice(0, slashIdx);
-      if (!seen.has(name)) {
-        seen.add(name);
-        entries.push({
-          name,
-          path: prefix + name,
-          is_dir: slashIdx !== -1,
-        });
-      }
-    }
+async function apiPost(path: string, body: Record<string, unknown>): Promise<Response> {
+  const res = await fetch(`${SERVER_BASE}${path}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    let msg = text;
+    try { msg = JSON.parse(text).error || text; } catch { /* use raw text */ }
+    throw new Error(msg);
   }
-  return entries;
+  return res;
+}
+
+async function apiDelete(path: string): Promise<Response> {
+  const res = await fetch(`${SERVER_BASE}${path}`, { method: "DELETE" });
+  if (!res.ok) {
+    const text = await res.text();
+    let msg = text;
+    try { msg = JSON.parse(text).error || text; } catch { /* use raw text */ }
+    throw new Error(msg);
+  }
+  return res;
 }
 
 export async function readDirectory(path: string): Promise<FileEntry[]> {
   if (IS_TAURI) {
     return invoke<FileEntry[]>("read_directory", { path });
   }
-  return fallbackReadDir(path);
+  const res = await apiGet(`/api/read-directory?path=${encodeURIComponent(path)}`);
+  return res.json();
 }
 
 export async function readFile(path: string): Promise<string> {
   if (IS_TAURI) {
     return invoke("read_file", { path });
   }
-  return fallbackFS.get(path) ?? "";
+  const res = await apiGet(`/api/read-file?path=${encodeURIComponent(path)}`);
+  return res.text();
 }
 
 export async function readFileBase64(path: string): Promise<string> {
   if (IS_TAURI) {
     return invoke<string>("read_file_base64", { path });
   }
-  return fallbackFS.get(path) ?? "";
+  const res = await apiGet(`/api/read-file-base64?path=${encodeURIComponent(path)}`);
+  return res.text();
 }
 
 export async function writeFile(path: string, content: string): Promise<void> {
   if (IS_TAURI) {
     return invoke("write_file", { path, content });
   }
-  fallbackFS.set(path, content);
-  // Also create parent folder entries for the browser fallback tree.
-  const parts = path.split("/");
-  for (let i = 0; i < parts.length - 1; i++) {
-    const dirPath = parts.slice(0, i + 1).join("/");
-    if (!fallbackFS.has(dirPath)) {
-      fallbackFS.set(dirPath, "");
-    }
+  await apiPost("/api/write-file", { path, content });
+}
+
+export async function writeFileBase64(path: string, content: string): Promise<void> {
+  if (IS_TAURI) {
+    return invoke("write_file_base64", { path, content });
   }
+  await apiPost("/api/write-file-base64", { path, content });
 }
 
 export async function writeVaultMarkdownFile(
@@ -92,40 +86,33 @@ export async function writeVaultMarkdownFile(
   content: string,
 ): Promise<string> {
   if (IS_TAURI) {
-    return invoke<string>("write_vault_markdown_file", {
-      vaultPath,
-      relativePath,
-      content,
-    });
+    return invoke<string>("write_vault_markdown_file", { vaultPath, relativePath, content });
   }
-  const target = pathJoin(vaultPath, relativePath);
-  await writeFile(target, content);
-  return target;
+  const res = await apiPost("/api/write-vault-markdown", { vaultPath, relativePath, content });
+  return res.text();
 }
 
 export async function createFile(path: string): Promise<void> {
   if (IS_TAURI) {
     return invoke("create_file", { path });
   }
-  fallbackFS.set(path, "");
+  await apiPost("/api/create-file", { path });
 }
 
 export async function getVaultSize(path: string): Promise<number> {
   if (IS_TAURI) {
     return invoke<number>("get_vault_size", { path });
   }
-  let total = 0;
-  for (const [, content] of fallbackFS) {
-    total += content.length;
-  }
-  return total;
+  const res = await apiGet(`/api/get-vault-size?path=${encodeURIComponent(path)}`);
+  const text = await res.text();
+  return Number(text);
 }
 
 export async function createFolder(path: string): Promise<void> {
   if (IS_TAURI) {
     return invoke("create_folder", { path });
   }
-  fallbackFS.set(path, "");
+  await apiPost("/api/create-folder", { path });
 }
 
 export async function copyFile(
@@ -135,8 +122,7 @@ export async function copyFile(
   if (IS_TAURI) {
     return invoke("copy_file", { sourcePath, destinationPath });
   }
-  const content = fallbackFS.get(sourcePath);
-  fallbackFS.set(destinationPath, content ?? "");
+  await apiPost("/api/copy-file", { sourcePath, destinationPath });
 }
 
 export async function renameFile(
@@ -146,23 +132,14 @@ export async function renameFile(
   if (IS_TAURI) {
     return invoke("rename_file", { oldPath, newPath });
   }
-  const content = fallbackFS.get(oldPath);
-  if (content !== undefined) {
-    fallbackFS.delete(oldPath);
-    fallbackFS.set(newPath, content);
-  }
+  await apiPost("/api/rename-file", { oldPath, newPath });
 }
 
 export async function deleteFile(path: string): Promise<void> {
   if (IS_TAURI) {
     return invoke("delete_file", { path });
   }
-  // Remove the file and all children
-  for (const key of fallbackFS.keys()) {
-    if (key === path || key.startsWith(path + "/")) {
-      fallbackFS.delete(key);
-    }
-  }
+  await apiDelete(`/api/delete-file?path=${encodeURIComponent(path)}`);
 }
 
 export function getAssetUrl(filePath: string): string {
@@ -185,7 +162,6 @@ export function pathParentDir(path: string): string {
 }
 
 export function pathJoin(...segments: string[]): string {
-  // Match the path separator style of the first segment to preserve Windows paths.
   if (segments.length === 0) return "";
   const base = segments[0];
   const sep = base.includes("\\") && !base.includes("/") ? "\\" : "/";
@@ -276,7 +252,6 @@ const CODE_EXTENSIONS: Record<string, string> = {
 };
 
 export function isCodeFile(path: string): boolean {
-  // Unknown short extensions are treated as code so uncommon languages still open in CodeMirror.
   const lower = path.toLowerCase();
   if (isMarkdownFile(path)) return false;
   if (isMermaidFile(path)) return false;
@@ -335,4 +310,29 @@ export async function syncGitSync(
     return invoke<SyncResult>("sync_git_sync", { vaultPath, remoteUrl, branch });
   }
   return { success: false, message: "Not available in browser mode.", files_changed: 0, errors: [] };
+}
+
+// ── Vault listing (web mode) ──────────────────────────────────
+
+export async function listVaults(): Promise<{ name: string; path: string }[]> {
+  if (IS_TAURI) {
+    return invoke<{ name: string; path: string }[]>("list_vaults");
+  }
+  const res = await apiGet("/api/list-vaults");
+  return res.json();
+}
+
+export async function ensureAllowedPath(path: string): Promise<void> {
+  if (IS_TAURI) {
+    return invoke("ensure_allowed_path_cmd", { path });
+  }
+  await apiPost("/api/ensure-allowed-path", { path });
+}
+
+export async function ensureDemoVault(): Promise<string | null> {
+  if (IS_TAURI) {
+    return invoke<string>("ensure_demo_vault");
+  }
+  const res = await apiGet("/api/ensure-demo-vault");
+  return res.text();
 }

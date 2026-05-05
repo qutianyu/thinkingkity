@@ -275,14 +275,24 @@
 		"testFailed": "Connection failed",
 		"initGit": "Init Repository"
 	},
+	"imagePicker": {
+		"title": "Pick an image",
+		"chooseWorkspace": "Choose a workspace to find images.",
+		"loading": "Loading...",
+		"empty": "No images in this folder.",
+		"noWorkspaces": "No workspaces configured."
+	},
 	"vaultPicker": {
 		"title": "Open Vault",
-		"description": "Choose a vault to get started with ThinkingKity.",
-		"demoVault": "Demo Vault",
-		"demoVaultDesc": "Start with sample files to explore all features",
-		"createVault": "Create New Vault",
-		"createVaultDesc": "Start fresh with an empty vault",
+		"step1Desc": "Choose a workspace.",
+		"loading": "Loading...",
+		"noWorkspaces": "No workspaces configured.",
+		"emptyWorkspace": "This folder is empty.",
+		"useFolder": "Use this folder",
+		"browseInto": "Browse into",
+		"createVault": "Create Vault",
 		"namePlaceholder": "Vault name",
-		"recentVaults": "Recent Vaults"
+		"or": "or",
+		"refresh": "Refresh"
 	}
 }

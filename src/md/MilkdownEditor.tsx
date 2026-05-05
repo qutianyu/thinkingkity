@@ -10,7 +10,7 @@ import { gfm } from "@milkdown/kit/preset/gfm";
 import { history } from "@milkdown/kit/plugin/history";
 import { clipboard } from "@milkdown/kit/plugin/clipboard";
 import { listener, listenerCtx } from "@milkdown/kit/plugin/listener";
-import { TextSelection } from "@milkdown/prose/state";
+import { Plugin, PluginKey, TextSelection } from "@milkdown/prose/state";
 import {
   addColumnAfter,
   addColumnBefore,
@@ -26,6 +26,7 @@ import { prism, prismConfig } from "@milkdown/plugin-prism";
 import toml from "refractor/toml";
 import properties from "refractor/properties";
 import { InsertMenu } from "./InsertMenu";
+import { ImagePickerModal } from "./ImagePickerModal";
 import { linkClickPlugin } from "./LinkClickPlugin";
 import {
   createImageHtml,
@@ -38,7 +39,8 @@ import {
   brToHardbreak,
   hardbreakToBr,
 } from "./markdownUtils";
-import { copyFile, createFolder, isTauri, readDirectory, readFileBase64 } from "@/lib/tauriCommands";
+import { $prose } from "@milkdown/utils";
+import { copyFile, createFolder, isTauri, readDirectory, readFileBase64, writeFileBase64, pathBasename, pathJoin } from "@/lib/tauriCommands";
 import { useDialogStore } from "@/stores/dialogStore";
 import { useEditorStore } from "@/stores/editorStore";
 import { useFileTreeStore } from "@/stores/fileTreeStore";
@@ -334,12 +336,84 @@ async function copyImageToVaultAssets(filePath: string, vaultPath: string): Prom
   return destinationPath;
 }
 
+const imagePastePlugin = $prose((ctx) => {
+  async function saveClipboardImage(view: any, file: File) {
+    // Access refs via closures — they're captured when the plugin runs.
+    const vault = vaultPathRef_inner;
+    if (!vault) return;
+    const ext = file.name.split(".").pop() || "png";
+    const stamp = Date.now();
+    const baseName = `paste-${stamp}.${ext}`;
+    const assetsPath = pathJoin(vault, "assets");
+    await createFolder(assetsPath);
+    const destPath = pathJoin(assetsPath, baseName);
+
+    const dataUrl: string = await new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.readAsDataURL(file);
+    });
+    await writeFileBase64(destPath, dataUrl);
+
+    const activeTab = activeTabPath_inner;
+    const { dirname, getMarkdownRelativePath, createImageHtml } = await import("./markdownUtils");
+    const imageSrc = activeTab
+      ? getMarkdownRelativePath(dirname(activeTab), destPath)
+      : baseName;
+
+    const html = createImageHtml(encodeURI(imageSrc), baseName);
+    const node = view.state.schema.nodes.html?.create({ value: html });
+    if (node) {
+      view.dispatch(view.state.tr.replaceSelectionWith(node));
+    } else {
+      view.dispatch(view.state.tr.insertText(html));
+    }
+  }
+
+  return new Plugin({
+    key: new PluginKey("imagePaste"),
+    props: {
+      handlePaste(view, _event) {
+        const e = _event as ClipboardEvent;
+        const clipboardData = e.clipboardData;
+        if (!clipboardData) return false;
+
+        const items = Array.from(clipboardData.items);
+        const imageFiles: File[] = [];
+        for (const item of items) {
+          if (item.type.startsWith("image/")) {
+            const file = item.getAsFile();
+            if (file) imageFiles.push(file);
+          }
+        }
+
+        if (imageFiles.length > 0) {
+          (async () => {
+            for (const file of imageFiles) {
+              await saveClipboardImage(view, file);
+            }
+          })();
+          return true;
+        }
+
+        return false;
+      },
+    },
+  });
+});
+
+// Module-level vars set by the component for the paste plugin to read.
+let vaultPathRef_inner: string | null = null;
+let activeTabPath_inner: string | null = null;
+
 function MilkdownEditorInner({ content, onChange }: MilkdownEditorProps) {
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
   const showPrompt = useDialogStore((s) => s.showPrompt);
   const activeTabPath = useEditorStore((s) => s.activeTabPath);
   const vaultPath = useVaultStore((s) => s.vaultPath);
+  vaultPathRef_inner = vaultPath;
+  activeTabPath_inner = activeTabPath;
   const refreshTree = useFileTreeStore((s) => s.refreshTree);
   const editorContainerRef = useRef<HTMLDivElement>(null);
   const [lineTop, setLineTop] = useState<number | null>(null);
@@ -348,6 +422,7 @@ function MilkdownEditorInner({ content, onChange }: MilkdownEditorProps) {
     left: number;
   } | null>(null);
   const [editorContext, setEditorContext] = useState<EditorContext | null>(null);
+  const [showImagePicker, setShowImagePicker] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const viewRef = useRef<any>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -396,7 +471,8 @@ function MilkdownEditorInner({ content, onChange }: MilkdownEditorProps) {
       .use(listener)
       .use(blockHandlePlugin)
       .use(linkClickPlugin)
-      .use(prism);
+      .use(prism)
+      .use(imagePastePlugin);
   }, []);
 
   const MENU_WIDTH = 220;
@@ -454,7 +530,7 @@ function MilkdownEditorInner({ content, onChange }: MilkdownEditorProps) {
     const render = () => renderHtmlImages(root, {
       activeTabPath,
       vaultPath,
-      resolveAssetUrl: isTauri() ? readFileBase64 : undefined,
+      resolveAssetUrl: readFileBase64,
     });
     const frame = requestAnimationFrame(render);
     const observer = new MutationObserver(() => {
@@ -543,6 +619,12 @@ function MilkdownEditorInner({ content, onChange }: MilkdownEditorProps) {
         }
         view.focus();
         onHide();
+        return;
+      }
+
+      if (action === "image") {
+        onHide();
+        setShowImagePicker(true);
         return;
       }
 
@@ -660,6 +742,31 @@ function MilkdownEditorInner({ content, onChange }: MilkdownEditorProps) {
         onAction={handleAction}
         onClose={onHide}
       />
+      {showImagePicker && vaultPath && (
+        <ImagePickerModal
+          vaultPath={vaultPath}
+          onSelect={async (filePath) => {
+            setShowImagePicker(false);
+            const view = viewRef.current;
+            if (!view) return;
+            const copiedPath = await copyImageToVaultAssets(filePath, vaultPath);
+            await refreshTree(vaultPath);
+            const imageSrc = activeTabPath
+              ? getMarkdownRelativePath(dirname(activeTabPath), copiedPath)
+              : getFileName(copiedPath);
+            const html = createImageHtml(encodeURI(imageSrc), getFileName(copiedPath));
+            const { state, dispatch } = view;
+            const node = state.schema.nodes.html?.create({ value: html });
+            if (node) {
+              dispatch(state.tr.replaceSelectionWith(node));
+            } else {
+              dispatch(state.tr.insertText(html));
+            }
+            view.focus();
+          }}
+          onClose={() => setShowImagePicker(false)}
+        />
+      )}
     </div>
   );
 }

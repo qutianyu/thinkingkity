@@ -5,12 +5,12 @@ import { useFileTreeStore } from "@/stores/fileTreeStore";
 import { useEditorStore } from "@/stores/editorStore";
 import { useThemeStore } from "@/stores/themeStore";
 import { DEFAULT_AI_CONFIG, useAiStore } from "@/ai";
-import { isTauri } from "@/lib/tauriCommands";
 import { pathBasename } from "@/lib/tauriCommands";
 import { ensureVaultConfig, ALL_DISPLAY_TYPES } from "@/lib/vaultConfig";
 import { DEFAULT_SYNC_CONFIG, useSyncStore } from "@/sync";
 import { ensureDemoVault } from "@/lib/globalVaults";
 import { useState, useRef, useEffect } from "react";
+import { VaultPickerModal } from "@/components/common/VaultPickerModal";
 
 export function VaultSelector() {
   const { t } = useTranslation();
@@ -21,6 +21,7 @@ export function VaultSelector() {
   const setPreference = useThemeStore((s) => s.setPreference);
   const setAi = useAiStore((s) => s.setAi);
   const [showRecent, setShowRecent] = useState(false);
+  const [showVaultPicker, setShowVaultPicker] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -57,15 +58,7 @@ export function VaultSelector() {
 
   const handleOpenVault = async () => {
     try {
-      if (isTauri()) {
-        const { open } = await import("@tauri-apps/plugin-dialog");
-        const selected = await open({ directory: true, multiple: false });
-        if (selected) {
-          await openVaultPath(selected as string);
-        }
-      } else {
-        await openVaultPath("/demo-vault");
-      }
+      setShowVaultPicker(true);
     } catch (e) {
       console.error("Failed to open vault:", e);
     }
@@ -135,6 +128,13 @@ export function VaultSelector() {
           ))}
           <div className="h-1" />
         </div>
+      )}
+
+      {showVaultPicker && (
+        <VaultPickerModal
+          openVaultPath={openVaultPath}
+          onClose={() => setShowVaultPicker(false)}
+        />
       )}
     </div>
   );

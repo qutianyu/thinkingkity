@@ -6,7 +6,7 @@ import type { FileEntry } from "@/types";
 import { useFileTreeStore } from "@/stores/fileTreeStore";
 import { useEditorStore } from "@/stores/editorStore";
 import { useFileOperations } from "@/hooks/useFileOperations";
-import { isImageFile, isJsonFile, isPdfFile, isTextFile, isCodeFile, isMarkdownFile, isMermaidFile, revealInExplorer } from "@/lib/tauriCommands";
+import { isImageFile, isJsonFile, isPdfFile, isTextFile, isCodeFile, isMarkdownFile, isMermaidFile, revealInExplorer, isTauri } from "@/lib/tauriCommands";
 import { getIconEntry } from "@/lib/fileIcons";
 import { FileTypePicker, CodeTypePicker } from "./FileActions";
 
@@ -260,6 +260,7 @@ export function FileTreeNode({ entry, depth, dropTarget, onPointerDown }: FileTr
               <Pencil size={15} className="text-[var(--color-text-muted)] shrink-0" />
               {t("contextMenu.rename")}
             </button>
+            {isTauri() && (
             <button
               className="menu-item"
               onClick={() => {
@@ -270,6 +271,7 @@ export function FileTreeNode({ entry, depth, dropTarget, onPointerDown }: FileTr
               <FolderSearch size={15} className="text-[var(--color-text-muted)] shrink-0" />
               {t("contextMenu.revealInExplorer")}
             </button>
+            )}
             <div className="menu-separator" />
             <button
               className="menu-item menu-item-danger"

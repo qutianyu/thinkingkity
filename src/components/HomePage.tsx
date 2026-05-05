@@ -7,7 +7,6 @@ import { useFileTreeStore } from "@/stores/fileTreeStore";
 import { useEditorStore } from "@/stores/editorStore";
 import { useThemeStore } from "@/stores/themeStore";
 import { DEFAULT_AI_CONFIG, useAiStore } from "@/ai";
-import { isTauri } from "@/lib/tauriCommands";
 import { pathBasename } from "@/lib/tauriCommands";
 import { ensureVaultConfig, ALL_DISPLAY_TYPES } from "@/lib/vaultConfig";
 import { DEFAULT_SYNC_CONFIG, useSyncStore } from "@/sync";
@@ -49,15 +48,7 @@ export function HomePage() {
 
   const handleOpenVault = async () => {
     try {
-      if (isTauri()) {
-        const { open } = await import("@tauri-apps/plugin-dialog");
-        const selected = await open({ directory: true, multiple: false });
-        if (selected) {
-          await openVaultPath(selected as string);
-        }
-      } else {
-        setShowVaultPicker(true);
-      }
+      setShowVaultPicker(true);
     } catch (e) {
       console.error("Failed to open vault:", e);
     }
@@ -147,6 +138,13 @@ export function HomePage() {
           </div>
         )}
       </div>
+
+      {showVaultPicker && (
+        <VaultPickerModal
+          openVaultPath={openVaultPath}
+          onClose={() => setShowVaultPicker(false)}
+        />
+      )}
     </div>
   );
 }

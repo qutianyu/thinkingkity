@@ -8,8 +8,9 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "tauri": "tauri",
-    "tauri:dev": "tauri dev",
-    "tauri:build": "tauri build",
+    "dev:web": "lsof -ti:1420 | xargs kill -9 2>/dev/null; lsof -ti:19840 | xargs kill -9 2>/dev/null; vite & THINKINGKITY_DEV=1 cargo run --manifest-path src-tauri/Cargo.toml --bin thinkingkity-server",
+    "dev:desktop": "lsof -ti:1420 | xargs kill -9 2>/dev/null; tauri dev",
+    "build:desktop": "tauri build",
     "sync-version": "node scripts/sync-version.js",
     "postversion": "node scripts/sync-version.js && git add src-tauri/tauri.conf.json src-tauri/Cargo.toml"
   },

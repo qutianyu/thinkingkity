@@ -38,7 +38,7 @@
 ### 环境要求
 
 - [Node.js](https://nodejs.org/) 20+
-- [Rust](https://www.rust-lang.org/) 工具链（仅 Tauri 桌面构建需要）
+- [Rust](https://www.rust-lang.org/) 工具链
 
 ### 安装
 
@@ -49,20 +49,25 @@ npm install
 ### 开发
 
 ```bash
-# 浏览器模式（无需 Tauri 后端，使用内存文件系统）
-npm run dev
+# Web 模式（Vite + Rust HTTP server）
+npm run dev:web
 
 # Tauri 桌面应用（含热更新）
-npm run tauri:dev
+npm run dev:desktop
 ```
 
-开发服务器运行在 `http://localhost:1420`。
+| 模式 | 命令 | URL | 说明 |
+|------|------|-----|------|
+| Web 开发 | `npm run dev:web` | `http://localhost:19840` | Rust server 代理到 Vite，共享 Rust 后端 |
+| 桌面开发 | `npm run dev:desktop` | Tauri 窗口 | 原生桌面应用，Tauri IPC |
+
+两种模式共享同一套 Rust 后端。文件访问受 `~/.thinkingkity/vaults.json` 中的 `allowed_paths` 白名单限制。开发模式下 server 将前端请求代理到 Vite（HMR 仍然可用）。
 
 ### 构建
 
 ```bash
 # 生产环境桌面应用
-npm run tauri:build
+npm run build:desktop
 ```
 
 构建产物位置：
@@ -76,6 +81,45 @@ npm run tauri:build
 | Linux (AppImage) | `src-tauri/target/release/bundle/appimage/thinkingkity_{version}_amd64.AppImage` |
 
 独立二进制文件（不含安装器包装）在 `src-tauri/target/release/thinkingkity`。
+
+### Web Server 构建
+
+```bash
+# 构建全部（前端 + 嵌入到单个二进制文件）
+npm run build && cargo build --release --manifest-path src-tauri/Cargo.toml --bin thinkingkity-server
+
+# 运行 — 单文件部署，无需额外文件
+./src-tauri/target/release/thinkingkity-server
+# → http://localhost:19840
+```
+
+前端在编译时嵌入到二进制中。部署只需一个文件。
+
+| 环境变量 | 默认值 | 说明 |
+|----------|--------|------|
+| `THINKINGKITY_PORT` | `19840` | Server 监听端口 |
+| `THINKINGKITY_DEV` | — | 设为 `1` 时，前端请求代理到 Vite `:1420`（开发模式） |
+
+## 全局配置
+
+`~/.thinkingkity/vaults.json`：
+
+```json
+{
+  "allowed_paths": [
+    "/Users/you/Documents/notes",
+    "/Users/you/work"
+  ],
+  "vaults": [
+    "/Users/you/Documents/notes/vault1"
+  ]
+}
+```
+
+| 字段 | 说明 |
+|------|------|
+| `allowed_paths` | 白名单目录列表，后端只允许在这些路径及子目录内进行文件操作。白名单外的路径将被拒绝。Demo Vault 始终允许。 |
+| `vaults` | 最近打开的 Vault 列表（自动管理）。 |
 
 ## 项目结构
 
@@ -107,8 +151,15 @@ src-tauri/
 ├── build.rs             # 编译时自动扫描 demo-vault 生成嵌入文件列表
 └── src/
     ├── main.rs           # Tauri 应用入口 + 命令注册
-    ├── commands.rs       # 文件系统命令（读写/创建/删除/浏览）
-    └── global_config.rs  # 全局 Vault 列表 + demo vault 初始化
+    ├── lib.rs            # 共享库（模块声明）
+    ├── commands.rs       # Tauri 命令包装（委托到 fs_ops）
+    ├── fs_ops.rs          # 共享文件操作 + 路径白名单校验
+    ├── server.rs          # Web 模式 HTTP server（API 路由 + 静态文件）
+    ├── bin/
+    │   └── server.rs      # 独立 HTTP server 入口
+    ├── global_config.rs   # 全局 Vault 列表 + allowed_paths 配置 + Demo Vault
+    ├── sync_common.rs     # 同步通用工具
+    └── sync_git.rs        # Git 同步实现
 
 demo-vault/               # 内置示例 Vault（通过 build.rs 自动嵌入）
 

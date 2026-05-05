@@ -1,11 +1,6 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-mod commands;
-mod global_config;
-mod sync_common;
-mod sync_git;
-
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
@@ -14,23 +9,28 @@ fn main() {
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
-            commands::read_directory,
-            commands::read_file,
-            commands::read_file_base64,
-            commands::write_file,
-            commands::write_vault_markdown_file,
-            commands::browse_page_with_playwright,
-            commands::create_file,
-            commands::create_folder,
-            commands::copy_file,
-            commands::rename_file,
-            commands::delete_file,
-            commands::get_vault_size,
-            sync_git::sync_git_init,
-            sync_git::sync_git_sync,
-            global_config::read_global_vaults,
-            global_config::write_global_vaults,
-            global_config::ensure_demo_vault,
+            thinkingkity::commands::read_directory,
+            thinkingkity::commands::read_file,
+            thinkingkity::commands::read_file_base64,
+            thinkingkity::commands::write_file,
+            thinkingkity::commands::write_file_base64,
+            thinkingkity::commands::write_vault_markdown_file,
+            thinkingkity::commands::browse_page_with_playwright,
+            thinkingkity::commands::create_file,
+            thinkingkity::commands::create_folder,
+            thinkingkity::commands::copy_file,
+            thinkingkity::commands::rename_file,
+            thinkingkity::commands::delete_file,
+            thinkingkity::commands::get_vault_size,
+            thinkingkity::commands::list_vaults,
+            thinkingkity::sync_git::sync_git_init,
+            thinkingkity::sync_git::sync_git_sync,
+            thinkingkity::global_config::read_global_vaults,
+            thinkingkity::global_config::write_global_vaults,
+            thinkingkity::global_config::read_allowed_paths,
+            thinkingkity::global_config::write_allowed_paths,
+            thinkingkity::global_config::ensure_demo_vault,
+            thinkingkity::global_config::ensure_allowed_path_cmd,
         ])
         .run(tauri::generate_context!())
         .unwrap_or_else(|e| {

@@ -14,6 +14,12 @@ export default defineConfig({
   server: {
     port: 1420,
     strictPort: true,
+    proxy: {
+      "/api": {
+        target: `http://localhost:${process.env.THINKINGKITY_PORT || "19840"}`,
+        changeOrigin: true,
+      },
+    },
   },
   envPrefix: ["VITE_", "TAURI_"],
 });

@@ -38,7 +38,7 @@ A local-first desktop knowledge base built with Tauri v2 and React 19. Open any 
 ### Prerequisites
 
 - [Node.js](https://nodejs.org/) 20+
-- [Rust](https://www.rust-lang.org/) toolchain (for Tauri desktop builds only)
+- [Rust](https://www.rust-lang.org/) toolchain
 
 ### Install
 
@@ -49,20 +49,25 @@ npm install
 ### Development
 
 ```bash
-# Browser-only (no Tauri backend — uses in-memory file system)
-npm run dev
+# Web mode (Vite + Rust HTTP server)
+npm run dev:web
 
-# Full Tauri desktop app with hot reload
-npm run tauri:dev
+# Tauri desktop app with hot reload
+npm run dev:desktop
 ```
 
-The dev server runs on `http://localhost:1420`.
+| Mode | Command | URL | Description |
+|------|---------|-----|-------------|
+| Web dev | `npm run dev:web` | `http://localhost:19840` | Rust server proxies to Vite, shared Rust backend |
+| Desktop dev | `npm run dev:desktop` | Tauri window | Native desktop app with Tauri IPC |
+
+Both modes share the same Rust backend for file operations. File access is restricted by `allowed_paths` in `~/.thinkingkity/vaults.json`. In dev mode, the server proxies frontend requests to Vite (HMR still works).
 
 ### Build
 
 ```bash
 # Production desktop app
-npm run tauri:build
+npm run build:desktop
 ```
 
 The build output is located at:
@@ -76,6 +81,45 @@ The build output is located at:
 | Linux (AppImage) | `src-tauri/target/release/bundle/appimage/thinkingkity_{version}_amd64.AppImage` |
 
 The standalone binary (without installer bundle) is `src-tauri/target/release/thinkingkity`.
+
+### Web Server Build
+
+```bash
+# Build everything (frontend + embed into single binary)
+npm run build && cargo build --release --manifest-path src-tauri/Cargo.toml --bin thinkingkity-server
+
+# Run — single binary, no extra files needed
+./src-tauri/target/release/thinkingkity-server
+# → http://localhost:19840
+```
+
+The frontend is embedded into the binary at compile time. Deploy just one file.
+
+| Env | Default | Description |
+|-----|---------|-------------|
+| `THINKINGKITY_PORT` | `19840` | Server listen port |
+| `THINKINGKITY_DEV` | — | Set to `1` in dev mode to proxy frontend to Vite `:1420` |
+
+## Global Config
+
+`~/.thinkingkity/vaults.json`:
+
+```json
+{
+  "allowed_paths": [
+    "/Users/you/Documents/notes",
+    "/Users/you/work"
+  ],
+  "vaults": [
+    "/Users/you/Documents/notes/vault1"
+  ]
+}
+```
+
+| Field | Description |
+|-------|-------------|
+| `allowed_paths` | Whitelist of directories the backend is allowed to access. File operations outside these paths are denied. Demo vault is always allowed. |
+| `vaults` | Recently opened vaults (managed automatically). |
 
 ## Project Structure
 
@@ -107,8 +151,15 @@ src-tauri/
 ├── build.rs             # Auto-generates demo vault file list at compile time
 └── src/
     ├── main.rs           # Tauri app entry + command registration
-    ├── commands.rs       # File system commands (read/write/create/delete/browse)
-    └── global_config.rs  # Global vault list + demo vault provisioning
+    ├── lib.rs            # Shared library (module declarations)
+    ├── commands.rs       # Tauri command wrappers (delegates to fs_ops)
+    ├── fs_ops.rs          # Shared file operations + path whitelist validation
+    ├── server.rs          # HTTP server for web mode (API routes + static serve)
+    ├── bin/
+    │   └── server.rs      # Standalone HTTP server entry point
+    ├── global_config.rs   # Global vault list + allowed_paths config + demo vault
+    ├── sync_common.rs     # Shared sync utilities
+    └── sync_git.rs        # Git sync implementation
 
 demo-vault/               # Bundled demo vault with examples (auto-embedded via build.rs)
 

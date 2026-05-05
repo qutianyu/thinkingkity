@@ -275,14 +275,24 @@
 		"testFailed": "连接失败",
 		"initGit": "初始化仓库"
 	},
+	"imagePicker": {
+		"title": "选择图片",
+		"chooseWorkspace": "选择一个工作区来查找图片。",
+		"loading": "正在加载...",
+		"empty": "此文件夹中没有图片。",
+		"noWorkspaces": "未配置工作区。"
+	},
 	"vaultPicker": {
 		"title": "打开 Vault",
-		"description": "选择一个 Vault 开始使用 ThinkingKity。",
-		"demoVault": "Demo Vault",
-		"demoVaultDesc": "使用示例文件探索全部功能",
-		"createVault": "新建空白 Vault",
-		"createVaultDesc": "从零开始创建一个空的 Vault",
+		"step1Desc": "选择一个工作区。",
+		"loading": "正在加载...",
+		"noWorkspaces": "未配置工作区。",
+		"emptyWorkspace": "此文件夹为空。",
+		"useFolder": "使用此文件夹",
+		"browseInto": "进入浏览",
+		"createVault": "创建 Vault",
 		"namePlaceholder": "Vault 名称",
-		"recentVaults": "最近使用的 Vault"
+		"or": "或者",
+		"refresh": "刷新"
 	}
 }
