@@ -1,6 +1,6 @@
 [package]
 name = "thinkingkity"
-version = "0.3.0"
+version = "0.4.0"
 description = "A knowledge base app"
 authors = ["you"]
 edition = "2021"
