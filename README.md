@@ -86,10 +86,10 @@ The standalone binary (without installer bundle) is `src-tauri/target/release/th
 
 ```bash
 # Build everything (frontend + embed into single binary)
-npm run build && cargo build --release --manifest-path src-tauri/Cargo.toml --bin thinkingkity-server
+npm run build:web
 
 # Run — single binary, no extra files needed
-./src-tauri/target/release/thinkingkity-server
+./thinkingkity-server
 # → http://localhost:19840
 ```
 

@@ -86,10 +86,10 @@ npm run build:desktop
 
 ```bash
 # 构建全部（前端 + 嵌入到单个二进制文件）
-npm run build && cargo build --release --manifest-path src-tauri/Cargo.toml --bin thinkingkity-server
+npm run build:web
 
 # 运行 — 单文件部署，无需额外文件
-./src-tauri/target/release/thinkingkity-server
+./thinkingkity-server
 # → http://localhost:19840
 ```
 
