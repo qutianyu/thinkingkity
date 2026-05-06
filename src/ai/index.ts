@@ -3,7 +3,11 @@ import "./styles.css";
 export {
   AI_PROVIDER_BASE_URLS,
   DEFAULT_AI_CONFIG,
+  DEFAULT_AI_CONTEXT_COMPACTION_THRESHOLD_KB,
+  MAX_AI_CONTEXT_COMPACTION_THRESHOLD_KB,
+  MIN_AI_CONTEXT_COMPACTION_THRESHOLD_KB,
   getDefaultAiBaseUrl,
+  normalizeAiContextCompactionThresholdKb,
   normalizeAiConfig,
   type AiConfig,
   type AiProvider,

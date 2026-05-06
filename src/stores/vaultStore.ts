@@ -1,14 +1,17 @@
 import { create } from "zustand";
 import { loadGlobalVaults, saveGlobalVaults } from "@/lib/globalVaults";
+import { applyAppFontSizePx, DEFAULT_APP_FONT_SIZE_PX, normalizeAppFontSizePx } from "@/lib/fontSize";
 
 interface VaultState {
   vaultPath: string | null;
   vaultName: string;
   recentVaults: string[];
   displayType: string[];
+  fontSizePx: number;
   setVault: (path: string) => void;
   loadRecentVaults: () => Promise<void>;
   setDisplayType: (types: string[]) => void;
+  setFontSizePx: (sizePx: number) => void;
   removeRecentVault: (path: string) => void;
   clearVault: () => void;
 }
@@ -23,6 +26,7 @@ export const useVaultStore = create<VaultState>((set) => ({
   vaultName: "",
   recentVaults: [],
   displayType: [],
+  fontSizePx: DEFAULT_APP_FONT_SIZE_PX,
   setVault: (path: string) =>
     set((state) => {
       const recent = [
@@ -41,11 +45,19 @@ export const useVaultStore = create<VaultState>((set) => ({
     set({ recentVaults });
   },
   setDisplayType: (types: string[]) => set({ displayType: types }),
+  setFontSizePx: (sizePx: number) => {
+    const fontSizePx = normalizeAppFontSizePx(sizePx);
+    applyAppFontSizePx(fontSizePx);
+    set({ fontSizePx });
+  },
   removeRecentVault: (path: string) =>
     set((state) => {
       const recent = state.recentVaults.filter((p) => p !== path);
       saveGlobalVaults(recent);
       return { recentVaults: recent };
     }),
-  clearVault: () => set({ vaultPath: null, vaultName: "", displayType: [] }),
+  clearVault: () => {
+    applyAppFontSizePx(DEFAULT_APP_FONT_SIZE_PX);
+    set({ vaultPath: null, vaultName: "", displayType: [], fontSizePx: DEFAULT_APP_FONT_SIZE_PX });
+  },
 }));

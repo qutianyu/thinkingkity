@@ -10,6 +10,7 @@ import { SyncButton, SyncToast } from "@/sync";
 import { useVaultStore } from "@/stores/vaultStore";
 import { useFileTreeStore } from "@/stores/fileTreeStore";
 import { useEditorStore } from "@/stores/editorStore";
+import { useLinkStore } from "@/md/links/linkStore";
 
 const AUTO_SAVE_INTERVAL = 5000;
 
@@ -160,7 +161,11 @@ export function Layout() {
       if (dirtyTabs.length === 0) return;
       savingRef.current = true;
       Promise.all(
-        dirtyTabs.map((tab) => saveFile(tab.path)),
+        dirtyTabs.map((tab) =>
+          saveFile(tab.path).then(() => {
+            useLinkStore.getState().onFileChanged(tab.path);
+          }),
+        ),
       ).finally(() => {
         savingRef.current = false;
       });
@@ -174,6 +179,17 @@ export function Layout() {
       navigate("/", { replace: true });
     }
   }, [vaultPath, navigate]);
+
+  // Initialize link index when vault opens
+  const initIndex = useLinkStore((s) => s.initIndex);
+  const clearIndex = useLinkStore((s) => s.clearIndex);
+  useEffect(() => {
+    if (vaultPath) {
+      initIndex(vaultPath);
+    } else {
+      clearIndex();
+    }
+  }, [vaultPath]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -195,7 +211,7 @@ export function Layout() {
           collapsed={sidebarCollapsed}
           onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
         />
-        <EditorArea />
+        <EditorArea sidebarCollapsed={sidebarCollapsed} />
       </div>
       {showQuickSwitcher && (
         <QuickSwitcher onClose={() => setShowQuickSwitcher(false)} />

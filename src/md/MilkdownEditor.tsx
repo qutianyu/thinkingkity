@@ -28,6 +28,7 @@ import properties from "refractor/properties";
 import { InsertMenu } from "./InsertMenu";
 import { ImagePickerModal } from "./ImagePickerModal";
 import { linkClickPlugin } from "./LinkClickPlugin";
+import { wikiLinkPlugin } from "./WikiLinkPlugin";
 import {
   createImageHtml,
   dirname,
@@ -45,7 +46,6 @@ import { useDialogStore } from "@/stores/dialogStore";
 import { useEditorStore } from "@/stores/editorStore";
 import { useFileTreeStore } from "@/stores/fileTreeStore";
 import { useVaultStore } from "@/stores/vaultStore";
-import { Plus } from "lucide-react";
 
 interface MilkdownEditorProps {
   content: string;
@@ -61,8 +61,7 @@ type MenuAction =
   | "orderedList"
   | "codeBlock"
   | "blockquote"
-  | "divider"
-  | "lineBreak";
+  | "divider";
 
 type EditorContext =
   | {
@@ -77,6 +76,13 @@ type EditorContext =
       pos: number;
       language: string;
     };
+
+type SlashCommandCallbacks = {
+  onOpen: (view: any, slashFrom: number) => void;
+  onClose: () => void;
+};
+
+const slashCommandCallbacksRef: { current: SlashCommandCallbacks | null } = { current: null };
 
 const CODE_LANGUAGES = [
   "",
@@ -266,11 +272,6 @@ function executeInsertAction(view: any, action: MenuAction) {
       if (node) tr = tr.replaceSelectionWith(node);
       break;
     }
-    case "lineBreak": {
-      const hardBreak = schema.nodes.hardbreak?.create();
-      if (hardBreak) tr = tr.replaceSelectionWith(hardBreak);
-      break;
-    }
   }
 
   view.dispatch(tr);
@@ -402,6 +403,35 @@ const imagePastePlugin = $prose((ctx) => {
   });
 });
 
+const slashCommandPlugin = $prose(() => {
+  return new Plugin({
+    key: new PluginKey("slashCommand"),
+    props: {
+      handleTextInput(view, from, _to, text) {
+        const callbacks = slashCommandCallbacksRef.current;
+        if (!callbacks) return false;
+
+        if (text !== "/") {
+          callbacks.onClose();
+          return false;
+        }
+
+        requestAnimationFrame(() => {
+          const current = slashCommandCallbacksRef.current;
+          if (current) current.onOpen(view, from);
+        });
+        return false;
+      },
+      handleKeyDown(_view, event) {
+        if (event.key.length === 1 || event.key === "Backspace" || event.key === "Delete" || event.key === "Enter") {
+          slashCommandCallbacksRef.current?.onClose();
+        }
+        return false;
+      },
+    },
+  });
+});
+
 // Module-level vars set by the component for the paste plugin to read.
 let vaultPathRef_inner: string | null = null;
 let activeTabPath_inner: string | null = null;
@@ -416,7 +446,6 @@ function MilkdownEditorInner({ content, onChange }: MilkdownEditorProps) {
   activeTabPath_inner = activeTabPath;
   const refreshTree = useFileTreeStore((s) => s.refreshTree);
   const editorContainerRef = useRef<HTMLDivElement>(null);
-  const [lineTop, setLineTop] = useState<number | null>(null);
   const [menuPosition, setMenuPosition] = useState<{
     top: number;
     left: number;
@@ -427,19 +456,48 @@ function MilkdownEditorInner({ content, onChange }: MilkdownEditorProps) {
   const viewRef = useRef<any>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const selectionBookmarkRef = useRef<any>(null);
+  const slashRangeRef = useRef<{ from: number; to: number } | null>(null);
 
   const onHide = useCallback(() => {
     setMenuPosition(null);
+    slashRangeRef.current = null;
   }, []);
+
+  slashCommandCallbacksRef.current = {
+    onOpen: (view: any, slashFrom: number) => {
+      viewRef.current = view;
+      const slashTo = slashFrom + 1;
+      const cursor = view.state.selection.from;
+      const slashChar = view.state.doc.textBetween(slashFrom, slashTo);
+      if (cursor !== slashTo || slashChar !== "/") {
+        onHide();
+        return;
+      }
+
+      const coords = view.coordsAtPos(slashTo);
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      let left = coords.left;
+      let top = coords.bottom + 6;
+
+      if (left + MENU_WIDTH > vw) left = vw - MENU_WIDTH - 8;
+      if (left < 8) left = 8;
+      if (top + MENU_HEIGHT > vh) top = Math.max(8, coords.top - MENU_HEIGHT - 6);
+      if (top < 8) top = 8;
+
+      slashRangeRef.current = { from: slashFrom, to: slashTo };
+      selectionBookmarkRef.current = view.state.selection.getBookmark();
+      setMenuPosition({ top, left });
+    },
+    onClose: onHide,
+  };
 
   setBlockHandleCallbacks({
     onLineTop: (_top: number, view: any) => {
       viewRef.current = view;
-      setLineTop(_top);
       setEditorContext(getEditorContext(view));
     },
     onHide: () => {
-      setLineTop(null);
       setMenuPosition(null);
       setEditorContext(null);
     },
@@ -455,6 +513,12 @@ function MilkdownEditorInner({ content, onChange }: MilkdownEditorProps) {
           configureRefractor: (refractor) => {
             if (!refractor.registered("toml")) refractor.register(toml);
             if (!refractor.registered("properties")) refractor.register(properties);
+            // Skip markdown highlighting — code fences in a markdown doc don't need it
+            const original = refractor.highlight.bind(refractor);
+            refractor.highlight = ((text: string, language: any) => {
+              if (language === "markdown" || language === "md") return text as any;
+              return original(text, language);
+            }) as typeof refractor.highlight;
             return refractor;
           },
         }));
@@ -470,48 +534,15 @@ function MilkdownEditorInner({ content, onChange }: MilkdownEditorProps) {
       .use(clipboard)
       .use(listener)
       .use(blockHandlePlugin)
+      .use(slashCommandPlugin)
       .use(linkClickPlugin)
+      .use(wikiLinkPlugin)
       .use(prism)
       .use(imagePastePlugin);
   }, []);
 
   const MENU_WIDTH = 220;
   const MENU_HEIGHT = 300;
-
-  const rememberSelection = useCallback(() => {
-    const view = viewRef.current;
-    if (view) {
-      selectionBookmarkRef.current = view.state.selection.getBookmark();
-    }
-  }, []);
-
-  const handlePlusClick = useCallback(() => {
-    if (lineTop === null) return;
-    rememberSelection();
-    const editorEl = editorContainerRef.current?.querySelector(".milkdown .ProseMirror") as HTMLElement | null;
-    if (!editorEl) return;
-    const editorRect = editorEl.getBoundingClientRect();
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
-
-    let top = lineTop;
-    let left = editorRect.left;
-
-    if (left + MENU_WIDTH > vw) {
-      left = vw - MENU_WIDTH - 8;
-    }
-    if (left < 8) {
-      left = 8;
-    }
-    if (top + MENU_HEIGHT > vh) {
-      top = vh - MENU_HEIGHT - 8;
-    }
-    if (top < 8) {
-      top = 8;
-    }
-
-    setMenuPosition({ top, left });
-  }, [lineTop, rememberSelection]);
 
   useEffect(() => {
     if (!menuPosition) return;
@@ -565,8 +596,19 @@ function MilkdownEditorInner({ content, onChange }: MilkdownEditorProps) {
         view.focus();
         return view;
       };
+      const removeSlashCommandTrigger = (view: any) => {
+        const range = slashRangeRef.current;
+        if (!range) return;
+        if (view.state.doc.textBetween(range.from, range.to) !== "/") return;
+        view.dispatch(view.state.tr.delete(range.from, range.to));
+        selectionBookmarkRef.current = view.state.selection.getBookmark();
+        slashRangeRef.current = null;
+      };
 
       if (action === "link") {
+        const view = restoreSelection();
+        if (!view) return;
+        removeSlashCommandTrigger(view);
         onHide();
         const url = await showPrompt({
           title: "Insert link",
@@ -574,8 +616,6 @@ function MilkdownEditorInner({ content, onChange }: MilkdownEditorProps) {
           confirmLabel: "Insert",
         });
         if (!url) return;
-        const view = restoreSelection();
-        if (!view) return;
         insertLink(view, url.trim());
         return;
       }
@@ -583,6 +623,7 @@ function MilkdownEditorInner({ content, onChange }: MilkdownEditorProps) {
       if (action === "codeBlock") {
         const view = restoreSelection();
         if (!view) return;
+        removeSlashCommandTrigger(view);
         insertCodeBlock(view, "");
         onHide();
         return;
@@ -599,6 +640,7 @@ function MilkdownEditorInner({ content, onChange }: MilkdownEditorProps) {
           onHide();
           return;
         }
+        removeSlashCommandTrigger(view);
         const copiedPath = vaultPath
           ? await copyImageToVaultAssets(filePath, vaultPath)
           : filePath;
@@ -623,6 +665,8 @@ function MilkdownEditorInner({ content, onChange }: MilkdownEditorProps) {
       }
 
       if (action === "image") {
+        const view = restoreSelection();
+        if (view) removeSlashCommandTrigger(view);
         onHide();
         setShowImagePicker(true);
         return;
@@ -630,23 +674,12 @@ function MilkdownEditorInner({ content, onChange }: MilkdownEditorProps) {
 
       const view = restoreSelection();
       if (!view) return;
+      removeSlashCommandTrigger(view);
       executeInsertAction(view, action);
       onHide();
     },
     [activeTabPath, onHide, refreshTree, showPrompt, vaultPath],
   );
-
-  const computeHandleStyle = useCallback((): React.CSSProperties | undefined => {
-    if (lineTop === null) return undefined;
-    const editorEl = editorContainerRef.current?.querySelector(".milkdown .ProseMirror") as HTMLElement | null;
-    if (!editorEl) return undefined;
-    const editorRect = editorEl.getBoundingClientRect();
-    return {
-      position: "fixed",
-      top: lineTop,
-      left: editorRect.left - 32,
-    };
-  }, [lineTop]);
 
   const runTableCommand = useCallback((command: (state: any, dispatch?: any) => boolean) => {
     const view = viewRef.current;
@@ -686,20 +719,6 @@ function MilkdownEditorInner({ content, onChange }: MilkdownEditorProps) {
 
   return (
     <div ref={editorContainerRef} className="milkdown-editor-wrapper">
-      {lineTop !== null && !menuPosition && (
-        <button
-          type="button"
-          className="block-handle-button"
-          style={computeHandleStyle()}
-          onMouseDown={(e) => {
-            e.preventDefault();
-            rememberSelection();
-          }}
-          onClick={handlePlusClick}
-        >
-          <Plus size={14} />
-        </button>
-      )}
       {editorContext?.type === "table" && (
         <div
           className="md-context-toolbar"

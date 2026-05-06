@@ -4,6 +4,8 @@ export interface RenderHtmlImagesOptions {
   resolveAssetUrl?: (path: string) => Promise<string>;
 }
 
+const BLANK_LINE_PLACEHOLDER = "\u200B";
+
 export function escapeHtmlAttribute(value: string): string {
   // HTML image snippets are stored as Markdown content, so attributes must be escaped.
   return value
@@ -114,7 +116,8 @@ async function resolveImageSrcForRender(
 }
 
 export async function renderHtmlImages(root: HTMLElement, options: RenderHtmlImagesOptions): Promise<void> {
-  // Milkdown keeps raw HTML as inline atoms; replace image atoms with real previews.
+  // Milkdown keeps raw HTML as inline atoms; replace image atoms and blank-line
+  // placeholders with editor-native previews.
   const nodes = root.querySelectorAll<HTMLElement>('.milkdown .ProseMirror span[data-type="html"][data-value]');
   const promises = Array.from(nodes).map(async (node) => {
     const value = node.dataset.value || "";
@@ -146,8 +149,9 @@ export function brToHardbreak(markdown: string): string {
     if (i % 2 === 1) {
       result += parts[i];
     } else {
-      let part = parts[i].replace(/^[ \t]*<br\s*\/?>[ \t]*$/gm, "");
-      part = part.replace(/<br\s*\/?>/gi, "\\\n");
+      let part = stripLegacyBlankLinePlaceholders(parts[i]);
+      part = preserveMarkdownBlankLines(part);
+      part = part.replace(/<br\s*\/?>/gi, "\n");
       result += part;
     }
   }
@@ -161,13 +165,27 @@ export function hardbreakToBr(markdown: string): string {
     if (i % 2 === 1) {
       result += parts[i];
     } else {
-      result += parts[i].replace(/\\\n/g, "<br />\n");
+      result += parts[i]
+        .replace(/\\\n/g, "\n")
+        .replace(/<br\s*\/?>/gi, "\n");
     }
   }
-  result = result.replace(/^[ \t]*<br\s*\/?>[ \t]*$/gm, "");
-  result = result.replace(/\n{3,}/g, "\n\n");
+  result = result.replace(/^[ \t]*\u200B[ \t]*$/gm, "");
+  result = stripLegacyBlankLinePlaceholders(result);
   return result;
 }
+
+function preserveMarkdownBlankLines(markdown: string): string {
+  return markdown.replace(/\n{3,}/g, (match) => {
+    const blankLineCount = match.length - 1;
+    return `\n\n${Array.from({ length: blankLineCount - 1 }, () => BLANK_LINE_PLACEHOLDER).join("\n")}\n\n`;
+  });
+}
+
+function stripLegacyBlankLinePlaceholders(markdown: string): string {
+  return markdown.replace(/^[ \t]*<span\s+data-thinkingkity-blank-line=["']true["']\s*><\/span>[ \t]*$/gim, "");
+}
+
 
 export function uniqueFileName(fileName: string, existingNames: Set<string>): string {
   if (!existingNames.has(fileName)) return fileName;

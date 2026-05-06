@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
-import { Bot, Check, FilePlus, FileText, Folder, Globe, Plus, Search, Send, Square, Trash2, X } from "lucide-react";
+import { Bot, Check, FilePlus, FileText, Folder, Globe, Maximize2, Minimize2, Plus, Search, Send, Square, Trash2, X } from "lucide-react";
 import { useEditorStore } from "@/stores/editorStore";
 import { useVaultStore } from "@/stores/vaultStore";
 import { useFileTreeStore } from "@/stores/fileTreeStore";
@@ -39,9 +39,14 @@ interface PendingToolRequest {
   error?: string;
 }
 
-export function AiChatDock() {
+interface AiChatDockProps {
+  sidebarCollapsed?: boolean;
+}
+
+export function AiChatDock({ sidebarCollapsed = false }: AiChatDockProps) {
   const { t, i18n } = useTranslation();
   const [open, setOpen] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const [input, setInput] = useState("");
   const [manager, setManager] = useState<AiSessionManagerData | null>(null);
   const [session, setSession] = useState<AiSessionData | null>(null);
@@ -455,7 +460,11 @@ export function AiChatDock() {
       </button>
 
       {open && createPortal(
-        <aside className="ai-chat-panel" aria-label={t("aiChat.panelLabel")}>
+        <aside
+          className={`ai-chat-panel ${expanded ? "ai-chat-panel-expanded" : ""}`}
+          style={expanded ? { left: sidebarCollapsed ? 56 : 300 } : undefined}
+          aria-label={t("aiChat.panelLabel")}
+        >
           <div className="ai-chat-panel-header">
             <div className="ai-chat-panel-title">
               <Bot size={16} />
@@ -474,6 +483,15 @@ export function AiChatDock() {
               </select>
             </div>
             <div className="ai-chat-panel-actions">
+              <button
+                type="button"
+                className="ai-chat-panel-close"
+                onClick={() => setExpanded((value) => !value)}
+                title={expanded ? t("aiChat.collapsePanel") : t("aiChat.expandPanel")}
+                aria-label={expanded ? t("aiChat.collapsePanel") : t("aiChat.expandPanel")}
+              >
+                {expanded ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
+              </button>
               <button
                 type="button"
                 className="ai-chat-panel-close"
@@ -528,7 +546,10 @@ export function AiChatDock() {
               <button
                 type="button"
                 className="ai-chat-panel-close"
-                onClick={() => setOpen(false)}
+                onClick={() => {
+                  setOpen(false);
+                  setExpanded(false);
+                }}
                 title={t("tab.close")}
                 aria-label={t("tab.close")}
               >

@@ -15,11 +15,11 @@ This vault contains sample files across multiple languages and formats to showca
 
 | File | Description |
 |------|-------------|
-| `getting-started.md` | Feature tour with frontmatter, tables, code blocks, lists |
-| `cheatsheet.md` | Full Markdown syntax reference |
-| `todo.md` | Task list with nested checkboxes |
-| `daily-journal.md` | Daily journal entry with tags and YAML frontmatter |
-| `project-plan.md` | Project planning doc with milestones and a Mermaid diagram |
+| `getting-started.md` | Feature tour with wiki links, frontmatter, tables, code blocks, lists |
+| `cheatsheet.md` | Full Markdown syntax reference including wiki link syntax |
+| `todo.md` | Task list with nested checkboxes — links to project-plan |
+| `daily-journal.md` | Daily journal entry with wiki links to other notes |
+| `project-plan.md` | Project planning doc with milestones, Mermaid diagram, and backlinks |
 
 ### `code/` — Multi-language Source Code
 

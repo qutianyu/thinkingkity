@@ -1,4 +1,5 @@
 import type { AiConfig } from "./config";
+import { DEFAULT_AI_CONTEXT_COMPACTION_THRESHOLD_KB, normalizeAiContextCompactionThresholdKb } from "./config";
 import { streamProviderChat } from "./client";
 import { readAttachedArticleContext } from "./contextBuilder";
 import type { AiSessionData, AiSessionManagerData } from "./sessionTypes";
@@ -7,15 +8,17 @@ import { saveAiSession } from "./sessionManager";
 import type { AiChatMessage } from "./types";
 import { getAiPrompt } from "./promptConfig";
 
-const MAX_SESSION_JSON_BYTES = 200 * 1024;
-
 function byteLength(text: string): number {
   return new TextEncoder().encode(text).byteLength;
 }
 
-export function shouldCompactSession(session: AiSessionData): boolean {
+export function shouldCompactSession(session: AiSessionData, thresholdKb = DEFAULT_AI_CONTEXT_COMPACTION_THRESHOLD_KB): boolean {
   // Keep session files bounded so loading a chat stays fast over long conversations.
-  return byteLength(JSON.stringify(session)) > MAX_SESSION_JSON_BYTES;
+  const normalizedThresholdKb = normalizeAiContextCompactionThresholdKb(
+    thresholdKb,
+    DEFAULT_AI_CONTEXT_COMPACTION_THRESHOLD_KB,
+  );
+  return byteLength(JSON.stringify(session)) > normalizedThresholdKb * 1024;
 }
 
 async function buildCompactionMessages(
@@ -59,7 +62,7 @@ export async function compactSessionMemoryIfNeeded(options: {
   language: string;
 }): Promise<{ session: AiSessionData; manager: AiSessionManagerData; memory: string }> {
   const { ai, vaultPath, session, manager, memory, language } = options;
-  if (!shouldCompactSession(session)) {
+  if (!shouldCompactSession(session, ai.context_compaction_threshold_kb)) {
     return { session, manager, memory };
   }
 

@@ -3,13 +3,18 @@ title: Project Plan — ThinkingKity v1.0
 date: 2026-05-01
 status: in-progress
 owner: Team Alpha
+aliases:
+ - project-plan
+ - roadmap
 ---
 
 # Project Plan: ThinkingKity v1.0
 
 ## Overview
 
-Build a local-first knowledge base with vault-based file management, multi-format editing, and an integrated AI assistant.
+Build a local-first knowledge base with vault-based file management, multi-format editing, wiki links with backlinks, and an integrated AI assistant.
+
+See [[getting-started]] for a feature tour, and [[todo]] for the current task list.
 
 ## Milestones
 
@@ -18,6 +23,7 @@ Build a local-first knowledge base with vault-based file management, multi-forma
 | Core editing (Markdown, Code, CSV) | Apr 2026 | Done |
 | File tree & vault system | Apr 2026 | Done |
 | AI assistant integration | May 2026 | Done |
+| Wiki links & backlinks | May 2026 | Done |
 | Vault sync (Git + WebDAV) | May 2026 | In Progress |
 | Mobile companion app | Jun 2026 | Planned |
 | Plugin system | Jul 2026 | Planned |
@@ -50,3 +56,5 @@ graph TD
 2. Implement WebDAV backend
 3. Add conflict resolution UI for pull failures
 4. Write integration tests for the sync module
+
+Check [[todo#Work]] for the detailed breakdown.

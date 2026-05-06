@@ -3,13 +3,16 @@ import { HotTable } from "@handsontable/react-wrapper";
 import { registerAllModules } from "handsontable/registry";
 import type { CellChange, ChangeSource } from "handsontable/common";
 import Papa from "papaparse";
-import { Code2, FileText, PanelRightClose, PanelRightOpen } from "lucide-react";
+import { ArrowLeftRight, Code2, FileText, PanelRightClose, PanelRightOpen, X } from "lucide-react";
 import { AiChatDock } from "@/ai";
 import { useEditorStore } from "@/stores/editorStore";
+import { useLinkStore } from "@/md/links/linkStore";
 import { isImageFile, isJsonFile, isPdfFile, isTextFile, isCodeFile, isMarkdownFile, isMermaidFile, getCodeLanguage, pathBasename } from "@/lib/tauriCommands";
 import { CodeEditor } from "./CodeEditor";
 import { MermaidEditor } from "./MermaidEditor";
 import { MilkdownEditor } from "@/md";
+import { BacklinksPanel } from "@/md/BacklinksPanel";
+import { UnresolvedLinkDialog } from "@/md/UnresolvedLinkDialog";
 import { TabBar } from "./TabBar";
 import { EmptyState } from "../common/EmptyState";
 import "handsontable/styles/handsontable.min.css";
@@ -39,7 +42,7 @@ interface MarkdownHeading {
 
 function splitFrontmatter(content: string): FrontmatterParts {
   // Rich editor edits only the body; frontmatter is preserved around Milkdown updates.
-  const match = content.match(/^(---\r?\n[\s\S]*?\r?\n---)(?:\r?\n)?/);
+  const match = content.match(/^(---\r?\n[\s\S]*?\r?\n---)(?:[ \t]*\r?\n)*/);
   if (!match) return { frontmatter: "", body: content };
 
   return {
@@ -162,9 +165,15 @@ function serializeCsv(rows: string[][]): string {
   );
 }
 
-export function EditorArea() {
+interface EditorAreaProps {
+  sidebarCollapsed?: boolean;
+}
+
+export function EditorArea({ sidebarCollapsed = false }: EditorAreaProps) {
   const [mode, setMode] = useState<EditorMode>("rich");
   const [outlineCollapsed, setOutlineCollapsed] = useState(false);
+  const [panelTab, setPanelTab] = useState<"outline" | "backlinks">("outline");
+  const [unresolvedTarget, setUnresolvedTarget] = useState<string | null>(null);
   const activeTabPath = useEditorStore((s) => s.activeTabPath);
   const activeContent = useEditorStore((s) =>
     s.activeTabPath ? s.fileContents.get(s.activeTabPath) ?? "" : "",
@@ -189,6 +198,30 @@ export function EditorArea() {
   const editorScrollRef = useRef<HTMLDivElement>(null);
   const usesCodeEditor = isJson || isText || isCode || isMermaid || (isMarkdown && mode === "source");
 
+  // Listen for unresolved wiki link clicks
+  const handleUnresolvedLink = useCallback((e: Event) => {
+    const detail = (e as CustomEvent).detail as { target: string } | undefined;
+    if (detail?.target) setUnresolvedTarget(detail.target);
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener("wiki-link-unresolved", handleUnresolvedLink);
+    return () => window.removeEventListener("wiki-link-unresolved", handleUnresolvedLink);
+  }, [handleUnresolvedLink]);
+
+  // Handle wiki link heading scroll — state ensures re-render triggers the effect
+  const [scrollHeadingSlug, setScrollHeadingSlug] = useState<string | null>(null);
+
+  const handleWikiLinkScroll = useCallback((e: Event) => {
+    const detail = (e as CustomEvent).detail as { heading: string } | undefined;
+    if (detail?.heading) setScrollHeadingSlug(detail.heading);
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener("wiki-link-scroll-to", handleWikiLinkScroll);
+    return () => window.removeEventListener("wiki-link-scroll-to", handleWikiLinkScroll);
+  }, [handleWikiLinkScroll]);
+
   const handleRichChange = useCallback(
     (markdown: string) => {
       if (activeTabPath) {
@@ -205,6 +238,7 @@ export function EditorArea() {
         e.preventDefault();
         if (activeTabPath) {
           await saveFile(activeTabPath);
+          useLinkStore.getState().onFileChanged(activeTabPath);
         }
       }
     },
@@ -239,6 +273,22 @@ export function EditorArea() {
     [frontmatterParts.body, frontmatterParts.frontmatter.length, mode],
   );
 
+  // Perform heading scroll triggered by wiki link clicks
+  useEffect(() => {
+    if (!scrollHeadingSlug || headings.length === 0) return;
+
+    let target = headings.find((h) => h.id === scrollHeadingSlug);
+    if (!target) {
+      const s = scrollHeadingSlug.toLowerCase();
+      target = headings.find((h) => h.text.toLowerCase() === s);
+    }
+
+    if (target) {
+      setScrollHeadingSlug(null);
+      requestAnimationFrame(() => scrollToHeading(target));
+    }
+  }, [scrollHeadingSlug, headings, scrollToHeading]);
+
   const updateFrontmatterField = useCallback(
     (fieldIndex: number, value: string, itemIndex?: number) => {
       if (!activeTabPath) return;
@@ -259,6 +309,24 @@ export function EditorArea() {
     [activeTabPath, frontmatterFields, frontmatterParts.body, updateContent],
   );
 
+  const removeFrontmatterListItem = useCallback(
+    (fieldIndex: number, itemIndex: number) => {
+      if (!activeTabPath) return;
+      const nextFields = frontmatterFields.map((field, index) => {
+        if (index !== fieldIndex || !Array.isArray(field.value)) return field;
+        return {
+          ...field,
+          value: field.value.filter((_, index) => index !== itemIndex),
+        };
+      });
+      updateContent(
+        activeTabPath,
+        serializeFrontmatter(nextFields) + frontmatterParts.body,
+      );
+    },
+    [activeTabPath, frontmatterFields, frontmatterParts.body, updateContent],
+  );
+
   return (
     <div
       className="editor-shell flex flex-col flex-1 bg-[var(--color-bg-editor)] min-w-0"
@@ -269,7 +337,7 @@ export function EditorArea() {
         <div className="editor-tabs">
           <TabBar />
         </div>
-        <AiChatDock />
+        <AiChatDock sidebarCollapsed={sidebarCollapsed} />
       </div>
       <div className="editor-main flex-1 min-h-0">
         <div
@@ -320,18 +388,28 @@ export function EditorArea() {
                         {Array.isArray(field.value) ? (
                           <div className="frontmatter-list">
                             {field.value.map((item, itemIndex) => (
-                              <input
-                                key={itemIndex}
-                                className="frontmatter-input"
-                                value={item}
-                                onChange={(e) =>
-                                  updateFrontmatterField(
-                                    fieldIndex,
-                                    e.target.value,
-                                    itemIndex,
-                                  )
-                                }
-                              />
+                              <span className="frontmatter-chip" key={itemIndex}>
+                                <input
+                                  className="frontmatter-input frontmatter-chip-input"
+                                  value={item}
+                                  size={Math.max(2, Math.min(24, item.length || 2))}
+                                  onChange={(e) =>
+                                    updateFrontmatterField(
+                                      fieldIndex,
+                                      e.target.value,
+                                      itemIndex,
+                                    )
+                                  }
+                                />
+                                <button
+                                  type="button"
+                                  className="frontmatter-chip-remove"
+                                  onClick={() => removeFrontmatterListItem(fieldIndex, itemIndex)}
+                                  aria-label="Remove item"
+                                >
+                                  <X size={11} />
+                                </button>
+                              </span>
                             ))}
                           </div>
                         ) : (
@@ -366,34 +444,53 @@ export function EditorArea() {
           </div>
         </div>
         {activeTabPath && isMarkdown && (
-          <MarkdownOutline
+          <MarkdownRightPanel
             mode={mode}
             headings={headings}
             collapsed={outlineCollapsed}
+            panelTab={panelTab}
             onModeChange={setMode}
             onHeadingClick={scrollToHeading}
             onToggleCollapsed={() => setOutlineCollapsed((value) => !value)}
+            onPanelTabChange={setPanelTab}
+            filePath={activeTabPath}
           />
         )}
       </div>
+      {unresolvedTarget && (
+        <UnresolvedLinkDialog
+          target={unresolvedTarget}
+          onClose={() => setUnresolvedTarget(null)}
+          onCreated={(path) => {
+            setUnresolvedTarget(null);
+            useEditorStore.getState().openFile(path);
+          }}
+        />
+      )}
     </div>
   );
 }
 
-function MarkdownOutline({
+function MarkdownRightPanel({
   mode,
   headings,
   collapsed,
+  panelTab,
   onModeChange,
   onHeadingClick,
   onToggleCollapsed,
+  onPanelTabChange,
+  filePath,
 }: {
   mode: EditorMode;
   headings: MarkdownHeading[];
   collapsed: boolean;
+  panelTab: "outline" | "backlinks";
   onModeChange: (mode: EditorMode) => void;
   onHeadingClick: (heading: MarkdownHeading) => void;
   onToggleCollapsed: () => void;
+  onPanelTabChange: (tab: "outline" | "backlinks") => void;
+  filePath: string;
 }) {
   if (collapsed) {
     return (
@@ -442,25 +539,57 @@ function MarkdownOutline({
           <PanelRightClose size={15} />
         </button>
       </div>
-      <div className="markdown-outline-title">Outline</div>
-      <div className="markdown-outline-list">
-        {headings.length > 0 ? (
-          headings.map((heading) => (
-            <button
-              key={heading.id}
-              type="button"
-              className="markdown-outline-item"
-              onClick={() => onHeadingClick(heading)}
-              style={{ paddingLeft: `${(heading.level - 1) * 10 + 8}px` }}
-            >
-              {heading.text}
-            </button>
-          ))
-        ) : (
-          <div className="markdown-outline-empty">No headings</div>
-        )}
+      <div className="markdown-outline-tabs">
+        <button
+          type="button"
+          className={`markdown-outline-tab ${panelTab === "outline" ? "markdown-outline-tab-active" : ""}`}
+          onClick={() => onPanelTabChange("outline")}
+        >
+          Outline
+        </button>
+        <button
+          type="button"
+          className={`markdown-outline-tab ${panelTab === "backlinks" ? "markdown-outline-tab-active" : ""}`}
+          onClick={() => onPanelTabChange("backlinks")}
+        >
+          <ArrowLeftRight size={12} />
+          Links
+        </button>
       </div>
+      {panelTab === "outline" ? (
+        <OutlinePanel headings={headings} onHeadingClick={onHeadingClick} />
+      ) : (
+        <BacklinksPanel filePath={filePath} />
+      )}
     </aside>
+  );
+}
+
+function OutlinePanel({
+  headings,
+  onHeadingClick,
+}: {
+  headings: MarkdownHeading[];
+  onHeadingClick: (heading: MarkdownHeading) => void;
+}) {
+  return (
+    <div className="markdown-outline-list">
+      {headings.length > 0 ? (
+        headings.map((heading) => (
+          <button
+            key={heading.id}
+            type="button"
+            className="markdown-outline-item"
+            onClick={() => onHeadingClick(heading)}
+            style={{ paddingLeft: `${(heading.level - 1) * 10 + 8}px` }}
+          >
+            {heading.text}
+          </button>
+        ))
+      ) : (
+        <div className="markdown-outline-empty">No headings</div>
+      )}
+    </div>
   );
 }
 

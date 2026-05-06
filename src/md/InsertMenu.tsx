@@ -1,6 +1,6 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { Image, Link, Table, FileText, List, ListOrdered, Code, Quote, Minus, CornerDownLeft } from "lucide-react";
+import { Image, Link, Table, FileText, List, ListOrdered, Code, Quote, Minus } from "lucide-react";
 
 type MenuAction =
   | "image"
@@ -11,8 +11,7 @@ type MenuAction =
   | "orderedList"
   | "codeBlock"
   | "blockquote"
-  | "divider"
-  | "lineBreak";
+  | "divider";
 
 type MenuLabelKey =
   | "heading"
@@ -23,8 +22,7 @@ type MenuLabelKey =
   | "table"
   | "codeBlock"
   | "blockquote"
-  | "divider"
-  | "lineBreak";
+  | "divider";
 
 interface InsertMenuProps {
   position: { top: number; left: number } | null;
@@ -42,17 +40,11 @@ const menuItems: { action: MenuAction; labelKey: MenuLabelKey; icon: React.React
   { action: "codeBlock", labelKey: "codeBlock", icon: <Code size={15} /> },
   { action: "blockquote", labelKey: "blockquote", icon: <Quote size={15} /> },
   { action: "divider", labelKey: "divider", icon: <Minus size={15} /> },
-  { action: "lineBreak", labelKey: "lineBreak", icon: <CornerDownLeft size={15} /> },
 ];
 
 export function InsertMenu({ position, onAction, onClose }: InsertMenuProps) {
   const { t } = useTranslation();
   const ref = useRef<HTMLDivElement>(null);
-  const [filter, setFilter] = useState("");
-
-  useEffect(() => {
-    setFilter("");
-  }, [position]);
 
   useEffect(() => {
     if (!position) return;
@@ -78,10 +70,6 @@ export function InsertMenu({ position, onAction, onClose }: InsertMenuProps) {
     ...item,
     label: t(`insertMenu.${item.labelKey}`),
   }));
-  const normalizedFilter = filter.toLowerCase();
-  const filtered = localizedItems.filter((item) =>
-    item.label.toLowerCase().includes(normalizedFilter),
-  );
 
   return (
     <div
@@ -89,16 +77,8 @@ export function InsertMenu({ position, onAction, onClose }: InsertMenuProps) {
       className="insert-menu"
       style={{ top: position.top, left: position.left }}
     >
-      <input
-        className="insert-menu-search"
-        type="text"
-        placeholder={t("insertMenu.filter")}
-        value={filter}
-        onChange={(e) => setFilter(e.target.value)}
-        autoFocus
-      />
       <div className="insert-menu-list">
-        {filtered.map((item) => (
+        {localizedItems.map((item) => (
           <button
             key={item.action}
             className="insert-menu-item"
@@ -110,9 +90,6 @@ export function InsertMenu({ position, onAction, onClose }: InsertMenuProps) {
             <span className="insert-menu-label">{item.label}</span>
           </button>
         ))}
-        {filtered.length === 0 && (
-          <div className="insert-menu-empty">{t("insertMenu.noResults")}</div>
-        )}
       </div>
     </div>
   );

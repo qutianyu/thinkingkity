@@ -103,7 +103,7 @@ const lightTheme = EditorView.theme({
     height: "100%",
     backgroundColor: "var(--color-bg-surface)",
     color: "var(--color-text-primary)",
-    fontSize: "13px",
+    fontSize: "calc(var(--app-font-size) - 3px)",
   },
   ".cm-scroller": {
     fontFamily: '"SF Mono", "Fira Code", "Fira Mono", ui-monospace, monospace',

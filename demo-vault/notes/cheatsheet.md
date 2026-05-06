@@ -10,7 +10,19 @@ tags:
 
 # Markdown Cheatsheet
 
-A quick reference for all supported Markdown syntax in ThinkingKity.
+A quick reference for all supported Markdown syntax in ThinkingKity. Also check [[getting-started]] for a hands-on tutorial.
+
+## Wiki Links
+
+| Syntax | Meaning | Example |
+|--------|---------|---------|
+| `[[note]]` | Link to a note | [[getting-started]] |
+| `[[folder/note]]` | Link by path | [[notes/todo]] |
+| `[[note\|alias]]` | Link with display alias | [[cheatsheet\|cheatsheet]] |
+| `[[note#heading]]` | Link to a heading | [[project-plan#Milestones]] |
+| `[[#heading]]` | Link within current note | [[#Typography]] |
+
+Open the right panel and switch to **Links** to see backlinks for any note.
 
 ## Typography
 
@@ -27,7 +39,7 @@ A quick reference for all supported Markdown syntax in ThinkingKity.
 
 ## Headings
 
-```markdown
+```
 # H1
 ## H2
 ### H3

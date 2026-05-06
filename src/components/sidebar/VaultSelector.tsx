@@ -7,6 +7,7 @@ import { useThemeStore } from "@/stores/themeStore";
 import { DEFAULT_AI_CONFIG, useAiStore } from "@/ai";
 import { pathBasename } from "@/lib/tauriCommands";
 import { ensureVaultConfig, ALL_DISPLAY_TYPES } from "@/lib/vaultConfig";
+import { DEFAULT_APP_FONT_SIZE_PX } from "@/lib/fontSize";
 import { DEFAULT_SYNC_CONFIG, useSyncStore } from "@/sync";
 import { ensureDemoVault } from "@/lib/globalVaults";
 import { useState, useRef, useEffect } from "react";
@@ -15,7 +16,7 @@ import { VaultPickerModal } from "@/components/common/VaultPickerModal";
 export function VaultSelector() {
   const { t } = useTranslation();
   const { i18n } = useTranslation();
-  const { vaultPath, vaultName, recentVaults, setVault, setDisplayType, removeRecentVault, loadRecentVaults } = useVaultStore();
+  const { vaultPath, vaultName, recentVaults, setVault, setDisplayType, setFontSizePx, removeRecentVault, loadRecentVaults } = useVaultStore();
   const refreshTree = useFileTreeStore((s) => s.refreshTree);
   const preference = useThemeStore((s) => s.preference);
   const setPreference = useThemeStore((s) => s.setPreference);
@@ -43,12 +44,14 @@ export function VaultSelector() {
     const config = await ensureVaultConfig(path, {
       language: i18n.language || "zh-CN",
       mode: preference,
+      font_size_px: DEFAULT_APP_FONT_SIZE_PX,
       display_type: ALL_DISPLAY_TYPES,
       ai: DEFAULT_AI_CONFIG,
       sync: DEFAULT_SYNC_CONFIG,
     });
     await i18n.changeLanguage(config.language);
     setPreference(config.mode);
+    setFontSizePx(config.font_size_px);
     setDisplayType(config.display_type);
     setAi(config.ai);
     useSyncStore.getState().setConfig(config.sync);

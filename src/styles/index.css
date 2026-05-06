@@ -56,6 +56,8 @@
   --transition-fast: 150ms ease-in-out;
   --transition-normal: 200ms ease-in-out;
   --transition-slow: 300ms ease-in-out;
+
+  --app-font-size: 16px;
 }
 
 /* ===== Dark Theme Overrides ===== */
@@ -108,7 +110,7 @@ html, body, #root {
     var(--color-bg-app);
   color: var(--color-text-primary);
   font-family: "Inter", system-ui, sans-serif;
-  font-size: 16px;
+  font-size: var(--app-font-size);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -1053,6 +1055,49 @@ h3 { font-size: 1.25rem; font-weight: 600; line-height: 1.4; }
   min-width: 0;
 }
 
+.settings-font-size-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.settings-font-size-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-input);
+  color: var(--color-text-primary);
+  flex: 0 0 auto;
+}
+
+.settings-font-size-control:focus-within {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-15);
+}
+
+.settings-font-size-control select {
+  width: 46px;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.settings-font-size-control span {
+  color: var(--color-text-muted);
+  font-size: 12px;
+  line-height: 1;
+}
+
 .settings-ai-form {
   display: grid;
   gap: 12px;
@@ -1163,6 +1208,14 @@ h3 { font-size: 1.25rem; font-weight: 600; line-height: 1.4; }
 }
 
 @media (max-width: 560px) {
+  .settings-font-size-card {
+    flex-wrap: wrap;
+  }
+
+  .settings-font-size-control {
+    margin-left: 48px;
+  }
+
   .settings-ai-row {
     grid-template-columns: 1fr;
     gap: 6px;
@@ -1271,6 +1324,218 @@ h3 { font-size: 1.25rem; font-weight: 600; line-height: 1.4; }
   height: 100%;
   min-height: 0;
   background: var(--color-bg-surface);
+}
+
+/* ===== Wiki Link Decorations ===== */
+.wiki-link {
+  color: var(--color-primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+  transition: opacity var(--transition-fast);
+}
+
+.wiki-link:hover {
+  opacity: 0.8;
+}
+
+.wiki-link-unresolved {
+  color: var(--color-text-muted);
+  text-decoration-style: dashed;
+  text-underline-offset: 2px;
+}
+
+.wiki-link-ambiguous {
+  color: var(--color-file-json);
+  text-decoration-style: wavy;
+  text-underline-offset: 2px;
+}
+
+/* ===== Outline Tabs ===== */
+.markdown-outline-tabs {
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-input);
+}
+
+.markdown-outline-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex: 1;
+  justify-content: center;
+  min-height: 26px;
+  padding: 3px 8px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-muted);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.markdown-outline-tab:hover {
+  background: var(--color-bg-hover);
+  color: var(--color-text-primary);
+}
+
+.markdown-outline-tab-active {
+  background: var(--color-bg-active);
+  color: var(--color-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ===== Backlinks Panel ===== */
+.backlinks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow-y: auto;
+}
+
+.backlinks-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 24px 8px;
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+
+.backlinks-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.backlinks-section-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  min-height: 28px;
+  padding: 4px 8px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  text-align: left;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.backlinks-section-header:hover {
+  background: var(--color-bg-hover);
+  color: var(--color-text-primary);
+}
+
+.backlinks-section-title {
+  flex: 1;
+}
+
+.backlinks-section-count {
+  font-size: 10px;
+  color: var(--color-text-muted);
+  background: var(--color-bg-input);
+  border-radius: 999px;
+  padding: 1px 6px;
+  min-width: 18px;
+  text-align: center;
+}
+
+.backlinks-section-body {
+  display: grid;
+  gap: 1px;
+}
+
+.backlinks-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  min-height: 28px;
+  padding: 4px 8px 4px 20px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.35;
+  text-align: left;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.backlinks-item:hover {
+  background: var(--color-bg-hover);
+  color: var(--color-text-primary);
+}
+
+.backlinks-item-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.backlinks-item-alias {
+  color: var(--color-text-muted);
+  font-size: 11px;
+  font-style: italic;
+  white-space: nowrap;
+}
+
+.backlinks-item-line {
+  color: var(--color-text-muted);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+.backlinks-item-heading {
+  color: var(--color-text-muted);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.backlinks-item-status {
+  font-size: 10px;
+  color: var(--color-danger);
+  flex-shrink: 0;
+}
+
+.backlinks-item-muted {
+  color: var(--color-text-muted);
+}
+
+.backlinks-item-unresolved {
+  cursor: default;
+}
+
+.backlinks-item-create {
+  color: var(--color-primary);
+}
+
+.backlinks-item-create:hover {
+  color: var(--color-primary-hover);
+}
+
+.backlinks-item-action {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--color-primary);
+  flex-shrink: 0;
 }
 
 /* ===== Mermaid Editor ===== */

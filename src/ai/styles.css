@@ -52,9 +52,20 @@
   -webkit-backdrop-filter: var(--glass-backdrop);
 }
 
+.ai-chat-panel-expanded {
+  top: 0;
+  width: auto;
+  border-left: 1px solid var(--glass-border);
+}
+
 @media (max-width: 720px) {
   .ai-chat-panel {
     width: min(100vw, 460px);
+  }
+
+  .ai-chat-panel-expanded {
+    left: 0;
+    width: auto;
   }
 }
 

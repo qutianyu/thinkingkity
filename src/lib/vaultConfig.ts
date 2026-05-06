@@ -3,6 +3,7 @@ import { createFolder, readFile, writeFile, pathJoin } from "@/lib/tauriCommands
 import { normalizeAiConfig, type AiConfig } from "@/ai";
 import { ensureVaultToolFiles } from "@/ai/tools/toolPolicy";
 import { DEFAULT_SYNC_CONFIG, type SyncConfig } from "@/sync";
+import { normalizeAppFontSizePx } from "@/lib/fontSize";
 
 export const THINKINGKITY_DIR = ".thinkingkity";
 const CONFIG_FILE = "config.json";
@@ -34,6 +35,7 @@ export const ALL_DISPLAY_TYPES = DISPLAY_TYPE_GROUPS.flatMap((g) => g.types);
 export interface VaultConfig {
   language: string;
   mode: VaultMode;
+  font_size_px: number;
   display_type: string[];
   ai: AiConfig;
   sync: SyncConfig;
@@ -117,6 +119,7 @@ function normalizeConfig(value: unknown, defaults: VaultConfig): VaultConfig {
       ? raw.language
       : defaults.language,
     mode: normalizeMode(raw.mode, defaults.mode),
+    font_size_px: normalizeAppFontSizePx(raw.font_size_px, defaults.font_size_px),
     display_type: normalizeDisplayType(raw.display_type, defaults.display_type),
     ai: normalizeAiConfig(raw.ai, defaults.ai),
     sync: normalizeSyncConfig(raw.sync, defaults.sync),

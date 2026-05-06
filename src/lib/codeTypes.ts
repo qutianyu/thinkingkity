@@ -44,14 +44,11 @@ export function expandCodeTypes(): TypeChip[] {
 }
 
 export const DOC_TYPES: TypeChip[] = [
-  { ext: "md", labelKey: "sidebar.newMarkdown", titleKey: "dialog.newMarkdownTitle", descKey: "dialog.newMarkdownDescription" },
-  { ext: "markdown", labelKey: "sidebar.newMarkdown", titleKey: "dialog.newMarkdownTitle", descKey: "dialog.newMarkdownDescription" },
   { ext: "csv", labelKey: "sidebar.newCsv", titleKey: "dialog.newCsvTitle", descKey: "dialog.newCsvDescription" },
   { ext: "json", labelKey: "sidebar.newJson", titleKey: "dialog.newJsonTitle", descKey: "dialog.newJsonDescription" },
   { ext: "yaml", labelKey: "sidebar.newYaml", titleKey: "dialog.newYamlTitle", descKey: "dialog.newYamlDescription" },
   { ext: "yml", labelKey: "sidebar.newYaml", titleKey: "dialog.newYamlTitle", descKey: "dialog.newYamlDescription" },
   { ext: "toml", labelKey: "sidebar.newToml", titleKey: "dialog.newTomlTitle", descKey: "dialog.newTomlDescription" },
-  { ext: "ini", labelKey: "sidebar.newIni", titleKey: "dialog.newIniTitle", descKey: "dialog.newIniDescription" },
   { ext: "conf", labelKey: "sidebar.newConf", titleKey: "dialog.newConfTitle", descKey: "dialog.newConfDescription" },
   { ext: "env", labelKey: "sidebar.newEnv", titleKey: "dialog.newEnvTitle", descKey: "dialog.newEnvDescription" },
   { ext: "properties", labelKey: "sidebar.newProperties", titleKey: "dialog.newPropertiesTitle", descKey: "dialog.newPropertiesDescription" },

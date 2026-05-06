@@ -1,4 +1,13 @@
+---
+title: Todo List
+aliases:
+ - tasks
+ - task-list
+---
+
 # Todo List
+
+Covers both [[project-plan]] milestones and personal items. See [[getting-started#Tips]] for keyboard shortcuts.
 
 ## Work
 
@@ -6,6 +15,7 @@
 - [ ] Review pull request #42
 - [ ] Prepare sprint demo slides
 - [ ] Update API documentation
+- [ ] Test wiki link heading navigation
 
 ## Personal
 

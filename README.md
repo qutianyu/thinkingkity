@@ -9,7 +9,7 @@ A local-first desktop knowledge base built with Tauri v2 and React 19. Open any 
 ## Features
 
 - **Vault-based file management** — Open any local folder, browse with a sidebar tree, drag-and-drop to reorder, search by filename and content.
-- **Rich Markdown editor** — WYSIWYG editing powered by Milkdown, with YAML frontmatter editing and source/code toggle.
+- **Rich Markdown editor** — WYSIWYG editing powered by Milkdown, with YAML frontmatter editing, source/code toggle, and Obsidian-style `[[wiki links]]` with backlinks panel.
 - **Code editor** — CodeMirror 6 with syntax highlighting and autocompletion for 20+ languages: JavaScript, TypeScript, Python, Java, C/C++, Rust, Go, HTML, CSS, SCSS, Sass, Less, XML, Vue, JSON, YAML, TOML, SQL, Lua, R, Groovy, Markdown, and more.
 - **CSV spreadsheet editor** — Handsontable-based grid editor with add/remove row/column, copy/paste, and fill handle.
 - **Mermaid diagram editor** — Split-pane editor with live preview for `.mermaid` files. Edit source code on the left, see rendered diagrams on the right.
@@ -222,6 +222,45 @@ Each vault stores its settings in `<vault>/.thinkingkity/config.json`:
   }
 }
 ```
+
+## Wiki Links & Backlinks
+
+ThinkingKity supports Obsidian-style `[[wiki links]]` for connecting notes. The link index is built automatically from Markdown files and cached at `<vault>/.thinkingkity/link-index.json`.
+
+### Syntax
+
+| Syntax | Meaning | Example |
+|--------|---------|---------|
+| `[[note]]` | Link to a note by name or path | `[[project-plan]]` |
+| `[[folder/note]]` | Link to a note at a specific path | `[[notes/project-plan]]` |
+| `[[note\|alias]]` | Link with display alias | `[[project-plan\|Project Plan]]` |
+| `[[note#heading]]` | Link to a heading within a note | `[[project-plan#Milestones]]` |
+| `[[#heading]]` | Link to a heading in the current note | `[[#TODO]]` |
+
+### How Links Are Resolved
+
+A note can be targeted by multiple names:
+
+1. **Filename** (without extension) — `notes/project-plan.md` can be linked as `[[project-plan]]`
+2. **Relative path** (without extension) — `[[notes/project-plan]]`
+3. **Frontmatter `title`** — `title: Project Plan` allows `[[Project Plan]]`
+4. **Frontmatter `aliases`** — `aliases: [Plan, Roadmap]` allows `[[Plan]]` and `[[Roadmap]]`
+
+When a link target matches multiple files, the note in the same directory takes priority. If ambiguity remains, the link is marked as ambiguous rather than silently picking one.
+
+### Editor
+
+- **Resolved links** appear as clickable links ( blue underline). Click to open the target note.
+- **Unresolved links** appear with a dashed underline. Click to create the missing note.
+- **Ambiguous links** appear with a wavy underline (yellow).
+
+### Backlinks Panel
+
+Open the right panel in the Markdown editor and switch to the **Links** tab to see:
+
+- **Backlinks** — notes that reference the current note
+- **Outgoing Links** — notes referenced by the current note
+- **Unresolved** — targets that don't exist yet (click to create)
 
 ## License
 

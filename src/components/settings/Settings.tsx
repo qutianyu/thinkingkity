@@ -1,13 +1,19 @@
 import { useEffect, useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { X, Plus, Moon, Languages, Eye, EyeOff, ChevronDown, Bot, Loader2, CheckCircle2, XCircle } from "lucide-react";
+import { X, Plus, Moon, Languages, Eye, EyeOff, ChevronDown, Bot, Loader2, CheckCircle2, XCircle, CaseSensitive } from "lucide-react";
 import { useThemeStore } from "@/stores/themeStore";
 import { useVaultStore } from "@/stores/vaultStore";
 import { ensureVaultConfig, writeVaultConfig, ALL_DISPLAY_TYPES, type VaultMode } from "@/lib/vaultConfig";
+import {
+  normalizeAppFontSizePx,
+} from "@/lib/fontSize";
 import { useFileTreeStore } from "@/stores/fileTreeStore";
 import {
   AI_PROVIDER_BASE_URLS,
   DEFAULT_AI_CONFIG,
+  MAX_AI_CONTEXT_COMPACTION_THRESHOLD_KB,
+  MIN_AI_CONTEXT_COMPACTION_THRESHOLD_KB,
+  normalizeAiContextCompactionThresholdKb,
   testAiConnection,
   useAiStore,
   type AiConfig,
@@ -31,21 +37,27 @@ const LANGUAGE_OPTIONS = [
   { value: "es-ES", label: "Español" },
 ];
 
+const FONT_SIZE_OPTIONS = Array.from({ length: 11 }, (_, index) => index + 10);
+
 
 export function Settings({ onClose }: SettingsProps) {
   const { t, i18n } = useTranslation();
   const vaultPath = useVaultStore((s) => s.vaultPath);
   const displayType = useVaultStore((s) => s.displayType);
   const setDisplayType = useVaultStore((s) => s.setDisplayType);
+  const fontSizePx = useVaultStore((s) => s.fontSizePx);
+  const setFontSizePx = useVaultStore((s) => s.setFontSizePx);
   const refreshTree = useFileTreeStore((s) => s.refreshTree);
   const preference = useThemeStore((s) => s.preference);
   const setPreference = useThemeStore((s) => s.setPreference);
   const ai = useAiStore((s) => s.ai);
   const setAi = useAiStore((s) => s.setAi);
   const setProvider = useAiStore((s) => s.setProvider);
+  const setProviderName = useAiStore((s) => s.setProviderName);
   const setBaseUrl = useAiStore((s) => s.setBaseUrl);
   const setApiKey = useAiStore((s) => s.setApiKey);
   const setModel = useAiStore((s) => s.setModel);
+  const setContextCompactionThresholdKb = useAiStore((s) => s.setContextCompactionThresholdKb);
   const [localDisplayType, setLocalDisplayType] = useState<string[]>(displayType);
   const [newExt, setNewExt] = useState("");
   const [displayTypeExpanded, setDisplayTypeExpanded] = useState(false);
@@ -75,6 +87,7 @@ export function Settings({ onClose }: SettingsProps) {
       const current = await ensureVaultConfig(vaultPath, {
         language: i18n.language || "zh-CN",
         mode: preference,
+        font_size_px: fontSizePx,
         display_type: ALL_DISPLAY_TYPES,
         ai: DEFAULT_AI_CONFIG,
         sync: useSyncStore.getState().config,
@@ -93,6 +106,12 @@ export function Settings({ onClose }: SettingsProps) {
   const changeMode = async (mode: VaultMode) => {
     setPreference(mode);
     await saveVaultConfig({ mode });
+  };
+
+  const changeFontSize = async (value: string) => {
+    const nextFontSizePx = normalizeAppFontSizePx(value, fontSizePx);
+    setFontSizePx(nextFontSizePx);
+    await saveVaultConfig({ font_size_px: nextFontSizePx });
   };
 
   const removeExt = useCallback(async (ext: string) => {
@@ -131,6 +150,12 @@ export function Settings({ onClose }: SettingsProps) {
     await saveAiConfig(nextAi);
   };
 
+  const changeProviderName = (provider_name: string) => {
+    setProviderName(provider_name);
+    setTestStatus("idle");
+    setTestMessage("");
+  };
+
   const changeBaseUrl = (base_url: string) => {
     setBaseUrl(base_url);
     setTestStatus("idle");
@@ -147,6 +172,12 @@ export function Settings({ onClose }: SettingsProps) {
     setModel(model);
     setTestStatus("idle");
     setTestMessage("");
+  };
+
+  const changeContextCompactionThresholdKb = (value: string) => {
+    setContextCompactionThresholdKb(
+      normalizeAiContextCompactionThresholdKb(value, ai.context_compaction_threshold_kb),
+    );
   };
 
   const testConnection = async () => {
@@ -235,6 +266,33 @@ export function Settings({ onClose }: SettingsProps) {
             </select>
           </div>
 
+          {/* Font Size */}
+          <div className="settings-card settings-font-size-card">
+            <div className="w-9 h-9 rounded-[var(--radius-md)] bg-[var(--color-accent-bg)] flex items-center justify-center shrink-0">
+              <CaseSensitive size={18} className="text-[var(--color-primary)]" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <h3 className="text-[15px] font-semibold">{t("settings.fontSize")}</h3>
+              <p className="mt-1 text-[12px] leading-5 text-[var(--color-text-muted)]">
+                {t("settings.fontSizeDescription")}
+              </p>
+            </div>
+            <label className="settings-font-size-control">
+              <select
+                value={fontSizePx}
+                onChange={(e) => changeFontSize(e.target.value)}
+                aria-label={t("settings.fontSize")}
+              >
+                {FONT_SIZE_OPTIONS.map((size) => (
+                  <option key={size} value={size}>
+                    {size}
+                  </option>
+                ))}
+              </select>
+              <span>px</span>
+            </label>
+          </div>
+
           {/* Display Types */}
           <div className="settings-card">
             <button
@@ -318,7 +376,7 @@ export function Settings({ onClose }: SettingsProps) {
                 <h3 className="text-[15px] font-semibold">{t("settings.ai")}</h3>
                 {!aiExpanded && (
                   <p className="text-[13px] text-[var(--color-text-muted)] truncate">
-                    {ai.provider === "anthropic" ? "Anthropic" : "OpenAI"}
+                    {ai.provider_name.trim()}
                     {ai.model ? ` · ${ai.model}` : ""}
                   </p>
                 )}
@@ -335,6 +393,18 @@ export function Settings({ onClose }: SettingsProps) {
               <div className="settings-ai-row">
                 <label className="settings-ai-label">
                   {t("settings.aiProvider")}
+                </label>
+                <input
+                  type="text"
+                  value={ai.provider_name}
+                  onChange={(e) => changeProviderName(e.target.value)}
+                  onBlur={() => saveAiConfig()}
+                  className="input-base settings-ai-control"
+                />
+              </div>
+              <div className="settings-ai-row">
+                <label className="settings-ai-label">
+                  {t("settings.aiProtocol")}
                 </label>
                 <select
                   value={ai.provider}
@@ -393,6 +463,21 @@ export function Settings({ onClose }: SettingsProps) {
                   onBlur={() => saveAiConfig()}
                   className="input-base settings-ai-control"
                   placeholder={ai.provider === "anthropic" ? "claude-sonnet-4-20250514" : "gpt-4o"}
+                />
+              </div>
+              <div className="settings-ai-row">
+                <label className="settings-ai-label">
+                  {t("settings.aiContextCompactionThreshold")}
+                </label>
+                <input
+                  type="number"
+                  min={MIN_AI_CONTEXT_COMPACTION_THRESHOLD_KB}
+                  max={MAX_AI_CONTEXT_COMPACTION_THRESHOLD_KB}
+                  step={10}
+                  value={ai.context_compaction_threshold_kb}
+                  onChange={(e) => changeContextCompactionThresholdKb(e.target.value)}
+                  onBlur={() => saveAiConfig()}
+                  className="input-base settings-ai-control"
                 />
               </div>
               <div className="settings-ai-actions">
