@@ -1,9 +1,10 @@
 import { Plugin, PluginKey } from "@milkdown/prose/state";
 import { Decoration, DecorationSet } from "@milkdown/prose/view";
 import { $prose } from "@milkdown/utils";
-import { extractWikiLinks } from "@/md/links/wikiLinkParser";
+import { extractWikiLinks, parseWikiLink } from "@/md/links/wikiLinkParser";
 import { useLinkStore } from "@/md/links/linkStore";
 import { useEditorStore } from "@/stores/editorStore";
+import { wikiLinkNodeName } from "./WikiLinkExtension";
 
 export const wikiLinkPluginKey = new PluginKey("wikiLink");
 
@@ -14,12 +15,32 @@ export function bumpDecorationVersion() {
   decorationVersion++;
 }
 
-function buildDecorationsFromDoc(doc: any): DecorationSet {
-  const decorations: Decoration[] = [];
+function resolveLinkStatus(raw: string): "resolved" | "unresolved" | "ambiguous" | "loading" {
   const currentPath = useEditorStore.getState().activeTabPath;
   const index = useLinkStore.getState().index;
+  if (!currentPath || !index) return "loading";
+
+  const entry = index.files[currentPath];
+  if (!entry) return "unresolved";
+
+  return entry.outgoing.find((ol) => ol.raw === raw)?.status ?? "unresolved";
+}
+
+function buildDecorationsFromDoc(doc: any): DecorationSet {
+  const decorations: Decoration[] = [];
 
   doc.descendants((node: any, pos: number) => {
+    if (node.type?.name === wikiLinkNodeName) {
+      const raw = node.attrs.raw as string;
+      const status = resolveLinkStatus(raw);
+      decorations.push(
+        Decoration.node(pos, pos + node.nodeSize, {
+          class: `wiki-link-${status}`,
+        }),
+      );
+      return false;
+    }
+
     if (!node.isText) return;
 
     const links = extractWikiLinks(node.text ?? "", 0);
@@ -30,20 +51,7 @@ function buildDecorationsFromDoc(doc: any): DecorationSet {
       const to = from + link.raw.length;
       if (to > doc.content.size) continue;
 
-      let status = link.status;
-
-      if (index && currentPath) {
-        const fileEntry = index.files[currentPath];
-        if (fileEntry) {
-          const match = fileEntry.outgoing.find(
-            (ol) =>
-              ol.position?.line === link.position?.line &&
-              ol.position?.column === link.position?.column &&
-              ol.raw === link.raw,
-          );
-          if (match) status = match.status;
-        }
-      }
+      const status = resolveLinkStatus(link.raw);
 
       decorations.push(
         Decoration.inline(
@@ -93,12 +101,10 @@ export const wikiLinkPlugin = $prose(() => {
 
           const from = view.posAtDOM(wikiLinkEl, 0);
           const to = view.posAtDOM(wikiLinkEl, wikiLinkEl.childNodes.length);
-          const rawText = view.state.doc.textBetween(from, to);
+          const rawText = (wikiLinkEl as HTMLElement).dataset.raw || view.state.doc.textBetween(from, to);
 
-          const parsed = extractWikiLinks(rawText, 0);
-          if (parsed.length === 0) return true;
-
-          const link = parsed[0];
+          const link = parseWikiLink(rawText);
+          if (!link) return true;
           const linkStore = useLinkStore.getState();
           const editorStore = useEditorStore.getState();
           const currentPath = editorStore.activeTabPath;
@@ -155,4 +161,3 @@ export function refreshWikiLinkDecorations() {
   const tr = _activeView.state.tr.setMeta(wikiLinkPluginKey, { refresh: true });
   _activeView.dispatch(tr);
 }
-

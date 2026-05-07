@@ -20,7 +20,7 @@ fn cors_headers() -> Vec<Header> {
     vec![
         Header::from_str("Access-Control-Allow-Origin: *").unwrap(),
         Header::from_str("Access-Control-Allow-Methods: GET, POST, DELETE, OPTIONS").unwrap(),
-        Header::from_str("Access-Control-Allow-Headers: Content-Type").unwrap(),
+        Header::from_str("Access-Control-Allow-Headers: Content-Type, X-ThinkingKity-Auth").unwrap(),
     ]
 }
 
@@ -111,6 +111,31 @@ fn parse_json_body(request: &mut Request) -> Result<serde_json::Value, String> {
 
 fn read_json_field(val: &serde_json::Value, field: &str) -> Option<String> {
     val.get(field).and_then(|v| v.as_str()).map(|s| s.to_string())
+}
+
+fn auth_token(request: &Request) -> Option<String> {
+    request
+        .headers()
+        .iter()
+        .find(|header| header.field.equiv("X-ThinkingKity-Auth"))
+        .map(|header| header.value.as_str().to_string())
+}
+
+fn requires_auth(method: &Method, path: &str) -> bool {
+    if !path.starts_with("/api/") {
+        return false;
+    }
+
+    !matches!(
+        (method, path),
+        (&Method::Get, "/api/health")
+            | (&Method::Get, "/api/read-login-status")
+            | (&Method::Post, "/api/verify-login")
+    )
+}
+
+fn unauthorized_response() -> Response<std::io::Cursor<Vec<u8>>> {
+    err_json(StatusCode(401), "Authentication required")
 }
 
 // ── route handlers ──
@@ -371,6 +396,29 @@ fn handle_write_global_vaults(request: &mut Request) -> Response<std::io::Cursor
     }
 }
 
+fn handle_verify_login(request: &mut Request) -> Response<std::io::Cursor<Vec<u8>>> {
+    let body = match parse_json_body(request) {
+        Ok(b) => b,
+        Err(e) => return err_json(StatusCode(400), &e),
+    };
+    let username = read_json_field(&body, "username").unwrap_or_default();
+    let password = read_json_field(&body, "password").unwrap_or_default();
+    match global_config::verify_login(username, password) {
+        Ok(result) => ok_json(&serde_json::to_string(&result).unwrap_or_default()),
+        Err(e) => err_json(StatusCode(500), &e),
+    }
+}
+
+fn handle_logout(request: &Request) -> Response<std::io::Cursor<Vec<u8>>> {
+    match auth_token(request) {
+        Some(token) => match global_config::logout(token) {
+            Ok(()) => ok_json(r#"{"ok":true}"#),
+            Err(e) => err_json(StatusCode(500), &e),
+        },
+        None => ok_json(r#"{"ok":true}"#),
+    }
+}
+
 // ── dev proxy ──
 
 fn dev_mode() -> bool {
@@ -491,7 +539,7 @@ fn handle_options() -> Response<std::io::Cursor<Vec<u8>>> {
     let headers = vec![
         Header::from_str("Access-Control-Allow-Origin: *").unwrap(),
         Header::from_str("Access-Control-Allow-Methods: GET, POST, DELETE, OPTIONS").unwrap(),
-        Header::from_str("Access-Control-Allow-Headers: Content-Type").unwrap(),
+        Header::from_str("Access-Control-Allow-Headers: Content-Type, X-ThinkingKity-Auth").unwrap(),
     ];
     Response::new(
         StatusCode(204),
@@ -544,6 +592,20 @@ pub fn start(static_dir: Option<String>) {
             continue;
         }
 
+        if requires_auth(method, &path) {
+            match global_config::is_login_token_valid(auth_token(&request).as_deref()) {
+                Ok(true) => {}
+                Ok(false) => {
+                    let _ = request.respond(unauthorized_response());
+                    continue;
+                }
+                Err(e) => {
+                    let _ = request.respond(err_json(StatusCode(500), &e));
+                    continue;
+                }
+            }
+        }
+
         let response = match (method, path.as_str()) {
             (&Method::Get, "/api/health") => handle_health(),
             (&Method::Get, "/api/read-directory") => handle_read_directory(&url),
@@ -562,6 +624,12 @@ pub fn start(static_dir: Option<String>) {
                     Err(e) => err_json(StatusCode(500), &e),
                 }
             }
+            (&Method::Get, "/api/read-login-status") => {
+                match global_config::read_login_status() {
+                    Ok(status) => ok_json(&serde_json::to_string(&status).unwrap_or_default()),
+                    Err(e) => err_json(StatusCode(500), &e),
+                }
+            }
             (&Method::Post, "/api/write-file") => handle_write_file(&mut request),
             (&Method::Post, "/api/write-file-base64") => {
                 handle_write_file_base64(&mut request)
@@ -575,6 +643,8 @@ pub fn start(static_dir: Option<String>) {
             (&Method::Post, "/api/write-global-vaults") => {
                 handle_write_global_vaults(&mut request)
             }
+            (&Method::Post, "/api/verify-login") => handle_verify_login(&mut request),
+            (&Method::Post, "/api/logout") => handle_logout(&request),
             (&Method::Get, "/api/delete-file") | (&Method::Delete, "/api/delete-file") => {
                 handle_delete_file(&url)
             }

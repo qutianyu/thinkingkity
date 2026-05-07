@@ -30,6 +30,7 @@ import type { Extension } from "@codemirror/state";
 import { Compartment, EditorState } from "@codemirror/state";
 import { useThemeStore } from "@/stores/themeStore";
 import { completionSourceFor } from "@/lib/completions";
+import { wikiLinkCmExtension } from "./WikiLinkCodeMirror";
 
 interface CodeEditorProps {
   content: string;
@@ -90,9 +91,9 @@ function languageExtension(language: string): Extension {
     case "dockerfile":
       return StreamLanguage.define(dockerFile);
     case "markdown":
-      return markdown();
+      return [markdown(), wikiLinkCmExtension()];
     case "mermaid":
-      return markdown();
+      return [markdown(), wikiLinkCmExtension()];
     default:
       return [];
   }

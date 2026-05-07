@@ -12,7 +12,7 @@ import { useFileTreeStore } from "@/stores/fileTreeStore";
 import { useEditorStore } from "@/stores/editorStore";
 import { useLinkStore } from "@/md/links/linkStore";
 
-const AUTO_SAVE_INTERVAL = 5000;
+const AUTO_SAVE_INTERVAL = 3000;
 
 type FileType = "markdown" | "csv" | "json" | "code" | "text" | "image" | "pdf" | "unknown";
 
@@ -235,14 +235,16 @@ export function Layout() {
             </>
           )}
         </span>
-        <SyncButton />
-        <button
-          onClick={() => setShowSettings(true)}
-          className="bottom-settings-button"
-          title="Settings"
-        >
-          <Settings size={13} />
-        </button>
+        <div className="bottom-actions">
+          <SyncButton />
+          <button
+            onClick={() => setShowSettings(true)}
+            className="bottom-settings-button"
+            title="Settings"
+          >
+            <Settings size={13} />
+          </button>
+        </div>
       </div>
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
       <SyncToast />

@@ -4,7 +4,7 @@ import {
   MilkdownProvider,
   useEditor,
 } from "@milkdown/react";
-import { Editor, rootCtx, defaultValueCtx } from "@milkdown/kit/core";
+import { Editor, rootCtx, defaultValueCtx, remarkStringifyOptionsCtx } from "@milkdown/kit/core";
 import { commonmark } from "@milkdown/kit/preset/commonmark";
 import { gfm } from "@milkdown/kit/preset/gfm";
 import { history } from "@milkdown/kit/plugin/history";
@@ -30,6 +30,12 @@ import { ImagePickerModal } from "./ImagePickerModal";
 import { linkClickPlugin } from "./LinkClickPlugin";
 import { wikiLinkPlugin } from "./WikiLinkPlugin";
 import {
+  wikiLinkInputRule,
+  wikiLinkNodeName,
+  wikiLinkRemarkPlugin,
+  wikiLinkSchema,
+} from "./WikiLinkExtension";
+import {
   createImageHtml,
   dirname,
   getFileName,
@@ -39,6 +45,7 @@ import {
   uniqueFileName,
   brToHardbreak,
   hardbreakToBr,
+  normalizeEscapedWikiLinks,
 } from "./markdownUtils";
 import { $prose } from "@milkdown/utils";
 import { copyFile, createFolder, isTauri, readDirectory, readFileBase64, writeFileBase64, pathBasename, pathJoin } from "@/lib/tauriCommands";
@@ -102,6 +109,21 @@ const CODE_LANGUAGES = [
   "bash",
 ];
 
+const TABLE_TOOLBAR_WIDTH = 344;
+const CODE_TOOLBAR_WIDTH = 246;
+const FLOATING_MARGIN = 8;
+
+function clampFloatingToolbarPosition(rect: DOMRect, toolbarWidth: number) {
+  const viewportWidth = window.innerWidth;
+  const maxLeft = Math.max(FLOATING_MARGIN, viewportWidth - toolbarWidth - FLOATING_MARGIN);
+  const left = Math.min(Math.max(FLOATING_MARGIN, rect.left), maxLeft);
+
+  return {
+    top: Math.max(FLOATING_MARGIN, rect.top - 36),
+    left,
+  };
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function findParentNode(view: any, typeName: string) {
   const { from } = view.state.selection;
@@ -126,20 +148,22 @@ function getEditorContext(view: any): EditorContext | null {
   const table = findParentNode(view, "table");
   if (table) {
     const rect = table.el.getBoundingClientRect();
+    const position = clampFloatingToolbarPosition(rect, TABLE_TOOLBAR_WIDTH);
     return {
       type: "table",
-      top: Math.max(8, rect.top - 36),
-      left: Math.max(8, rect.left),
+      top: position.top,
+      left: position.left,
     };
   }
 
   const codeBlock = findParentNode(view, "code_block");
   if (codeBlock) {
     const rect = codeBlock.el.getBoundingClientRect();
+    const position = clampFloatingToolbarPosition(rect, CODE_TOOLBAR_WIDTH);
     return {
       type: "code",
-      top: Math.max(8, rect.top - 36),
-      left: Math.max(8, rect.left),
+      top: position.top,
+      left: position.left,
       pos: codeBlock.pos,
       language: codeBlock.node.attrs.language ?? "",
     };
@@ -503,11 +527,33 @@ function MilkdownEditorInner({ content, onChange }: MilkdownEditorProps) {
     },
   });
 
+  useEffect(() => {
+    const updateFloatingToolbar = () => {
+      const view = viewRef.current;
+      if (!view) return;
+      setEditorContext(getEditorContext(view));
+    };
+
+    window.addEventListener("resize", updateFloatingToolbar);
+    window.addEventListener("orientationchange", updateFloatingToolbar);
+    return () => {
+      window.removeEventListener("resize", updateFloatingToolbar);
+      window.removeEventListener("orientationchange", updateFloatingToolbar);
+    };
+  }, []);
+
   useEditor((root) => {
     return Editor.make()
       .config((ctx) => {
         ctx.set(rootCtx, root);
         ctx.set(defaultValueCtx, brToHardbreak(content));
+        ctx.update(remarkStringifyOptionsCtx, (options) => ({
+          ...options,
+          handlers: {
+            ...options.handlers,
+            [wikiLinkNodeName]: (node: any) => node.value || node.raw || "",
+          },
+        }));
         ctx.update(prismConfig.key, (config) => ({
           ...config,
           configureRefractor: (refractor) => {
@@ -523,13 +569,16 @@ function MilkdownEditorInner({ content, onChange }: MilkdownEditorProps) {
           },
         }));
         ctx.get(listenerCtx).markdownUpdated((_, markdown) => {
-          const cleaned = hardbreakToBr(markdown);
+          const cleaned = normalizeEscapedWikiLinks(hardbreakToBr(markdown));
           onChangeRef.current(cleaned);
         });
       })
       .use(nord as any)
       .use(commonmark)
       .use(gfm)
+      .use(wikiLinkRemarkPlugin)
+      .use(wikiLinkSchema)
+      .use(wikiLinkInputRule)
       .use(history)
       .use(clipboard)
       .use(listener)

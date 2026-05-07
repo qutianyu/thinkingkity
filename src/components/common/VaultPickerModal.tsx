@@ -130,8 +130,7 @@ export function VaultPickerModal({ openVaultPath, onClose }: VaultPickerModalPro
     <>
       <div className="dialog-backdrop fixed inset-0 z-50" onClick={onClose} />
       <div
-        className="prompt-modal fixed left-1/2 top-[12%] -translate-x-1/2 z-50"
-        style={{ width: 460, maxHeight: "80vh", overflow: "auto" }}
+        className="prompt-modal vault-picker-modal fixed left-1/2 top-[12%] -translate-x-1/2 z-50"
         role="dialog" aria-modal="true"
         onKeyDown={handleKeyDown}
       >
@@ -262,7 +261,7 @@ export function VaultPickerModal({ openVaultPath, onClose }: VaultPickerModalPro
                     </span>
                     <span className="text-[11px] text-[var(--color-text-muted)] ml-2">{currentPath}/</span>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="vault-picker-create-row flex items-center gap-2">
                     <input
                       type="text"
                       value={nameValue}

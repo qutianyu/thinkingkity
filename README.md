@@ -18,6 +18,7 @@ A local-first desktop knowledge base built with Tauri v2 and React 19. Open any 
 - **AI agent system** — LangGraph-based multi-step agent that can plan tasks, use tools (fetch URLs, browse web pages with headless Playwright, write markdown documents), and load user-defined skill sets from the vault.
 - **AI document generation** — Generate structured Markdown documents (summaries, proposals, meeting notes, etc.) from chat context, with directory picker, filename suggestion, and live preview before saving.
 - **9 languages** — English, 简体中文, 繁體中文, Français, 한국어, 日本語, Русский, Deutsch, Español.
+- **Optional web login** — Configure a username and password for the web server; leave them empty to keep local/no-login usage.
 - **Dark & light themes** — System-following, with manual override per vault.
 - **Quick switcher** — `Ctrl/Cmd+P` to fuzzy-find and open any file.
 - **Custom file type filters** — Freely add or remove file extensions to control which types appear in the sidebar.
@@ -82,6 +83,15 @@ The build output is located at:
 
 The standalone binary (without installer bundle) is `src-tauri/target/release/thinkingkity`.
 
+### Desktop Compatibility
+
+Desktop packages are configured for systems released in the last three years:
+
+| Platform | Compatibility target | Packaging note |
+|----------|----------------------|----------------|
+| macOS | macOS 14.0+ | `bundle.macOS.minimumSystemVersion` is set to `14.0`. |
+| Windows | Windows 11 23H2+ | Installers require WebView2 `110.0.1531.0` or newer and silently trigger the WebView2 bootstrapper when needed. |
+
 ### Web Server Build
 
 ```bash
@@ -100,6 +110,8 @@ The frontend is embedded into the binary at compile time. Deploy just one file.
 | `THINKINGKITY_PORT` | `19840` | Server listen port |
 | `THINKINGKITY_DEV` | — | Set to `1` in dev mode to proxy frontend to Vite `:1420` |
 
+If `auth.username` and `auth.password` are configured in `~/.thinkingkity/vaults.json`, the web UI shows a login page before the vault picker. Login sessions expire after 48 hours, and protected `/api/*` routes require the issued token. If either field is missing or empty, login is disabled.
+
 ## Global Config
 
 `~/.thinkingkity/vaults.json`:
@@ -112,7 +124,11 @@ The frontend is embedded into the binary at compile time. Deploy just one file.
   ],
   "vaults": [
     "/Users/you/Documents/notes/vault1"
-  ]
+  ],
+  "auth": {
+    "username": "admin",
+    "password": "change-me"
+  }
 }
 ```
 
@@ -120,6 +136,7 @@ The frontend is embedded into the binary at compile time. Deploy just one file.
 |-------|-------------|
 | `allowed_paths` | Whitelist of directories the backend is allowed to access. File operations outside these paths are denied. Demo vault is always allowed. |
 | `vaults` | Recently opened vaults (managed automatically). |
+| `auth` | Optional web login configuration. Login is enabled only when both `username` and `password` are non-empty. Tokens expire after 48 hours. |
 
 ## Project Structure
 

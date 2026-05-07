@@ -18,6 +18,7 @@
 - **AI Agent 系统** — 基于 LangGraph 的多步骤智能体，可规划任务、调用工具（获取 URL 内容、无头浏览器浏览网页、写入 Markdown 文件）、加载用户自定义技能集。
 - **AI 文档生成** — 从对话上下文生成结构化 Markdown 文档（摘要、方案、会议纪要等），可选择目录、编辑文件名、实时预览后保存到 Vault。
 - **9 种语言** — English, 简体中文, 繁體中文, Français, 한국어, 日本語, Русский, Deutsch, Español。
+- **可选 Web 登录** — 可为 Web Server 配置用户名和密码；留空则保持本地免登录使用。
 - **深色/浅色主题** — 跟随系统，也可手动切换，设置按 Vault 保存。
 - **快速切换器** — `Ctrl/Cmd+P` 模糊搜索并打开文件。
 - **自定义文件类型过滤** — 自由添加或移除文件后缀，精确控制侧边栏中显示的文件类型。
@@ -82,6 +83,15 @@ npm run build:desktop
 
 独立二进制文件（不含安装器包装）在 `src-tauri/target/release/thinkingkity`。
 
+### 桌面端兼容性
+
+桌面端安装包按最近三年发布的系统做兼容目标：
+
+| 平台 | 兼容目标 | 打包说明 |
+|------|----------|----------|
+| macOS | macOS 14.0+ | `bundle.macOS.minimumSystemVersion` 设置为 `14.0`。 |
+| Windows | Windows 11 23H2+ | 安装包要求 WebView2 `110.0.1531.0` 或更新版本；低于该版本时会静默触发 WebView2 bootstrapper 更新。 |
+
 ### Web Server 构建
 
 ```bash
@@ -100,6 +110,8 @@ npm run build:web
 | `THINKINGKITY_PORT` | `19840` | Server 监听端口 |
 | `THINKINGKITY_DEV` | — | 设为 `1` 时，前端请求代理到 Vite `:1420`（开发模式） |
 
+如果在 `~/.thinkingkity/vaults.json` 中配置了 `auth.username` 和 `auth.password`，Web UI 会先展示登录页，再进入选择 Vault 页面。登录会话 48 小时后过期，受保护的 `/api/*` 接口需要携带登录后签发的 token。任一字段缺失或为空时，不启用登录。
+
 ## 全局配置
 
 `~/.thinkingkity/vaults.json`：
@@ -112,7 +124,11 @@ npm run build:web
   ],
   "vaults": [
     "/Users/you/Documents/notes/vault1"
-  ]
+  ],
+  "auth": {
+    "username": "admin",
+    "password": "change-me"
+  }
 }
 ```
 
@@ -120,6 +136,7 @@ npm run build:web
 |------|------|
 | `allowed_paths` | 白名单目录列表，后端只允许在这些路径及子目录内进行文件操作。白名单外的路径将被拒绝。Demo Vault 始终允许。 |
 | `vaults` | 最近打开的 Vault 列表（自动管理）。 |
+| `auth` | 可选 Web 登录配置。只有 `username` 和 `password` 都非空时才启用登录；token 48 小时后过期。 |
 
 ## 项目结构
 

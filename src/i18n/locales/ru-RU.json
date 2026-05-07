@@ -2,6 +2,16 @@
 	"app": {
 		"name": "ThinkingKity"
 	},
+	"login": {
+		"title": "Войдите, чтобы продолжить",
+		"description": "Введите настроенные имя пользователя и пароль.",
+		"username": "Имя пользователя",
+		"password": "Пароль",
+		"submit": "Войти",
+		"invalidCredentials": "Неверное имя пользователя или пароль",
+		"failed": "Не удалось войти",
+		"logout": "Выйти"
+	},
 	"sidebar": {
 		"openVault": "Открыть Vault",
 		"newFile": "Новый файл",

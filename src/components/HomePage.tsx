@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { FolderOpen, X } from "lucide-react";
+import { FolderOpen, LogOut, X } from "lucide-react";
 import { useVaultStore } from "@/stores/vaultStore";
 import { useFileTreeStore } from "@/stores/fileTreeStore";
 import { useEditorStore } from "@/stores/editorStore";
@@ -11,7 +11,8 @@ import { pathBasename } from "@/lib/tauriCommands";
 import { ensureVaultConfig, ALL_DISPLAY_TYPES } from "@/lib/vaultConfig";
 import { DEFAULT_APP_FONT_SIZE_PX } from "@/lib/fontSize";
 import { DEFAULT_SYNC_CONFIG, useSyncStore } from "@/sync";
-import { ensureDemoVault } from "@/lib/globalVaults";
+import { ensureDemoVault, logout } from "@/lib/globalVaults";
+import { getAuthToken } from "@/lib/authSession";
 import { VaultPickerModal } from "@/components/common/VaultPickerModal";
 
 export function HomePage() {
@@ -23,8 +24,10 @@ export function HomePage() {
   const setPreference = useThemeStore((s) => s.setPreference);
   const setAi = useAiStore((s) => s.setAi);
   const [showVaultPicker, setShowVaultPicker] = useState(false);
+  const [showLogout, setShowLogout] = useState(false);
 
   useEffect(() => {
+    setShowLogout(Boolean(getAuthToken()));
     ensureDemoVault().then(() => loadRecentVaults());
   }, []);
 
@@ -63,6 +66,16 @@ export function HomePage() {
 
   return (
     <div className="home-shell flex flex-col items-center justify-center h-full bg-[var(--color-bg-app)] select-none px-6">
+      {showLogout && (
+        <button
+          className="home-logout-button"
+          onClick={() => logout()}
+          title={t("login.logout")}
+        >
+          <LogOut size={15} />
+          <span>{t("login.logout")}</span>
+        </button>
+      )}
       <div className="card flex flex-col items-center gap-8 max-w-[560px] w-full">
         {/* Logo & Brand */}
         <div className="flex flex-col items-center gap-3">

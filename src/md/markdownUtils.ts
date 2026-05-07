@@ -175,6 +175,37 @@ export function hardbreakToBr(markdown: string): string {
   return result;
 }
 
+export function normalizeEscapedWikiLinks(markdown: string): string {
+  const parts = markdown.split(/(```[\s\S]*?```|~~~[\s\S]*?~~~)/g);
+  let result = "";
+
+  for (let i = 0; i < parts.length; i++) {
+    if (i % 2 === 1) {
+      result += parts[i];
+      continue;
+    }
+
+    result += normalizeEscapedWikiLinksInText(parts[i]);
+  }
+
+  return result;
+}
+
+function normalizeEscapedWikiLinksInText(markdown: string): string {
+  const parts = markdown.split(/(`+[^`\n]*`+)/g);
+  let result = "";
+
+  for (let i = 0; i < parts.length; i++) {
+    if (i % 2 === 1) {
+      result += parts[i];
+    } else {
+      result += parts[i].replace(/\\?\[\\?\[([\s\S]*?)\\?\]\\?\]/g, "[[$1]]");
+    }
+  }
+
+  return result;
+}
+
 function preserveMarkdownBlankLines(markdown: string): string {
   return markdown.replace(/\n{3,}/g, (match) => {
     const blankLineCount = match.length - 1;

@@ -87,7 +87,10 @@ export function TabBar() {
                   e.stopPropagation();
                   handleClose(tab.path);
                 }}
-                className="p-1 rounded-[var(--radius-sm)] hover:bg-[var(--color-bg-hover)] opacity-0 group-hover:opacity-100 transition-all duration-200 shrink-0"
+                className="tab-close-button"
+                title={t("tab.close")}
+                aria-label={t("tab.close")}
+                type="button"
               >
                 <X size={13} />
               </button>

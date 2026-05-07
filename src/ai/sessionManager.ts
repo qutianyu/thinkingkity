@@ -24,6 +24,16 @@ function createDefaultManager(session: AiSessionData): AiSessionManagerData {
   };
 }
 
+async function readSessionMemoryIfPresent(
+  vaultPath: string,
+  manager: AiSessionManagerData,
+  sessionId: string,
+): Promise<string> {
+  const summary = manager.sessions.find((session) => session.id === sessionId);
+  if (!summary?.memory_updated_at) return "";
+  return readSessionMemory(vaultPath, sessionId);
+}
+
 function normalizeTitle(text: string): string {
   const title = text.replace(/\s+/g, " ").trim();
   if (!title) return "New chat";
@@ -55,7 +65,7 @@ export async function loadAiSessions(vaultPath: string): Promise<LoadedAiSession
   }
 
   const activeSession = await readSession(vaultPath, activeSessionId);
-  const memory = await readSessionMemory(vaultPath, activeSessionId);
+  const memory = await readSessionMemoryIfPresent(vaultPath, manager, activeSessionId);
   manager = {
     ...manager,
     sessions: manager.sessions.map((item) =>
@@ -90,7 +100,7 @@ export async function switchAiSession(
   }
   const manager = { ...loaded.manager, active_session_id: sessionId };
   const activeSession = await readSession(vaultPath, sessionId);
-  const memory = await readSessionMemory(vaultPath, sessionId);
+  const memory = await readSessionMemoryIfPresent(vaultPath, manager, sessionId);
   await writeSessionManager(vaultPath, manager);
   return { manager, activeSession, memory };
 }
@@ -120,7 +130,7 @@ export async function deleteAiSession(
     sessions: remaining,
   };
   const activeSession = await readSession(vaultPath, active_session_id);
-  const memory = await readSessionMemory(vaultPath, active_session_id);
+  const memory = await readSessionMemoryIfPresent(vaultPath, manager, active_session_id);
   await writeSessionManager(vaultPath, manager);
   return { manager, activeSession, memory };
 }

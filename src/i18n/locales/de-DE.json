@@ -2,6 +2,16 @@
 	"app": {
 		"name": "ThinkingKity"
 	},
+	"login": {
+		"title": "Anmelden, um fortzufahren",
+		"description": "Gib den konfigurierten Benutzernamen und das Passwort ein.",
+		"username": "Benutzername",
+		"password": "Passwort",
+		"submit": "Anmelden",
+		"invalidCredentials": "Benutzername oder Passwort ist falsch",
+		"failed": "Anmeldung fehlgeschlagen",
+		"logout": "Abmelden"
+	},
 	"sidebar": {
 		"openVault": "Vault öffnen",
 		"newFile": "Neue Datei",

@@ -1,6 +1,9 @@
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::{Mutex, OnceLock};
+use std::time::{SystemTime, UNIX_EPOCH};
 
 const MAX_VAULTS: usize = 5;
 const APP_DIR: &str = ".thinkingkity";
@@ -8,14 +11,73 @@ const VAULTS_SUBDIR: &str = "vaults";
 const VAULTS_FILE: &str = "vaults.json";
 const DEMO_VAULT_DIR: &str = "demo-vault";
 const LEGACY_TEST_VAULT_DIR: &str = "test-vault";
+const LOGIN_TOKEN_TTL_SECS: u64 = 48 * 60 * 60;
 
 include!("generated_demo_vault.rs");
+
+static LOGIN_SESSIONS: OnceLock<Mutex<std::collections::HashMap<String, u64>>> = OnceLock::new();
+static LOGIN_SESSION_COUNTER: AtomicU64 = AtomicU64::new(1);
 
 #[derive(Debug, Serialize, Deserialize)]
 struct VaultsData {
     #[serde(default)]
     allowed_paths: Vec<String>,
+    #[serde(default)]
     vaults: Vec<String>,
+    #[serde(default)]
+    auth: LoginConfig,
+}
+
+#[derive(Debug, Default, Serialize, Deserialize)]
+pub struct LoginConfig {
+    #[serde(default)]
+    username: String,
+    #[serde(default)]
+    password: String,
+}
+
+#[derive(Debug, Serialize)]
+pub struct LoginStatus {
+    enabled: bool,
+    username: Option<String>,
+}
+
+#[derive(Debug, Serialize)]
+pub struct LoginResult {
+    ok: bool,
+    token: Option<String>,
+}
+
+impl LoginConfig {
+    fn enabled(&self) -> bool {
+        !self.username.trim().is_empty() && !self.password.is_empty()
+    }
+}
+
+fn login_sessions() -> &'static Mutex<std::collections::HashMap<String, u64>> {
+    LOGIN_SESSIONS.get_or_init(|| Mutex::new(std::collections::HashMap::new()))
+}
+
+fn now_secs() -> u64 {
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|d| d.as_secs())
+        .unwrap_or_default()
+}
+
+fn create_login_token(username: &str) -> String {
+    let now = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|d| d.as_nanos())
+        .unwrap_or_default();
+    let counter = LOGIN_SESSION_COUNTER.fetch_add(1, Ordering::Relaxed);
+    format!(
+        "{:x}.{:x}.{:x}.{}",
+        now,
+        std::process::id(),
+        counter,
+        username.len()
+    )
 }
 
 // ── path helpers ──
@@ -88,6 +150,7 @@ fn read_vaults_file() -> Result<VaultsData, String> {
         Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(VaultsData {
             allowed_paths: Vec::new(),
             vaults: Vec::new(),
+            auth: LoginConfig::default(),
         }),
         Err(e) => Err(format!("Failed to read vaults.json: {}", e)),
     }
@@ -183,6 +246,77 @@ pub fn write_global_vaults(vaults: Vec<String>) -> Result<(), String> {
     let mut data = read_vaults_file()?;
     data.vaults = normalize_vaults(vaults);
     write_vaults_file(&data)
+}
+
+#[tauri::command]
+pub fn read_login_status() -> Result<LoginStatus, String> {
+    let data = read_vaults_file()?;
+    let enabled = data.auth.enabled();
+    Ok(LoginStatus {
+        enabled,
+        username: if enabled { Some(data.auth.username.clone()) } else { None },
+    })
+}
+
+pub fn is_login_token_valid(token: Option<&str>) -> Result<bool, String> {
+    let data = read_vaults_file()?;
+    if !data.auth.enabled() {
+        return Ok(true);
+    }
+
+    let Some(token) = token else {
+        return Ok(false);
+    };
+    if token.trim().is_empty() {
+        return Ok(false);
+    }
+
+    let now = now_secs();
+    let mut sessions = login_sessions()
+        .lock()
+        .map_err(|_| "Login session lock is poisoned.".to_string())?;
+    sessions.retain(|_, expires_at| *expires_at > now);
+    Ok(sessions.get(token).is_some_and(|expires_at| *expires_at > now))
+}
+
+#[tauri::command]
+pub fn verify_login(username: String, password: String) -> Result<LoginResult, String> {
+    let data = read_vaults_file()?;
+    if !data.auth.enabled() {
+        return Ok(LoginResult {
+            ok: true,
+            token: None,
+        });
+    }
+
+    let ok = username == data.auth.username && password == data.auth.password;
+    if !ok {
+        return Ok(LoginResult {
+            ok: false,
+            token: None,
+        });
+    }
+
+    let token = create_login_token(&username);
+    let expires_at = now_secs().saturating_add(LOGIN_TOKEN_TTL_SECS);
+    login_sessions()
+        .lock()
+        .map_err(|_| "Login session lock is poisoned.".to_string())?
+        .insert(token.clone(), expires_at);
+
+    Ok(LoginResult {
+        ok: true,
+        token: Some(token),
+    })
+}
+
+#[tauri::command]
+pub fn logout(token: String) -> Result<(), String> {
+    login_sessions()
+        .lock()
+        .map_err(|_| "Login session lock is poisoned.".to_string())?
+        .remove(&token);
+    Ok(())
 }
 
 /// Return the allowed_paths list. Used by the settings UI.

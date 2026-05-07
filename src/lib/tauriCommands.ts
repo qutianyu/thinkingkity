@@ -1,13 +1,18 @@
 import { invoke, convertFileSrc } from "@tauri-apps/api/core";
 import type { FileEntry } from "@/types";
+import { authHeaders, clearAuthTokens } from "@/lib/authSession";
 
 const IS_TAURI = typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
 // Relative paths work in both dev (Vite proxies /api) and production (same origin).
 const SERVER_BASE = IS_TAURI ? "" : "";
 
 async function apiGet(path: string): Promise<Response> {
-  const res = await fetch(`${SERVER_BASE}${path}`);
+  const res = await fetch(`${SERVER_BASE}${path}`, { headers: authHeaders() });
   if (!res.ok) {
+    if (res.status === 401) {
+      clearAuthTokens();
+      window.dispatchEvent(new CustomEvent("thinkingkity-auth-logout"));
+    }
     const body = await res.text();
     let msg = body;
     try { msg = JSON.parse(body).error || body; } catch { /* use raw text */ }
@@ -19,10 +24,14 @@ async function apiGet(path: string): Promise<Response> {
 async function apiPost(path: string, body: Record<string, unknown>): Promise<Response> {
   const res = await fetch(`${SERVER_BASE}${path}`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...authHeaders() },
     body: JSON.stringify(body),
   });
   if (!res.ok) {
+    if (res.status === 401) {
+      clearAuthTokens();
+      window.dispatchEvent(new CustomEvent("thinkingkity-auth-logout"));
+    }
     const text = await res.text();
     let msg = text;
     try { msg = JSON.parse(text).error || text; } catch { /* use raw text */ }
@@ -32,8 +41,12 @@ async function apiPost(path: string, body: Record<string, unknown>): Promise<Res
 }
 
 async function apiDelete(path: string): Promise<Response> {
-  const res = await fetch(`${SERVER_BASE}${path}`, { method: "DELETE" });
+  const res = await fetch(`${SERVER_BASE}${path}`, { method: "DELETE", headers: authHeaders() });
   if (!res.ok) {
+    if (res.status === 401) {
+      clearAuthTokens();
+      window.dispatchEvent(new CustomEvent("thinkingkity-auth-logout"));
+    }
     const text = await res.text();
     let msg = text;
     try { msg = JSON.parse(text).error || text; } catch { /* use raw text */ }
