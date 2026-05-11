@@ -277,6 +277,17 @@ h3 { font-size: 1.25rem; font-weight: 600; line-height: 1.4; }
   color: var(--color-text-primary);
 }
 
+.bottom-settings-button:disabled {
+  color: color-mix(in srgb, var(--color-text-muted) 55%, transparent);
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.bottom-settings-button:disabled:hover {
+  background: transparent;
+  color: color-mix(in srgb, var(--color-text-muted) 55%, transparent);
+}
+
 .bottom-sync-button {
   display: inline-flex;
   align-items: center;
@@ -295,6 +306,17 @@ h3 { font-size: 1.25rem; font-weight: 600; line-height: 1.4; }
 .bottom-sync-button:hover {
   background: var(--color-bg-hover);
   color: var(--color-text-primary);
+}
+
+.bottom-sync-button:disabled {
+  color: color-mix(in srgb, var(--color-text-muted) 55%, transparent);
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.bottom-sync-button:disabled:hover {
+  background: transparent;
+  color: color-mix(in srgb, var(--color-text-muted) 55%, transparent);
 }
 
 .home-shell {
@@ -1524,6 +1546,272 @@ h3 { font-size: 1.25rem; font-weight: 600; line-height: 1.4; }
 .home-logout-button:hover {
   color: var(--color-danger);
   background: var(--color-bg-hover);
+}
+
+/* Recovery Center */
+.recovery-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 45;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(15, 23, 42, 0.28);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.recovery-modal {
+  display: flex;
+  flex-direction: column;
+  width: min(980px, calc(100vw - 48px));
+  max-height: min(760px, calc(100vh - 48px));
+  overflow: hidden;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-surface);
+  box-shadow: var(--shadow-xl);
+}
+
+.recovery-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--color-border-light);
+  background: var(--color-bg-app);
+}
+
+.recovery-title {
+  color: var(--color-text-primary);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.recovery-subtitle {
+  margin-top: 2px;
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+
+.recovery-icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.recovery-icon-button:hover {
+  border-color: var(--color-border);
+  background: var(--color-bg-hover);
+  color: var(--color-text-primary);
+}
+
+.recovery-tabs {
+  display: flex;
+  gap: 6px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.recovery-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 30px;
+  padding: 0 10px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.recovery-tab:hover,
+.recovery-tab-active {
+  border-color: var(--color-border);
+  background: var(--color-bg-hover);
+  color: var(--color-text-primary);
+}
+
+.recovery-body {
+  min-height: 0;
+  overflow: auto;
+  padding: 12px;
+}
+
+.recovery-history-layout {
+  display: grid;
+  grid-template-columns: minmax(260px, 340px) minmax(0, 1fr);
+  gap: 12px;
+}
+
+.recovery-list,
+.recovery-preview-pane,
+.recovery-trash-list {
+  min-height: 0;
+}
+
+.recovery-list {
+  overflow: auto;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+}
+
+.recovery-list-item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: 100%;
+  padding: 10px 11px;
+  border: 0;
+  border-bottom: 1px solid var(--color-border-light);
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.recovery-list-item:last-child {
+  border-bottom: 0;
+}
+
+.recovery-list-item:hover,
+.recovery-list-item-active {
+  background: var(--color-bg-hover);
+  color: var(--color-text-primary);
+}
+
+.recovery-list-title {
+  color: var(--color-text-primary);
+  font-size: 13px;
+  font-weight: 650;
+  line-height: 1.35;
+}
+
+.recovery-list-meta {
+  color: var(--color-text-muted);
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.recovery-preview-pane {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.recovery-preview-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 8px;
+  border-bottom: 1px solid var(--color-border-light);
+  background: var(--color-bg-app);
+}
+
+.recovery-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 30px;
+  padding: 0 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-surface);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.recovery-button:hover:not(:disabled) {
+  background: var(--color-bg-hover);
+  color: var(--color-text-primary);
+}
+
+.recovery-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.recovery-button-primary {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: white;
+}
+
+.recovery-button-danger {
+  border-color: color-mix(in srgb, var(--color-danger) 42%, var(--color-border));
+  color: var(--color-danger);
+}
+
+.recovery-preview {
+  flex: 1;
+  min-height: 360px;
+  overflow: auto;
+  margin: 0;
+  padding: 12px;
+  background: var(--color-bg-surface);
+  color: var(--color-text-primary);
+  font-family: "SF Mono", "Fira Code", "Fira Mono", ui-monospace, monospace;
+  font-size: 12px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.recovery-empty {
+  padding: 28px;
+  color: var(--color-text-muted);
+  font-size: 13px;
+  text-align: center;
+}
+
+.recovery-trash-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.recovery-trash-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-surface);
+}
+
+.recovery-trash-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 3px;
+}
+
+.recovery-trash-actions {
+  display: flex;
+  flex-shrink: 0;
+  gap: 8px;
 }
 
 /* ===== Wiki Link Decorations ===== */

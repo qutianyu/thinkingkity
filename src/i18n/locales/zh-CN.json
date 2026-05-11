@@ -55,6 +55,28 @@
 		"expand": "展开侧边栏",
 		"removeRecent": "移除"
 	},
+	"recovery": {
+		"title": "恢复中心",
+		"subtitle": "快照和已删除文件",
+		"historyFor": "{{name}} 的历史",
+		"fileHistory": "文件历史",
+		"deletedFiles": "已删除文件",
+		"loading": "加载中...",
+		"noSnapshots": "还没有快照。",
+		"openFile": "打开文件",
+		"restore": "恢复",
+		"delete": "删除",
+		"selectSnapshot": "选择一个快照预览。",
+		"trashEmpty": "回收站为空。",
+		"deletedAt": "删除于 {{time}}",
+		"folder": "文件夹",
+		"restoreSnapshotTitle": "恢复快照",
+		"restoreSnapshotDescription": "将 {{path}} 恢复到这个保存版本？该文件更新的快照会被删除。",
+		"deletePermanentlyTitle": "永久删除",
+		"deletePermanentlyDescription": "永久删除 {{path}}？此操作无法撤销。",
+		"reasonManualSave": "手动保存",
+		"reasonBeforeRestore": "恢复前"
+	},
 	"editor": {
 		"save": "保存",
 		"noFileOpen": "未打开文件，从左侧选择或创建笔记",
@@ -289,7 +311,10 @@
 		"testConnection": "测试连接",
 		"testSuccess": "连接成功",
 		"testFailed": "连接失败",
-		"initGit": "初始化仓库"
+		"initGit": "初始化仓库",
+		"syncNow": "立即同步",
+		"statusError": "同步失败",
+		"notConfigured": "未配置同步"
 	},
 	"imagePicker": {
 		"title": "选择图片",
@@ -310,5 +335,14 @@
 		"namePlaceholder": "Vault 名称",
 		"or": "或者",
 		"refresh": "刷新"
+	},
+	"hoverPreview": {
+		"resolved": "已解析",
+		"unresolved": "未创建",
+		"ambiguous": "有歧义",
+		"loading": "加载中...",
+		"lines": "行",
+		"openFile": "打开文件",
+		"createFile": "创建文件"
 	}
 }

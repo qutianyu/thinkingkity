@@ -38,6 +38,28 @@
 		"expand": "Развернуть боковую панель",
 		"removeRecent": "Удалить"
 	},
+	"recovery": {
+		"title": "Центр восстановления",
+		"subtitle": "Снимки и удаленные файлы",
+		"historyFor": "История {{name}}",
+		"fileHistory": "История файла",
+		"deletedFiles": "Удаленные файлы",
+		"loading": "Загрузка...",
+		"noSnapshots": "Снимков пока нет.",
+		"openFile": "Открыть файл",
+		"restore": "Восстановить",
+		"delete": "Удалить",
+		"selectSnapshot": "Выберите снимок для предпросмотра.",
+		"trashEmpty": "Корзина пуста.",
+		"deletedAt": "Удалено {{time}}",
+		"folder": "папка",
+		"restoreSnapshotTitle": "Восстановить снимок",
+		"restoreSnapshotDescription": "Восстановить {{path}} до этой сохраненной версии? Более новые снимки этого файла будут удалены.",
+		"deletePermanentlyTitle": "Удалить навсегда",
+		"deletePermanentlyDescription": "Удалить {{path}} навсегда? Это действие нельзя отменить.",
+		"reasonManualSave": "Ручное сохранение",
+		"reasonBeforeRestore": "Перед восстановлением"
+	},
 	"editor": {
 		"save": "Сохранить",
 		"noFileOpen": "Файл не открыт. Выберите или создайте заметку на боковой панели.",
@@ -237,6 +259,18 @@
 		"testConnection": "Test Connection",
 		"testSuccess": "Connection succeeded",
 		"testFailed": "Connection failed",
-		"initGit": "Инициализировать репозиторий"
+		"initGit": "Инициализировать репозиторий",
+		"syncNow": "Синхронизировать сейчас",
+		"statusError": "Ошибка синхронизации",
+		"notConfigured": "Синхронизация не настроена"
+	},
+	"hoverPreview": {
+		"resolved": "Найден",
+		"unresolved": "Не найден",
+		"ambiguous": "Неоднозначно",
+		"loading": "Загрузка...",
+		"lines": "строк",
+		"openFile": "Открыть",
+		"createFile": "Создать"
 	}
 }

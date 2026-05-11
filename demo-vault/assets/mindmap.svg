@@ -33,7 +33,7 @@
   <line x1="385" y1="80" x2="430" y2="50" stroke="#f59e0b" stroke-width="1.5"/>
   <text x="440" y="50" fill="#f59e0b" font-size="9" font-family="monospace">WYSIWYG</text>
   <line x1="385" y1="155" x2="430" y2="125" stroke="#10b981" stroke-width="1.5"/>
-  <text x="440" y="125" fill="#10b981" font-size="9" font-family="monospace">20+ Langs</text>
+  <text x="440" y="125" fill="#10b981" font-size="9" font-family="monospace">Common Langs</text>
   <line x1="385" y1="310" x2="430" y2="310" stroke="#6366f1" stroke-width="1.5"/>
   <text x="440" y="310" fill="#6366f1" font-size="9" font-family="monospace">OpenAI / Anthropic</text>
 </svg>

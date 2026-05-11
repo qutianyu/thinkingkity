@@ -7,7 +7,6 @@ import { FileTree } from "./FileTree";
 import { useFileTreeStore } from "@/stores/fileTreeStore";
 import { useEditorStore } from "@/stores/editorStore";
 import { useVaultStore } from "@/stores/vaultStore";
-import { useFileOperations } from "@/hooks/useFileOperations";
 
 interface SidebarProps {
   collapsed: boolean;
@@ -20,10 +19,10 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const vaultPath = useVaultStore((s) => s.vaultPath);
   const vaultName = useVaultStore((s) => s.vaultName);
   const searchResults = useFileTreeStore((s) => s.searchResults);
+  const refreshTree = useFileTreeStore((s) => s.refreshTree);
   const searchFiles = useFileTreeStore((s) => s.searchFiles);
   const clearSearch = useFileTreeStore((s) => s.clearSearch);
   const openFile = useEditorStore((s) => s.openFile);
-  const { handleNewFile } = useFileOperations();
   const [localQuery, setLocalQuery] = useState("");
 
   useEffect(() => {
@@ -37,6 +36,33 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
     }, 200);
     return () => clearTimeout(timer);
   }, [localQuery, vaultPath, searchFiles, clearSearch]);
+
+  useEffect(() => {
+    if (!vaultPath) return;
+
+    let disposed = false;
+    let refreshing = false;
+    const refreshSidebar = async () => {
+      if (refreshing || disposed) return;
+      refreshing = true;
+      try {
+        const query = localQuery.trim();
+        if (query) {
+          await searchFiles(vaultPath, query);
+        } else {
+          await refreshTree(vaultPath);
+        }
+      } finally {
+        refreshing = false;
+      }
+    };
+
+    const interval = window.setInterval(refreshSidebar, 10_000);
+    return () => {
+      disposed = true;
+      window.clearInterval(interval);
+    };
+  }, [localQuery, refreshTree, searchFiles, vaultPath]);
 
   const isSearching = localQuery.trim().length > 0;
   const renderSnippet = (snippet: string) => {

@@ -38,6 +38,28 @@
 		"expand": "サイドバーを展開",
 		"removeRecent": "削除"
 	},
+	"recovery": {
+		"title": "復元センター",
+		"subtitle": "スナップショットと削除済みファイル",
+		"historyFor": "{{name}} の履歴",
+		"fileHistory": "ファイル履歴",
+		"deletedFiles": "削除済みファイル",
+		"loading": "読み込み中...",
+		"noSnapshots": "スナップショットはまだありません。",
+		"openFile": "ファイルを開く",
+		"restore": "復元",
+		"delete": "削除",
+		"selectSnapshot": "プレビューするスナップショットを選択してください。",
+		"trashEmpty": "ゴミ箱は空です。",
+		"deletedAt": "{{time}} に削除",
+		"folder": "フォルダー",
+		"restoreSnapshotTitle": "スナップショットを復元",
+		"restoreSnapshotDescription": "{{path}} をこの保存済みバージョンに復元しますか？このファイルの新しいスナップショットは削除されます。",
+		"deletePermanentlyTitle": "完全に削除",
+		"deletePermanentlyDescription": "{{path}} を完全に削除しますか？この操作は元に戻せません。",
+		"reasonManualSave": "手動保存",
+		"reasonBeforeRestore": "復元前"
+	},
 	"editor": {
 		"save": "保存",
 		"noFileOpen": "ファイルが開かれていません。サイドバーからノートを選択または作成してください。",
@@ -237,6 +259,18 @@
 		"testConnection": "Test Connection",
 		"testSuccess": "Connection succeeded",
 		"testFailed": "Connection failed",
-		"initGit": "リポジトリを初期化"
+		"initGit": "リポジトリを初期化",
+		"syncNow": "今すぐ同期",
+		"statusError": "同期に失敗しました",
+		"notConfigured": "同期は設定されていません"
+	},
+	"hoverPreview": {
+		"resolved": "解決済み",
+		"unresolved": "見つかりません",
+		"ambiguous": "曖昧",
+		"loading": "読み込み中...",
+		"lines": "行",
+		"openFile": "ファイルを開く",
+		"createFile": "ファイルを作成"
 	}
 }

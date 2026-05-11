@@ -22,6 +22,9 @@ import { properties } from "@codemirror/legacy-modes/mode/properties";
 import { lua } from "@codemirror/legacy-modes/mode/lua";
 import { r } from "@codemirror/legacy-modes/mode/r";
 import { groovy } from "@codemirror/legacy-modes/mode/groovy";
+import { ruby } from "@codemirror/legacy-modes/mode/ruby";
+import { shell } from "@codemirror/legacy-modes/mode/shell";
+import { csharp } from "@codemirror/legacy-modes/mode/clike";
 import { dockerFile } from "@codemirror/legacy-modes/mode/dockerfile";
 import { sass as sassMode } from "@codemirror/legacy-modes/mode/sass";
 import { oneDark } from "@codemirror/theme-one-dark";
@@ -88,6 +91,12 @@ function languageExtension(language: string): Extension {
       return StreamLanguage.define(r);
     case "groovy":
       return StreamLanguage.define(groovy);
+    case "ruby":
+      return StreamLanguage.define(ruby);
+    case "shell":
+      return StreamLanguage.define(shell);
+    case "csharp":
+      return StreamLanguage.define(csharp);
     case "dockerfile":
       return StreamLanguage.define(dockerFile);
     case "markdown":

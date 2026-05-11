@@ -38,6 +38,28 @@
 		"expand": "Seitenleiste ausklappen",
 		"removeRecent": "Entfernen"
 	},
+	"recovery": {
+		"title": "Wiederherstellungszentrum",
+		"subtitle": "Snapshots und gelöschte Dateien",
+		"historyFor": "Verlauf für {{name}}",
+		"fileHistory": "Dateiverlauf",
+		"deletedFiles": "Gelöschte Dateien",
+		"loading": "Wird geladen...",
+		"noSnapshots": "Noch keine Snapshots.",
+		"openFile": "Datei öffnen",
+		"restore": "Wiederherstellen",
+		"delete": "Löschen",
+		"selectSnapshot": "Wählen Sie einen Snapshot zur Vorschau aus.",
+		"trashEmpty": "Der Papierkorb ist leer.",
+		"deletedAt": "Gelöscht {{time}}",
+		"folder": "Ordner",
+		"restoreSnapshotTitle": "Snapshot wiederherstellen",
+		"restoreSnapshotDescription": "{{path}} auf diese gespeicherte Version wiederherstellen? Neuere Snapshots dieser Datei werden gelöscht.",
+		"deletePermanentlyTitle": "Endgültig löschen",
+		"deletePermanentlyDescription": "{{path}} endgültig löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+		"reasonManualSave": "Manuelles Speichern",
+		"reasonBeforeRestore": "Vor Wiederherstellung"
+	},
 	"editor": {
 		"save": "Speichern",
 		"noFileOpen": "Keine Datei geöffnet. Wählen oder erstellen Sie eine Notiz in der Seitenleiste.",
@@ -237,6 +259,18 @@
 		"testConnection": "Test Connection",
 		"testSuccess": "Connection succeeded",
 		"testFailed": "Connection failed",
-		"initGit": "Repository initialisieren"
+		"initGit": "Repository initialisieren",
+		"syncNow": "Jetzt synchronisieren",
+		"statusError": "Synchronisierung fehlgeschlagen",
+		"notConfigured": "Synchronisierung ist nicht konfiguriert"
+	},
+	"hoverPreview": {
+		"resolved": "Aufgelöst",
+		"unresolved": "Nicht gefunden",
+		"ambiguous": "Mehrdeutig",
+		"loading": "Laden...",
+		"lines": "Zeilen",
+		"openFile": "Öffnen",
+		"createFile": "Erstellen"
 	}
 }

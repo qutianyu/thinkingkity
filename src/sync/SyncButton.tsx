@@ -16,7 +16,7 @@ export function SyncButton() {
   const refreshTree = useFileTreeStore((s) => s.refreshTree);
 
   const handleSync = useCallback(async () => {
-    if (!vaultPath || status === "syncing") return;
+    if (!vaultPath || config.method === "none" || status === "syncing") return;
 
     setStatus("syncing");
     try {
@@ -48,15 +48,18 @@ export function SyncButton() {
     }
   }, [vaultPath, status, config, setStatus, showToast, refreshTree]);
 
-  if (config.method === "none") return null;
-
   const syncing = status === "syncing";
+  const disabled = !vaultPath || config.method === "none";
 
   return (
     <button
       onClick={handleSync}
       className="bottom-sync-button"
+      disabled={disabled}
       title={
+        disabled
+          ? t("sync.notConfigured")
+          :
         status === "error"
           ? `${t("sync.statusError")}: ${useSyncStore.getState().statusMessage}`
           : t("sync.syncNow")

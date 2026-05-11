@@ -38,6 +38,28 @@
 		"expand": "Expandir barra lateral",
 		"removeRecent": "Eliminar"
 	},
+	"recovery": {
+		"title": "Centro de recuperación",
+		"subtitle": "Instantáneas y archivos eliminados",
+		"historyFor": "Historial de {{name}}",
+		"fileHistory": "Historial del archivo",
+		"deletedFiles": "Archivos eliminados",
+		"loading": "Cargando...",
+		"noSnapshots": "Aún no hay instantáneas.",
+		"openFile": "Abrir archivo",
+		"restore": "Restaurar",
+		"delete": "Eliminar",
+		"selectSnapshot": "Selecciona una instantánea para previsualizar.",
+		"trashEmpty": "La papelera está vacía.",
+		"deletedAt": "Eliminado {{time}}",
+		"folder": "carpeta",
+		"restoreSnapshotTitle": "Restaurar instantánea",
+		"restoreSnapshotDescription": "¿Restaurar {{path}} a esta versión guardada? Las instantáneas más recientes de este archivo se eliminarán.",
+		"deletePermanentlyTitle": "Eliminar permanentemente",
+		"deletePermanentlyDescription": "¿Eliminar permanentemente {{path}}? Esta acción no se puede deshacer.",
+		"reasonManualSave": "Guardado manual",
+		"reasonBeforeRestore": "Antes de restaurar"
+	},
 	"editor": {
 		"save": "Guardar",
 		"noFileOpen": "No hay ningún archivo abierto. Selecciona o crea una nota desde la barra lateral.",
@@ -237,6 +259,18 @@
 		"testConnection": "Test Connection",
 		"testSuccess": "Connection succeeded",
 		"testFailed": "Connection failed",
-		"initGit": "Inicializar repositorio"
+		"initGit": "Inicializar repositorio",
+		"syncNow": "Sincronizar ahora",
+		"statusError": "Error de sincronización",
+		"notConfigured": "La sincronización no está configurada"
+	},
+	"hoverPreview": {
+		"resolved": "Resuelto",
+		"unresolved": "No encontrado",
+		"ambiguous": "Ambiguo",
+		"loading": "Cargando...",
+		"lines": "líneas",
+		"openFile": "Abrir",
+		"createFile": "Crear"
 	}
 }

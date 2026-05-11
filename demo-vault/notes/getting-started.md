@@ -15,7 +15,7 @@ Welcome to your new knowledge base! ThinkingKity is a **local-first** desktop ap
 ## What You Can Do
 
 - Write notes in **Markdown** with rich editing or source mode
-- Edit **code** with syntax highlighting for 30+ languages
+- Edit **code** with syntax highlighting for common programming and config languages
 - Work with **CSV data** in a spreadsheet-like editor
 - View **images** and **PDFs** directly
 - Chat with an **AI assistant** that can read your vault files

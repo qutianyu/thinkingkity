@@ -305,6 +305,141 @@ fn handle_delete_file(url: &str) -> Response<std::io::Cursor<Vec<u8>>> {
     }
 }
 
+fn handle_create_snapshot(request: &mut Request) -> Response<std::io::Cursor<Vec<u8>>> {
+    let body = match parse_json_body(request) {
+        Ok(b) => b,
+        Err(e) => return err_json(StatusCode(400), &e),
+    };
+    let vault_path = match read_json_field(&body, "vaultPath") {
+        Some(p) => p,
+        None => return err_json(StatusCode(400), "Missing 'vaultPath' field"),
+    };
+    let file_path = match read_json_field(&body, "filePath") {
+        Some(p) => p,
+        None => return err_json(StatusCode(400), "Missing 'filePath' field"),
+    };
+    let reason = read_json_field(&body, "reason").unwrap_or_else(|| "manual-save".to_string());
+    match fs_ops::create_snapshot(&vault_path, &file_path, &reason) {
+        Ok(entry) => ok_json(&serde_json::to_string(&entry).unwrap_or_default()),
+        Err(e) => err_json(StatusCode(500), &e),
+    }
+}
+
+fn handle_list_snapshots(url: &str) -> Response<std::io::Cursor<Vec<u8>>> {
+    let vault_path = match parse_query_param(url, "vaultPath") {
+        Some(p) => p,
+        None => return err_json(StatusCode(400), "Missing 'vaultPath' parameter"),
+    };
+    let file_path = parse_query_param(url, "filePath");
+    match fs_ops::list_snapshots(&vault_path, file_path.as_deref()) {
+        Ok(entries) => ok_json(&serde_json::to_string(&entries).unwrap_or_default()),
+        Err(e) => err_json(StatusCode(500), &e),
+    }
+}
+
+fn handle_read_snapshot(url: &str) -> Response<std::io::Cursor<Vec<u8>>> {
+    let vault_path = match parse_query_param(url, "vaultPath") {
+        Some(p) => p,
+        None => return err_json(StatusCode(400), "Missing 'vaultPath' parameter"),
+    };
+    let snapshot_id = match parse_query_param(url, "snapshotId") {
+        Some(p) => p,
+        None => return err_json(StatusCode(400), "Missing 'snapshotId' parameter"),
+    };
+    match fs_ops::read_snapshot(&vault_path, &snapshot_id) {
+        Ok(content) => ok_text(&content),
+        Err(e) => err_json(StatusCode(500), &e),
+    }
+}
+
+fn handle_restore_snapshot(request: &mut Request) -> Response<std::io::Cursor<Vec<u8>>> {
+    let body = match parse_json_body(request) {
+        Ok(b) => b,
+        Err(e) => return err_json(StatusCode(400), &e),
+    };
+    let vault_path = match read_json_field(&body, "vaultPath") {
+        Some(p) => p,
+        None => return err_json(StatusCode(400), "Missing 'vaultPath' field"),
+    };
+    let snapshot_id = match read_json_field(&body, "snapshotId") {
+        Some(p) => p,
+        None => return err_json(StatusCode(400), "Missing 'snapshotId' field"),
+    };
+    match fs_ops::restore_snapshot(&vault_path, &snapshot_id) {
+        Ok(path) => ok_text(&path),
+        Err(e) => err_json(StatusCode(500), &e),
+    }
+}
+
+fn handle_move_to_trash(request: &mut Request) -> Response<std::io::Cursor<Vec<u8>>> {
+    let body = match parse_json_body(request) {
+        Ok(b) => b,
+        Err(e) => return err_json(StatusCode(400), &e),
+    };
+    let vault_path = match read_json_field(&body, "vaultPath") {
+        Some(p) => p,
+        None => return err_json(StatusCode(400), "Missing 'vaultPath' field"),
+    };
+    let path = match read_json_field(&body, "path") {
+        Some(p) => p,
+        None => return err_json(StatusCode(400), "Missing 'path' field"),
+    };
+    match fs_ops::move_to_trash(&vault_path, &path) {
+        Ok(entry) => ok_json(&serde_json::to_string(&entry).unwrap_or_default()),
+        Err(e) => err_json(StatusCode(500), &e),
+    }
+}
+
+fn handle_list_trash(url: &str) -> Response<std::io::Cursor<Vec<u8>>> {
+    let vault_path = match parse_query_param(url, "vaultPath") {
+        Some(p) => p,
+        None => return err_json(StatusCode(400), "Missing 'vaultPath' parameter"),
+    };
+    match fs_ops::list_trash(&vault_path) {
+        Ok(entries) => ok_json(&serde_json::to_string(&entries).unwrap_or_default()),
+        Err(e) => err_json(StatusCode(500), &e),
+    }
+}
+
+fn handle_restore_trash(request: &mut Request) -> Response<std::io::Cursor<Vec<u8>>> {
+    let body = match parse_json_body(request) {
+        Ok(b) => b,
+        Err(e) => return err_json(StatusCode(400), &e),
+    };
+    let vault_path = match read_json_field(&body, "vaultPath") {
+        Some(p) => p,
+        None => return err_json(StatusCode(400), "Missing 'vaultPath' field"),
+    };
+    let trash_id = match read_json_field(&body, "trashId") {
+        Some(p) => p,
+        None => return err_json(StatusCode(400), "Missing 'trashId' field"),
+    };
+    let target_path = read_json_field(&body, "targetPath");
+    match fs_ops::restore_trash(&vault_path, &trash_id, target_path.as_deref()) {
+        Ok(path) => ok_text(&path),
+        Err(e) => err_json(StatusCode(500), &e),
+    }
+}
+
+fn handle_delete_trash_entry(request: &mut Request) -> Response<std::io::Cursor<Vec<u8>>> {
+    let body = match parse_json_body(request) {
+        Ok(b) => b,
+        Err(e) => return err_json(StatusCode(400), &e),
+    };
+    let vault_path = match read_json_field(&body, "vaultPath") {
+        Some(p) => p,
+        None => return err_json(StatusCode(400), "Missing 'vaultPath' field"),
+    };
+    let trash_id = match read_json_field(&body, "trashId") {
+        Some(p) => p,
+        None => return err_json(StatusCode(400), "Missing 'trashId' field"),
+    };
+    match fs_ops::delete_trash_entry(&vault_path, &trash_id) {
+        Ok(()) => ok_json(r#"{"ok":true}"#),
+        Err(e) => err_json(StatusCode(500), &e),
+    }
+}
+
 fn handle_write_vault_markdown(request: &mut Request) -> Response<std::io::Cursor<Vec<u8>>> {
     let body = match parse_json_body(request) {
         Ok(b) => b,
@@ -612,6 +747,9 @@ pub fn start(static_dir: Option<String>) {
             (&Method::Get, "/api/read-file") => handle_read_file(&url),
             (&Method::Get, "/api/read-file-base64") => handle_read_file_base64(&url),
             (&Method::Get, "/api/get-vault-size") => handle_get_vault_size(&url),
+            (&Method::Get, "/api/list-snapshots") => handle_list_snapshots(&url),
+            (&Method::Get, "/api/read-snapshot") => handle_read_snapshot(&url),
+            (&Method::Get, "/api/list-trash") => handle_list_trash(&url),
             (&Method::Get, "/api/list-vaults") => handle_list_vaults(),
             (&Method::Get, "/api/list-allowed-paths") => handle_list_allowed_paths(),
             (&Method::Get, "/api/ensure-demo-vault") => handle_ensure_demo_vault(),
@@ -638,6 +776,11 @@ pub fn start(static_dir: Option<String>) {
             (&Method::Post, "/api/create-folder") => handle_create_folder(&mut request),
             (&Method::Post, "/api/copy-file") => handle_copy_file(&mut request),
             (&Method::Post, "/api/rename-file") => handle_rename_file(&mut request),
+            (&Method::Post, "/api/create-snapshot") => handle_create_snapshot(&mut request),
+            (&Method::Post, "/api/restore-snapshot") => handle_restore_snapshot(&mut request),
+            (&Method::Post, "/api/move-to-trash") => handle_move_to_trash(&mut request),
+            (&Method::Post, "/api/restore-trash") => handle_restore_trash(&mut request),
+            (&Method::Post, "/api/delete-trash-entry") => handle_delete_trash_entry(&mut request),
             (&Method::Post, "/api/write-vault-markdown") => handle_write_vault_markdown(&mut request),
             (&Method::Post, "/api/browse-page") => handle_browse_page(&mut request),
             (&Method::Post, "/api/write-global-vaults") => {

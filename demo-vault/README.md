@@ -1,7 +1,7 @@
 ---
 title: ThinkingKity Demo Vault
 created: 2026-05-01
-updated: 2026-05-04
+updated: 2026-05-09
 category: demo
 ---
 
@@ -26,7 +26,6 @@ This vault contains sample files across multiple languages and formats to showca
 | File | Language | Mode |
 |------|----------|------|
 | `hello.py` | Python | python |
-| `app.ts` | TypeScript | typescript |
 | `hello.java` | Java | java |
 | `hello.rs` | Rust | rust |
 | `hello.go` | Go | go |
@@ -34,9 +33,9 @@ This vault contains sample files across multiple languages and formats to showca
 | `hello.cpp` | C++ | cpp |
 | `hello.cs` | C# | csharp |
 | `hello.rb` | Ruby | ruby |
-| `hello.php` | PHP | php |
-| `utils.js` | JavaScript | javascript |
-| `style.css` | CSS | css |
+| `hello.lua` | Lua | lua |
+| `hello.r` | R | r |
+| `hello.groovy` | Groovy | groovy |
 | `queries.sql` | SQL | sql |
 | `deploy.sh` | Shell | shell |
 | `example.mermaid` | Mermaid | mermaid |
@@ -46,7 +45,14 @@ This vault contains sample files across multiple languages and formats to showca
 | File | Type | Mode |
 |------|------|------|
 | `App.tsx` | React component | typescript |
+| `app.ts` | TypeScript module | typescript |
+| `utils.js` | JavaScript utilities | javascript |
 | `index.html` | Landing page | html |
+| `style.css` | CSS stylesheet | css |
+| `style.scss` | SCSS stylesheet | scss |
+| `style.sass` | Sass stylesheet | sass |
+| `style.less` | Less stylesheet | less |
+| `hello.vue` | Vue single-file component | vue |
 | `data.xml` | XML document | xml |
 
 ### `data/` — Structured Data & Config
@@ -59,14 +65,12 @@ This vault contains sample files across multiple languages and formats to showca
 | `config.toml` | TOML | CodeMirror toml |
 | `config.ini` | INI | CodeMirror ini |
 | `config.properties` | Properties | CodeMirror properties |
-| `.env.example` | ENV | CodeMirror env |
 
-### `text/` — Plain Text & Logs
+### `text/` — Plain Text
 
 | File | Type | Editor |
 |------|------|--------|
 | `plain.txt` | Notes / scratchpad | CodeMirror text |
-| `server.log` | Log file | CodeMirror text |
 
 ## Editor Types at a Glance
 
@@ -75,6 +79,6 @@ This vault contains sample files across multiple languages and formats to showca
 | `.md` | Milkdown (rich) / CodeMirror (source) | WYSIWYG, frontmatter table, outline, two-way toggle |
 | `.csv` | Handsontable | Grid, sort, add/remove rows & columns |
 | `.mermaid` | Mermaid editor | Live preview, source/preview/split modes |
-| `.json` `.yaml` `.toml` `.ini` `.properties` `.env` | CodeMirror | Syntax highlighting + bracket matching |
-| `.py` `.ts` `.tsx` `.java` `.rs` `.go` `.c` `.cpp` `.cs` `.rb` `.php` `.js` `.sql` `.sh` `.css` `.html` `.xml` | CodeMirror | Syntax highlighting + language autocomplete |
+| `.json` `.yaml` `.toml` `.ini` `.properties` | CodeMirror | Syntax highlighting + bracket matching |
+| `.py` `.ts` `.tsx` `.java` `.rs` `.go` `.c` `.cpp` `.cs` `.rb` `.js` `.sql` `.sh` `.css` `.scss` `.sass` `.less` `.html` `.xml` `.vue` `.lua` `.r` `.groovy` | CodeMirror | Syntax highlighting where a language mode is available |
 | `.txt` `.log` | CodeMirror (plain) | Line numbers, word wrap |

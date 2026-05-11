@@ -3,14 +3,15 @@ import { HotTable } from "@handsontable/react-wrapper";
 import { registerAllModules } from "handsontable/registry";
 import type { CellChange, ChangeSource } from "handsontable/common";
 import Papa from "papaparse";
-import { ArrowLeftRight, Code2, FileText, PanelRightClose, PanelRightOpen, X } from "lucide-react";
+import { ArrowLeftRight, ChevronDown, ChevronRight, Code2, FileText, PanelRightClose, PanelRightOpen, X } from "lucide-react";
 import { AiChatDock } from "@/ai";
+import { MemoDock } from "@/memo";
 import { useEditorStore } from "@/stores/editorStore";
 import { useLinkStore } from "@/md/links/linkStore";
 import { isImageFile, isJsonFile, isPdfFile, isTextFile, isCodeFile, isMarkdownFile, isMermaidFile, getCodeLanguage, pathBasename } from "@/lib/tauriCommands";
 import { CodeEditor } from "./CodeEditor";
 import { MermaidEditor } from "./MermaidEditor";
-import { MilkdownEditor } from "@/md";
+import { MilkdownEditor, LinkHoverPreview } from "@/md";
 import { BacklinksPanel } from "@/md/BacklinksPanel";
 import { UnresolvedLinkDialog } from "@/md/UnresolvedLinkDialog";
 import { TabBar } from "./TabBar";
@@ -173,6 +174,7 @@ export function EditorArea({ sidebarCollapsed = false }: EditorAreaProps) {
   const [mode, setMode] = useState<EditorMode>("rich");
   const [outlineCollapsed, setOutlineCollapsed] = useState(false);
   const [panelTab, setPanelTab] = useState<"outline" | "backlinks">("outline");
+  const [frontmatterCollapsed, setFrontmatterCollapsed] = useState(false);
   const [unresolvedTarget, setUnresolvedTarget] = useState<string | null>(null);
   const activeTabPath = useEditorStore((s) => s.activeTabPath);
   const activeContent = useEditorStore((s) =>
@@ -337,6 +339,7 @@ export function EditorArea({ sidebarCollapsed = false }: EditorAreaProps) {
         <div className="editor-tabs">
           <TabBar />
         </div>
+        <MemoDock sidebarCollapsed={sidebarCollapsed} />
         <AiChatDock sidebarCollapsed={sidebarCollapsed} />
       </div>
       <div className="editor-main flex-1 min-h-0">
@@ -381,49 +384,65 @@ export function EditorArea({ sidebarCollapsed = false }: EditorAreaProps) {
             <>
               {frontmatterFields.length > 0 && (
                 <div className="frontmatter-table" aria-label="Article metadata">
-                  {frontmatterFields.map((field, fieldIndex) => (
-                    <div className="frontmatter-row" key={`${field.key}-${fieldIndex}`}>
-                      <div className="frontmatter-key">{field.key}</div>
-                      <div className="frontmatter-value">
-                        {Array.isArray(field.value) ? (
-                          <div className="frontmatter-list">
-                            {field.value.map((item, itemIndex) => (
-                              <span className="frontmatter-chip" key={itemIndex}>
-                                <input
-                                  className="frontmatter-input frontmatter-chip-input"
-                                  value={item}
-                                  size={Math.max(2, Math.min(24, item.length || 2))}
-                                  onChange={(e) =>
-                                    updateFrontmatterField(
-                                      fieldIndex,
-                                      e.target.value,
-                                      itemIndex,
-                                    )
-                                  }
-                                />
-                                <button
-                                  type="button"
-                                  className="frontmatter-chip-remove"
-                                  onClick={() => removeFrontmatterListItem(fieldIndex, itemIndex)}
-                                  aria-label="Remove item"
-                                >
-                                  <X size={11} />
-                                </button>
-                              </span>
-                            ))}
+                  <button
+                    type="button"
+                    className="frontmatter-header"
+                    onClick={() => setFrontmatterCollapsed((collapsed) => !collapsed)}
+                    aria-expanded={!frontmatterCollapsed}
+                  >
+                    <span className="frontmatter-header-icon" aria-hidden="true">
+                      {frontmatterCollapsed ? <ChevronRight size={15} /> : <ChevronDown size={15} />}
+                    </span>
+                    <span className="frontmatter-header-title">Frontmatter</span>
+                    <span className="frontmatter-header-count">{frontmatterFields.length}</span>
+                  </button>
+                  {!frontmatterCollapsed && (
+                    <div className="frontmatter-body">
+                      {frontmatterFields.map((field, fieldIndex) => (
+                        <div className="frontmatter-row" key={`${field.key}-${fieldIndex}`}>
+                          <div className="frontmatter-key">{field.key}</div>
+                          <div className="frontmatter-value">
+                            {Array.isArray(field.value) ? (
+                              <div className="frontmatter-list">
+                                {field.value.map((item, itemIndex) => (
+                                  <span className="frontmatter-chip" key={itemIndex}>
+                                    <input
+                                      className="frontmatter-input frontmatter-chip-input"
+                                      value={item}
+                                      size={Math.max(2, Math.min(24, item.length || 2))}
+                                      onChange={(e) =>
+                                        updateFrontmatterField(
+                                          fieldIndex,
+                                          e.target.value,
+                                          itemIndex,
+                                        )
+                                      }
+                                    />
+                                    <button
+                                      type="button"
+                                      className="frontmatter-chip-remove"
+                                      onClick={() => removeFrontmatterListItem(fieldIndex, itemIndex)}
+                                      aria-label="Remove item"
+                                    >
+                                      <X size={11} />
+                                    </button>
+                                  </span>
+                                ))}
+                              </div>
+                            ) : (
+                              <input
+                                className="frontmatter-input"
+                                value={field.value}
+                                onChange={(e) =>
+                                  updateFrontmatterField(fieldIndex, e.target.value)
+                                }
+                              />
+                            )}
                           </div>
-                        ) : (
-                          <input
-                            className="frontmatter-input"
-                            value={field.value}
-                            onChange={(e) =>
-                              updateFrontmatterField(fieldIndex, e.target.value)
-                            }
-                          />
-                        )}
-                      </div>
+                        </div>
+                      ))}
                     </div>
-                  ))}
+                  )}
                 </div>
               )}
               <MilkdownEditor
@@ -467,6 +486,7 @@ export function EditorArea({ sidebarCollapsed = false }: EditorAreaProps) {
           }}
         />
       )}
+      <LinkHoverPreview />
     </div>
   );
 }

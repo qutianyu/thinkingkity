@@ -73,6 +73,37 @@ function buildDecorations(view: EditorView): DecorationSet {
   return Decoration.set(decorations, true);
 }
 
+let cmHoverTimer: ReturnType<typeof setTimeout> | null = null;
+let cmActiveHoverEl: HTMLElement | null = null;
+const CM_HOVER_DELAY = 250;
+
+function getCmHoverInfo(raw: string, el: HTMLElement): Record<string, unknown> | null {
+  const link = parseWikiLink(raw);
+  if (!link) return null;
+
+  const linkStore = useLinkStore.getState();
+  const editorStore = useEditorStore.getState();
+  const currentPath = editorStore.activeTabPath;
+
+  if (!currentPath || !linkStore.index) {
+    return { ...link, status: "loading", el };
+  }
+
+  const fileEntry = linkStore.index.files[currentPath];
+  const match = fileEntry?.outgoing.find((ol) => ol.raw === link.raw);
+
+  const rect = el.getBoundingClientRect();
+  return {
+    raw: link.raw,
+    target: link.target,
+    alias: link.alias,
+    heading: link.heading,
+    resolvedPath: match?.resolvedPath,
+    status: match?.status ?? "unresolved",
+    rect: { left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom, width: rect.width, height: rect.height },
+  };
+}
+
 const wikiLinkViewPlugin = ViewPlugin.fromClass(
   class {
     decorations: DecorationSet;
@@ -137,6 +168,46 @@ const wikiLinkViewPlugin = ViewPlugin.fromClass(
         }
 
         return true;
+      },
+      mouseover: (e) => {
+        const target = e.target as HTMLElement;
+        const linkEl = target.closest(".cm-wiki-link-token") as HTMLElement | null;
+        if (!linkEl) return false;
+
+        if (linkEl === cmActiveHoverEl) return false;
+
+        if (cmHoverTimer) {
+          clearTimeout(cmHoverTimer);
+          cmHoverTimer = null;
+        }
+
+        cmActiveHoverEl = linkEl;
+        const rawText = linkEl.getAttribute("data-wiki-link") || "";
+
+        cmHoverTimer = setTimeout(() => {
+          const info = getCmHoverInfo(rawText, linkEl);
+          if (info) {
+            window.dispatchEvent(new CustomEvent("wiki-link-hover", { detail: info }));
+          }
+        }, CM_HOVER_DELAY);
+
+        return false;
+      },
+      mouseout: (e) => {
+        const target = e.target as HTMLElement;
+        const linkEl = target.closest(".cm-wiki-link-token") as HTMLElement | null;
+        if (!linkEl) return false;
+
+        if (linkEl === cmActiveHoverEl) {
+          if (cmHoverTimer) {
+            clearTimeout(cmHoverTimer);
+            cmHoverTimer = null;
+          }
+          cmActiveHoverEl = null;
+          window.dispatchEvent(new CustomEvent("wiki-link-hover-leave"));
+        }
+
+        return false;
       },
     },
   },

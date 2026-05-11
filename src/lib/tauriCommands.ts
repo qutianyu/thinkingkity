@@ -155,6 +155,103 @@ export async function deleteFile(path: string): Promise<void> {
   await apiDelete(`/api/delete-file?path=${encodeURIComponent(path)}`);
 }
 
+export interface SnapshotEntry {
+  id: string;
+  filePath: string;
+  snapshotPath: string;
+  createdAt: string;
+  size: number;
+  reason: string;
+  contentHash: string;
+}
+
+export interface TrashEntry {
+  id: string;
+  originalPath: string;
+  trashPath: string;
+  deletedAt: string;
+  size: number;
+  isDirectory: boolean;
+}
+
+export async function createSnapshot(
+  vaultPath: string,
+  filePath: string,
+  reason = "manual-save",
+): Promise<SnapshotEntry | null> {
+  if (IS_TAURI) {
+    return invoke<SnapshotEntry | null>("create_snapshot", { vaultPath, filePath, reason });
+  }
+  const res = await apiPost("/api/create-snapshot", { vaultPath, filePath, reason });
+  return res.json();
+}
+
+export async function listSnapshots(
+  vaultPath: string,
+  filePath?: string,
+): Promise<SnapshotEntry[]> {
+  if (IS_TAURI) {
+    return invoke<SnapshotEntry[]>("list_snapshots", { vaultPath, filePath: filePath ?? null });
+  }
+  const params = [`vaultPath=${encodeURIComponent(vaultPath)}`];
+  if (filePath) params.push(`filePath=${encodeURIComponent(filePath)}`);
+  const res = await apiGet(`/api/list-snapshots?${params.join("&")}`);
+  return res.json();
+}
+
+export async function readSnapshot(vaultPath: string, snapshotId: string): Promise<string> {
+  if (IS_TAURI) {
+    return invoke<string>("read_snapshot", { vaultPath, snapshotId });
+  }
+  const res = await apiGet(
+    `/api/read-snapshot?vaultPath=${encodeURIComponent(vaultPath)}&snapshotId=${encodeURIComponent(snapshotId)}`,
+  );
+  return res.text();
+}
+
+export async function restoreSnapshot(vaultPath: string, snapshotId: string): Promise<string> {
+  if (IS_TAURI) {
+    return invoke<string>("restore_snapshot", { vaultPath, snapshotId });
+  }
+  const res = await apiPost("/api/restore-snapshot", { vaultPath, snapshotId });
+  return res.text();
+}
+
+export async function moveToTrash(vaultPath: string, path: string): Promise<TrashEntry> {
+  if (IS_TAURI) {
+    return invoke<TrashEntry>("move_to_trash", { vaultPath, path });
+  }
+  const res = await apiPost("/api/move-to-trash", { vaultPath, path });
+  return res.json();
+}
+
+export async function listTrash(vaultPath: string): Promise<TrashEntry[]> {
+  if (IS_TAURI) {
+    return invoke<TrashEntry[]>("list_trash", { vaultPath });
+  }
+  const res = await apiGet(`/api/list-trash?vaultPath=${encodeURIComponent(vaultPath)}`);
+  return res.json();
+}
+
+export async function restoreTrash(
+  vaultPath: string,
+  trashId: string,
+  targetPath?: string,
+): Promise<string> {
+  if (IS_TAURI) {
+    return invoke<string>("restore_trash", { vaultPath, trashId, targetPath: targetPath ?? null });
+  }
+  const res = await apiPost("/api/restore-trash", { vaultPath, trashId, targetPath: targetPath ?? null });
+  return res.text();
+}
+
+export async function deleteTrashEntry(vaultPath: string, trashId: string): Promise<void> {
+  if (IS_TAURI) {
+    return invoke("delete_trash_entry", { vaultPath, trashId });
+  }
+  await apiPost("/api/delete-trash-entry", { vaultPath, trashId });
+}
+
 export function getAssetUrl(filePath: string): string {
   if (!IS_TAURI) return filePath;
   return convertFileSrc(filePath);
@@ -257,7 +354,7 @@ const CODE_EXTENSIONS: Record<string, string> = {
   ".md": "markdown",
   ".log": "text",
   ".env": "text",
-  ".properties": "text",
+  ".properties": "properties",
   ".mermaid": "mermaid",
   ".csv": "csv",
   ".json": "json",

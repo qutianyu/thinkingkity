@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
-import { ChevronRight, Folder, FolderOpen, FileText, FilePlus, FolderPlus, Pencil, Trash2, FileSpreadsheet, Image, File, Code, FolderSearch } from "lucide-react";
+import { ChevronRight, Folder, FolderOpen, FileText, FilePlus, FolderPlus, Pencil, Trash2, FileSpreadsheet, Image, File, Code, FolderSearch, History } from "lucide-react";
 import type { FileEntry } from "@/types";
 import { useFileTreeStore } from "@/stores/fileTreeStore";
 import { useEditorStore } from "@/stores/editorStore";
@@ -9,6 +9,7 @@ import { useFileOperations } from "@/hooks/useFileOperations";
 import { isImageFile, isJsonFile, isPdfFile, isTextFile, isCodeFile, isMarkdownFile, isMermaidFile, revealInExplorer, isTauri } from "@/lib/tauriCommands";
 import { getIconEntry } from "@/lib/fileIcons";
 import { FileTypePicker, CodeTypePicker } from "./FileActions";
+import { RecoveryCenter } from "@/components/recovery/RecoveryCenter";
 
 type DropPosition = "before" | "inside" | "after";
 
@@ -44,6 +45,7 @@ export function FileTreeNode({ entry, depth, dropTarget, onPointerDown }: FileTr
     y: number;
     parentPath: string;
   } | null>(null);
+  const [recoveryFilePath, setRecoveryFilePath] = useState<string | null>(null);
   const isExpanded = expandedPaths.has(entry.path);
   const lowerName = entry.name.toLowerCase();
   const isMd = isMarkdownFile(entry.path);
@@ -260,6 +262,18 @@ export function FileTreeNode({ entry, depth, dropTarget, onPointerDown }: FileTr
               <Pencil size={15} className="text-[var(--color-text-muted)] shrink-0" />
               {t("contextMenu.rename")}
             </button>
+            {!entry.is_dir && (
+              <button
+                className="menu-item"
+                onClick={() => {
+                  setRecoveryFilePath(entry.path);
+                  closeContextMenu();
+                }}
+              >
+                <History size={15} className="text-[var(--color-text-muted)] shrink-0" />
+                {t("recovery.fileHistory")}
+              </button>
+            )}
             {isTauri() && (
             <button
               className="menu-item"
@@ -314,6 +328,14 @@ export function FileTreeNode({ entry, depth, dropTarget, onPointerDown }: FileTr
             handleNewCodeFile(codeTypePicker.parentPath, ext, titleKey, descKey);
             setCodeTypePicker(null);
           }}
+        />,
+        document.body,
+      )}
+
+      {recoveryFilePath && createPortal(
+        <RecoveryCenter
+          filePath={recoveryFilePath}
+          onClose={() => setRecoveryFilePath(null)}
         />,
         document.body,
       )}

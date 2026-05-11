@@ -38,6 +38,28 @@
 		"expand": "사이드바 펼치기",
 		"removeRecent": "삭제"
 	},
+	"recovery": {
+		"title": "복구 센터",
+		"subtitle": "스냅샷 및 삭제된 파일",
+		"historyFor": "{{name}} 기록",
+		"fileHistory": "파일 기록",
+		"deletedFiles": "삭제된 파일",
+		"loading": "불러오는 중...",
+		"noSnapshots": "아직 스냅샷이 없습니다.",
+		"openFile": "파일 열기",
+		"restore": "복원",
+		"delete": "삭제",
+		"selectSnapshot": "미리 볼 스냅샷을 선택하세요.",
+		"trashEmpty": "휴지통이 비어 있습니다.",
+		"deletedAt": "{{time}}에 삭제됨",
+		"folder": "폴더",
+		"restoreSnapshotTitle": "스냅샷 복원",
+		"restoreSnapshotDescription": "{{path}}을(를) 이 저장된 버전으로 복원할까요? 이 파일의 더 최신 스냅샷은 삭제됩니다.",
+		"deletePermanentlyTitle": "영구 삭제",
+		"deletePermanentlyDescription": "{{path}}을(를) 영구 삭제할까요? 이 작업은 되돌릴 수 없습니다.",
+		"reasonManualSave": "수동 저장",
+		"reasonBeforeRestore": "복원 전"
+	},
 	"editor": {
 		"save": "저장",
 		"noFileOpen": "열린 파일이 없습니다. 사이드바에서 노트를 선택하거나 만드세요.",
@@ -237,6 +259,18 @@
 		"testConnection": "Test Connection",
 		"testSuccess": "Connection succeeded",
 		"testFailed": "Connection failed",
-		"initGit": "저장소 초기화"
+		"initGit": "저장소 초기화",
+		"syncNow": "지금 동기화",
+		"statusError": "동기화 실패",
+		"notConfigured": "동기화가 설정되지 않았습니다"
+	},
+	"hoverPreview": {
+		"resolved": "확인됨",
+		"unresolved": "찾을 수 없음",
+		"ambiguous": "모호함",
+		"loading": "로딩 중...",
+		"lines": "행",
+		"openFile": "파일 열기",
+		"createFile": "파일 만들기"
 	}
 }

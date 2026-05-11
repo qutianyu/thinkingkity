@@ -20,6 +20,7 @@ import {
   deleteRow,
   selectedRect,
 } from "@milkdown/prose/tables";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { nord } from "@milkdown/theme-nord";
 import { blockHandlePlugin, setBlockHandleCallbacks } from "./BlockHandlePlugin";
 import { prism, prismConfig } from "@milkdown/plugin-prism";
@@ -28,6 +29,7 @@ import properties from "refractor/properties";
 import { InsertMenu } from "./InsertMenu";
 import { ImagePickerModal } from "./ImagePickerModal";
 import { linkClickPlugin } from "./LinkClickPlugin";
+import { linkHoverPlugin } from "./LinkHoverPlugin";
 import { wikiLinkPlugin } from "./WikiLinkPlugin";
 import {
   wikiLinkInputRule,
@@ -475,6 +477,7 @@ function MilkdownEditorInner({ content, onChange }: MilkdownEditorProps) {
     left: number;
   } | null>(null);
   const [editorContext, setEditorContext] = useState<EditorContext | null>(null);
+  const [contextToolbarCollapsed, setContextToolbarCollapsed] = useState(false);
   const [showImagePicker, setShowImagePicker] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const viewRef = useRef<any>(null);
@@ -585,6 +588,7 @@ function MilkdownEditorInner({ content, onChange }: MilkdownEditorProps) {
       .use(blockHandlePlugin)
       .use(slashCommandPlugin)
       .use(linkClickPlugin)
+      .use(linkHoverPlugin)
       .use(wikiLinkPlugin)
       .use(prism)
       .use(imagePastePlugin);
@@ -770,38 +774,66 @@ function MilkdownEditorInner({ content, onChange }: MilkdownEditorProps) {
     <div ref={editorContainerRef} className="milkdown-editor-wrapper">
       {editorContext?.type === "table" && (
         <div
-          className="md-context-toolbar"
+          className={`md-context-toolbar ${contextToolbarCollapsed ? "md-context-toolbar-collapsed" : ""}`}
           style={{ top: editorContext.top, left: editorContext.left }}
           onMouseDown={(e) => e.preventDefault()}
         >
-          <button type="button" onClick={() => runTableCommand(addRowBeforeSafely)}>Row +</button>
-          <button type="button" onClick={() => runTableCommand(addRowAfter)}>+ Row</button>
-          <button type="button" onClick={() => runTableCommand(deleteRow)}>Row -</button>
-          <span className="md-context-separator" />
-          <button type="button" onClick={() => runTableCommand(addColumnBefore)}>Col +</button>
-          <button type="button" onClick={() => runTableCommand(addColumnAfter)}>+ Col</button>
-          <button type="button" onClick={() => runTableCommand(deleteColumn)}>Col -</button>
+          <button
+            type="button"
+            className="md-context-toggle"
+            aria-label={contextToolbarCollapsed ? "Expand table tools" : "Collapse table tools"}
+            title={contextToolbarCollapsed ? "Expand" : "Collapse"}
+            onClick={() => setContextToolbarCollapsed((collapsed) => !collapsed)}
+          >
+            {contextToolbarCollapsed ? <ChevronRight size={14} strokeWidth={2.2} /> : <ChevronLeft size={14} strokeWidth={2.2} />}
+            <span>{contextToolbarCollapsed ? "Table" : "Collapse"}</span>
+          </button>
+          {!contextToolbarCollapsed && (
+            <>
+              <button type="button" onClick={() => runTableCommand(addRowBeforeSafely)}>Row +</button>
+              <button type="button" onClick={() => runTableCommand(addRowAfter)}>+ Row</button>
+              <button type="button" onClick={() => runTableCommand(deleteRow)}>Row -</button>
+              <span className="md-context-separator" />
+              <button type="button" onClick={() => runTableCommand(addColumnBefore)}>Col +</button>
+              <button type="button" onClick={() => runTableCommand(addColumnAfter)}>+ Col</button>
+              <button type="button" onClick={() => runTableCommand(deleteColumn)}>Col -</button>
+            </>
+          )}
         </div>
       )}
       {editorContext?.type === "code" && (
         <div
-          className="md-context-toolbar"
+          className={`md-context-toolbar ${contextToolbarCollapsed ? "md-context-toolbar-collapsed" : ""}`}
           style={{ top: editorContext.top, left: editorContext.left }}
           onMouseDown={(e) => e.preventDefault()}
         >
-          <select
-            className="md-code-language-select"
-            value={editorContext.language}
-            onMouseDown={(e) => e.stopPropagation()}
-            onChange={(e) => handleCodeLanguageChange(e.target.value)}
+          <button
+            type="button"
+            className="md-context-toggle"
+            aria-label={contextToolbarCollapsed ? "Expand code tools" : "Collapse code tools"}
+            title={contextToolbarCollapsed ? "Expand" : "Collapse"}
+            onClick={() => setContextToolbarCollapsed((collapsed) => !collapsed)}
           >
-            {CODE_LANGUAGES.map((language) => (
-              <option key={language || "plain"} value={language}>
-                {language || "plain text"}
-              </option>
-            ))}
-          </select>
-          <button type="button" onClick={promptCodeLanguage}>Language...</button>
+            {contextToolbarCollapsed ? <ChevronRight size={14} strokeWidth={2.2} /> : <ChevronLeft size={14} strokeWidth={2.2} />}
+            <span>{contextToolbarCollapsed ? "Code" : "Collapse"}</span>
+          </button>
+          {!contextToolbarCollapsed && (
+            <>
+              <select
+                className="md-code-language-select"
+                value={editorContext.language}
+                onMouseDown={(e) => e.stopPropagation()}
+                onChange={(e) => handleCodeLanguageChange(e.target.value)}
+              >
+                {CODE_LANGUAGES.map((language) => (
+                  <option key={language || "plain"} value={language}>
+                    {language || "plain text"}
+                  </option>
+                ))}
+              </select>
+              <button type="button" onClick={promptCodeLanguage}>Language...</button>
+            </>
+          )}
         </div>
       )}
       <Milkdown />

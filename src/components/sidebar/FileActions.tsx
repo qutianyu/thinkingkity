@@ -1,10 +1,9 @@
 import { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { FilePlus, FolderPlus, Plus, Code, Search, X, Table2, FileText, RefreshCw } from "lucide-react";
+import { FilePlus, FolderPlus, Plus, Code, Search, X, Table2, FileText } from "lucide-react";
 import { createPortal } from "react-dom";
 import { useFileOperations } from "@/hooks/useFileOperations";
 import { useVaultStore } from "@/stores/vaultStore";
-import { useFileTreeStore } from "@/stores/fileTreeStore";
 import { expandCodeTypes, DOC_TYPES } from "@/lib/codeTypes";
 import { getIconEntryForExt } from "@/lib/fileIcons";
 
@@ -36,7 +35,6 @@ export function FileActions() {
   const { t } = useTranslation();
   const vaultPath = useVaultStore((s) => s.vaultPath);
   const { handleNewFile, handleNewJsonFile, handleNewCodeFile, handleNewFolder } = useFileOperations();
-  const refreshTree = useFileTreeStore((s) => s.refreshTree);
   const [open, setOpen] = useState(false);
   const [fileTypePicker, setFileTypePicker] = useState<{
     x: number;
@@ -71,14 +69,6 @@ export function FileActions() {
       >
         <Plus size={15} />
       </button>
-      <button
-        onClick={() => vaultPath && refreshTree(vaultPath)}
-        className="new-note-button inline-flex h-8 w-8 items-center justify-center p-0"
-        title="Refresh"
-      >
-        <RefreshCw size={14} />
-      </button>
-
       {open && (
         <div className="context-menu absolute right-0 top-full mt-1.5 z-30 min-w-[200px]">
           <button
@@ -163,6 +153,7 @@ export function FileActions() {
         />,
         document.body,
       )}
+
     </div>
   );
 }

@@ -4,7 +4,7 @@ import {
   createFile,
   createFolder,
   renameFile,
-  deleteFile,
+  moveToTrash,
   writeFile,
   pathBasename,
   pathParentDir,
@@ -171,7 +171,8 @@ export function useFileOperations() {
         variant: "danger",
       });
       if (!confirmed) return;
-      await deleteFile(filePath);
+      if (!vaultPath) return;
+      await moveToTrash(vaultPath, filePath);
       closeTab(filePath);
       if (vaultPath) await refreshTree(vaultPath);
     },

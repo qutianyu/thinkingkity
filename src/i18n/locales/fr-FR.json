@@ -38,6 +38,28 @@
 		"expand": "Développer la barre latérale",
 		"removeRecent": "Supprimer"
 	},
+	"recovery": {
+		"title": "Centre de récupération",
+		"subtitle": "Instantanés et fichiers supprimés",
+		"historyFor": "Historique de {{name}}",
+		"fileHistory": "Historique du fichier",
+		"deletedFiles": "Fichiers supprimés",
+		"loading": "Chargement...",
+		"noSnapshots": "Aucun instantané pour le moment.",
+		"openFile": "Ouvrir le fichier",
+		"restore": "Restaurer",
+		"delete": "Supprimer",
+		"selectSnapshot": "Sélectionnez un instantané à prévisualiser.",
+		"trashEmpty": "La corbeille est vide.",
+		"deletedAt": "Supprimé le {{time}}",
+		"folder": "dossier",
+		"restoreSnapshotTitle": "Restaurer l'instantané",
+		"restoreSnapshotDescription": "Restaurer {{path}} vers cette version enregistrée ? Les instantanés plus récents de ce fichier seront supprimés.",
+		"deletePermanentlyTitle": "Supprimer définitivement",
+		"deletePermanentlyDescription": "Supprimer définitivement {{path}} ? Cette action est irréversible.",
+		"reasonManualSave": "Enregistrement manuel",
+		"reasonBeforeRestore": "Avant restauration"
+	},
 	"editor": {
 		"save": "Enregistrer",
 		"noFileOpen": "Aucun fichier ouvert. Sélectionnez ou créez une note dans la barre latérale.",
@@ -237,6 +259,18 @@
 		"testConnection": "Test Connection",
 		"testSuccess": "Connection succeeded",
 		"testFailed": "Connection failed",
-		"initGit": "Initialiser le dépôt"
+		"initGit": "Initialiser le dépôt",
+		"syncNow": "Synchroniser maintenant",
+		"statusError": "Échec de la synchronisation",
+		"notConfigured": "La synchronisation n'est pas configurée"
+	},
+	"hoverPreview": {
+		"resolved": "Résolu",
+		"unresolved": "Introuvable",
+		"ambiguous": "Ambigu",
+		"loading": "Chargement...",
+		"lines": "lignes",
+		"openFile": "Ouvrir",
+		"createFile": "Créer"
 	}
 }

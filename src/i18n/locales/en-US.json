@@ -55,6 +55,28 @@
 		"expand": "Expand sidebar",
 		"removeRecent": "Remove"
 	},
+	"recovery": {
+		"title": "Recovery Center",
+		"subtitle": "Snapshots and deleted files",
+		"historyFor": "History for {{name}}",
+		"fileHistory": "File History",
+		"deletedFiles": "Deleted Files",
+		"loading": "Loading...",
+		"noSnapshots": "No snapshots yet.",
+		"openFile": "Open file",
+		"restore": "Restore",
+		"delete": "Delete",
+		"selectSnapshot": "Select a snapshot to preview.",
+		"trashEmpty": "Trash is empty.",
+		"deletedAt": "Deleted {{time}}",
+		"folder": "folder",
+		"restoreSnapshotTitle": "Restore snapshot",
+		"restoreSnapshotDescription": "Restore {{path}} to this saved version? Newer snapshots for this file will be deleted.",
+		"deletePermanentlyTitle": "Delete permanently",
+		"deletePermanentlyDescription": "Permanently delete {{path}}? This cannot be undone.",
+		"reasonManualSave": "Manual save",
+		"reasonBeforeRestore": "Before restore"
+	},
 	"editor": {
 		"save": "Save",
 		"noFileOpen": "No file open. Select or create a note from the sidebar.",
@@ -289,7 +311,10 @@
 		"testConnection": "Test Connection",
 		"testSuccess": "Connection succeeded",
 		"testFailed": "Connection failed",
-		"initGit": "Init Repository"
+		"initGit": "Init Repository",
+		"syncNow": "Sync now",
+		"statusError": "Sync failed",
+		"notConfigured": "Sync is not configured"
 	},
 	"imagePicker": {
 		"title": "Pick an image",
@@ -298,17 +323,26 @@
 		"empty": "No images in this folder.",
 		"noWorkspaces": "No workspaces configured."
 	},
-	"vaultPicker": {
+"vaultPicker": {
 		"title": "Open Vault",
-		"step1Desc": "Choose a workspace.",
+		"step1Desc": "Select a workspace.",
 		"loading": "Loading...",
 		"noWorkspaces": "No workspaces configured.",
 		"emptyWorkspace": "This folder is empty.",
 		"useFolder": "Use this folder",
-		"browseInto": "Browse into",
+		"browseInto": "Browse",
 		"createVault": "Create Vault",
 		"namePlaceholder": "Vault name",
 		"or": "or",
 		"refresh": "Refresh"
+	},
+	"hoverPreview": {
+		"resolved": "Resolved",
+		"unresolved": "Not found",
+		"ambiguous": "Ambiguous",
+		"loading": "Loading...",
+		"lines": "lines",
+		"openFile": "Open file",
+		"createFile": "Create file"
 	}
 }

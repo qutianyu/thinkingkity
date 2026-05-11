@@ -38,6 +38,28 @@
 		"expand": "展開側邊欄",
 		"removeRecent": "移除"
 	},
+	"recovery": {
+		"title": "復原中心",
+		"subtitle": "快照和已刪除檔案",
+		"historyFor": "{{name}} 的歷史",
+		"fileHistory": "檔案歷史",
+		"deletedFiles": "已刪除檔案",
+		"loading": "載入中...",
+		"noSnapshots": "尚無快照。",
+		"openFile": "開啟檔案",
+		"restore": "復原",
+		"delete": "刪除",
+		"selectSnapshot": "選擇一個快照以預覽。",
+		"trashEmpty": "回收站是空的。",
+		"deletedAt": "刪除於 {{time}}",
+		"folder": "資料夾",
+		"restoreSnapshotTitle": "復原快照",
+		"restoreSnapshotDescription": "將 {{path}} 復原到這個儲存版本？該檔案較新的快照會被刪除。",
+		"deletePermanentlyTitle": "永久刪除",
+		"deletePermanentlyDescription": "永久刪除 {{path}}？此操作無法復原。",
+		"reasonManualSave": "手動儲存",
+		"reasonBeforeRestore": "復原前"
+	},
 	"editor": {
 		"save": "儲存",
 		"noFileOpen": "未開啟檔案，請從左側選擇或建立筆記",
@@ -237,6 +259,18 @@
 		"testConnection": "Test Connection",
 		"testSuccess": "Connection succeeded",
 		"testFailed": "Connection failed",
-		"initGit": "初始化倉庫"
+		"initGit": "初始化倉庫",
+		"syncNow": "立即同步",
+		"statusError": "同步失敗",
+		"notConfigured": "未設定同步"
+	},
+	"hoverPreview": {
+		"resolved": "已解析",
+		"unresolved": "未建立",
+		"ambiguous": "有歧義",
+		"loading": "載入中...",
+		"lines": "行",
+		"openFile": "開啟檔案",
+		"createFile": "建立檔案"
 	}
 }
