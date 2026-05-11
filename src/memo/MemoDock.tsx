@@ -205,6 +205,36 @@ export function MemoDock({ sidebarCollapsed = false }: MemoDockProps) {
   }, [vaultPath]);
 
   useEffect(() => {
+    if (!vaultPath || items.length === 0) return;
+    let cancelled = false;
+    const missing = items.filter((item) => previewById[item.id] === undefined);
+    if (missing.length === 0) return;
+
+    Promise.all(
+      missing.map(async (item) => {
+        try {
+          return [item.id, await readMemoContent(vaultPath, item)] as const;
+        } catch {
+          return [item.id, ""] as const;
+        }
+      }),
+    ).then((entries) => {
+      if (cancelled) return;
+      setPreviewById((current) => {
+        const next = { ...current };
+        for (const [id, content] of entries) {
+          if (next[id] === undefined) next[id] = content;
+        }
+        return next;
+      });
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [items, previewById, vaultPath]);
+
+  useEffect(() => {
     if (!vaultPath || !selected) {
       setActiveTitle("");
       setActiveContent("");
@@ -497,7 +527,7 @@ export function MemoDock({ sidebarCollapsed = false }: MemoDockProps) {
                           {item.type === "todo"
                             ? todoSummary(previewById[item.id] ?? "")
                             : previewById[item.id]
-                              ? previewById[item.id].replace(/\s+/g, " ").slice(0, 58)
+                              ? previewById[item.id].replace(/\s+/g, " ").slice(0, 120)
                               : "无内容"}
                         </span>
                       </span>
