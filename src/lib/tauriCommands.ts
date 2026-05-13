@@ -79,6 +79,19 @@ export async function readFileBase64(path: string): Promise<string> {
   return res.text();
 }
 
+export async function readFileBytes(path: string): Promise<Uint8Array> {
+  const dataUrl = await readFileBase64(path);
+  const marker = ";base64,";
+  const index = dataUrl.indexOf(marker);
+  if (index === -1) return new Uint8Array();
+  const binary = atob(dataUrl.slice(index + marker.length));
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return bytes;
+}
+
 export async function writeFile(path: string, content: string): Promise<void> {
   if (IS_TAURI) {
     return invoke("write_file", { path, content });

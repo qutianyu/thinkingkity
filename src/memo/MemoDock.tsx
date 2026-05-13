@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
-import { Archive, ArchiveRestore, Check, CheckSquare, Clock, Code2, FileText, Maximize2, Minimize2, Pin, Plus, Sparkles, StickyNote, Trash2, X } from "lucide-react";
+import { Archive, ArchiveRestore, Check, CheckSquare, Clock, Code2, FileText, Pin, Plus, Sparkles, StickyNote, Trash2, X } from "lucide-react";
 import { CodeEditor } from "@/components/editor/CodeEditor";
 import { useVaultStore } from "@/stores/vaultStore";
 import { createMemo, deleteMemo, readMemoContent, readMemoIndex, updateMemo } from "./memoStorage";
@@ -134,7 +134,6 @@ function formatShortDate(value: number): string {
 export function MemoDock({ sidebarCollapsed = false }: MemoDockProps) {
   const vaultPath = useVaultStore((s) => s.vaultPath);
   const [open, setOpen] = useState(false);
-  const [expanded, setExpanded] = useState(false);
   const [items, setItems] = useState<MemoItem[]>([]);
   const [viewTab, setViewTab] = useState<"active" | "archived">("active");
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -397,8 +396,8 @@ export function MemoDock({ sidebarCollapsed = false }: MemoDockProps) {
       </button>
       {open && createPortal(
         <aside
-          className={`memo-panel ${expanded ? "memo-panel-expanded" : ""}`}
-          style={expanded ? { left: sidebarCollapsed ? 56 : 300 } : undefined}
+          className="memo-panel"
+          style={{ left: sidebarCollapsed ? 56 : 300 }}
           aria-label="便签面板"
         >
           <div className="memo-panel-header">
@@ -408,9 +407,6 @@ export function MemoDock({ sidebarCollapsed = false }: MemoDockProps) {
               {saving && <span className="memo-saving">保存中</span>}
             </div>
             <div className="memo-panel-actions">
-              <button type="button" className="memo-icon-button" onClick={() => setExpanded((value) => !value)} title={expanded ? "收起" : "展开"}>
-                {expanded ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
-              </button>
               <button type="button" className="memo-icon-button" onClick={() => setOpen(false)} title="关闭">
                 <X size={15} />
               </button>

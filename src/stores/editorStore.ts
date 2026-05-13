@@ -3,7 +3,6 @@ import type { Tab } from "@/types";
 import {
   readFile,
   writeFile,
-  getAssetUrl,
   readFileBase64,
   isImageFile,
   isPdfFile,
@@ -52,7 +51,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       if (isImageFile(path)) {
         content = await readFileBase64(path);
       } else if (isPdfFile(path)) {
-        content = getAssetUrl(path);
+        content = await readFileBase64(path);
       } else {
         content = await readFile(path);
       }
@@ -83,6 +82,10 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       }
     }
     const newMap = new Map(fileContents);
+    const content = newMap.get(path);
+    if (isPdfFile(path) && content?.startsWith("blob:")) {
+      URL.revokeObjectURL(content);
+    }
     newMap.delete(path);
     const newEditedMap = new Map(lastEditedAt);
     newEditedMap.delete(path);
@@ -98,6 +101,10 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     const newEditedMap = new Map(lastEditedAt);
     for (const tab of tabs) {
       if (tab.path !== path) {
+        const content = newMap.get(tab.path);
+        if (isPdfFile(tab.path) && content?.startsWith("blob:")) {
+          URL.revokeObjectURL(content);
+        }
         newMap.delete(tab.path);
         newEditedMap.delete(tab.path);
       }
@@ -111,6 +118,11 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   },
 
   closeAll: () => {
+    for (const [path, content] of get().fileContents) {
+      if (isPdfFile(path) && content.startsWith("blob:")) {
+        URL.revokeObjectURL(content);
+      }
+    }
     set({
       tabs: [],
       activeTabPath: null,

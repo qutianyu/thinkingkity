@@ -1138,9 +1138,9 @@ h3 { font-size: 1.25rem; font-weight: 600; line-height: 1.4; }
 .settings-font-size-control {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  min-height: 32px;
-  padding: 0 10px;
+  gap: 8px;
+  min-height: 34px;
+  padding: 0 8px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   background: var(--color-bg-input);
@@ -1153,23 +1153,42 @@ h3 { font-size: 1.25rem; font-weight: 600; line-height: 1.4; }
   box-shadow: 0 0 0 3px var(--color-primary-15);
 }
 
-.settings-font-size-control select {
-  width: 46px;
-  min-width: 0;
+.settings-font-size-control button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
   border: 0;
-  outline: none;
+  border-radius: var(--radius-sm);
   background: transparent;
   color: inherit;
-  font: inherit;
-  font-size: 13px;
-  line-height: 1;
   cursor: pointer;
 }
 
+.settings-font-size-control button:hover:not(:disabled) {
+  background: var(--color-bg-hover);
+  color: var(--color-primary);
+}
+
+.settings-font-size-control button:disabled {
+  color: var(--color-text-muted);
+  cursor: default;
+  opacity: 0.45;
+}
+
+.settings-font-size-control input[type="range"] {
+  width: 118px;
+  accent-color: var(--color-primary);
+}
+
 .settings-font-size-control span {
+  min-width: 36px;
   color: var(--color-text-muted);
   font-size: 12px;
   line-height: 1;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
 }
 
 .settings-ai-form {
@@ -2390,43 +2409,6 @@ h3 { font-size: 1.25rem; font-weight: 600; line-height: 1.4; }
 .image-viewer-size {
   color: var(--color-text-muted);
   font-variant-numeric: tabular-nums;
-}
-
-/* ===== PDF Viewer ===== */
-.pdf-viewer {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  min-height: 0;
-  background: var(--color-bg-app);
-}
-
-.pdf-viewer-frame {
-  flex: 1;
-  min-height: 0;
-  width: 100%;
-  border: 0;
-  background: var(--color-bg-surface);
-}
-
-.pdf-viewer-toolbar {
-  display: flex;
-  align-items: center;
-  height: 32px;
-  min-height: 32px;
-  padding: 0 16px;
-  border-top: 1px solid var(--color-border-light);
-  color: var(--color-text-muted);
-  font-size: 12px;
-}
-
-.pdf-viewer-name {
-  min-width: 0;
-  overflow: hidden;
-  color: var(--color-text-secondary);
-  font-weight: 600;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 /* ===== Selection ===== */

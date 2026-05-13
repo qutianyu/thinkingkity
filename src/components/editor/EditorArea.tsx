@@ -6,7 +6,9 @@ import Papa from "papaparse";
 import { ArrowLeftRight, ChevronDown, ChevronRight, Code2, FileText, PanelRightClose, PanelRightOpen, X } from "lucide-react";
 import { AiChatDock } from "@/ai";
 import { MemoDock } from "@/memo";
+import { PdfViewer } from "@/pdf";
 import { useEditorStore } from "@/stores/editorStore";
+import { useVaultStore } from "@/stores/vaultStore";
 import { useLinkStore } from "@/md/links/linkStore";
 import { isImageFile, isJsonFile, isPdfFile, isTextFile, isCodeFile, isMarkdownFile, isMermaidFile, getCodeLanguage, pathBasename } from "@/lib/tauriCommands";
 import { CodeEditor } from "./CodeEditor";
@@ -177,6 +179,7 @@ export function EditorArea({ sidebarCollapsed = false }: EditorAreaProps) {
   const [frontmatterCollapsed, setFrontmatterCollapsed] = useState(false);
   const [unresolvedTarget, setUnresolvedTarget] = useState<string | null>(null);
   const activeTabPath = useEditorStore((s) => s.activeTabPath);
+  const vaultPath = useVaultStore((s) => s.vaultPath);
   const activeContent = useEditorStore((s) =>
     s.activeTabPath ? s.fileContents.get(s.activeTabPath) ?? "" : "",
   );
@@ -379,7 +382,12 @@ export function EditorArea({ sidebarCollapsed = false }: EditorAreaProps) {
           ) : activeTabPath && isImage ? (
             <ImageViewer src={activeContent} filename={pathBasename(activeTabPath)} />
           ) : activeTabPath && isPdf ? (
-            <PdfViewer src={activeContent} filename={pathBasename(activeTabPath)} />
+            <PdfViewer
+              src={activeContent}
+              filename={pathBasename(activeTabPath)}
+              filePath={activeTabPath}
+              vaultPath={vaultPath}
+            />
           ) : activeTabPath && mode === "rich" ? (
             <>
               {frontmatterFields.length > 0 && (
@@ -754,21 +762,6 @@ function ImageViewer({ src, filename }: { src: string; filename: string }) {
             {dimensions.w} x {dimensions.h}
           </span>
         )}
-      </div>
-    </div>
-  );
-}
-
-function PdfViewer({ src, filename }: { src: string; filename: string }) {
-  return (
-    <div className="pdf-viewer">
-      <iframe
-        className="pdf-viewer-frame"
-        src={src}
-        title={filename}
-      />
-      <div className="pdf-viewer-toolbar">
-        <span className="pdf-viewer-name">{filename}</span>
       </div>
     </div>
   );

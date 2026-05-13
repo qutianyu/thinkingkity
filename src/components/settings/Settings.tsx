@@ -1,10 +1,12 @@
 import { useEffect, useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { X, Plus, Moon, Languages, Eye, EyeOff, ChevronDown, Bot, Loader2, CheckCircle2, XCircle, CaseSensitive } from "lucide-react";
+import { X, Plus, Minus, Moon, Languages, Eye, EyeOff, ChevronDown, Bot, Loader2, CheckCircle2, XCircle, CaseSensitive } from "lucide-react";
 import { useThemeStore } from "@/stores/themeStore";
 import { useVaultStore } from "@/stores/vaultStore";
 import { ensureVaultConfig, writeVaultConfig, ALL_DISPLAY_TYPES, type VaultMode } from "@/lib/vaultConfig";
 import {
+  MAX_APP_FONT_SIZE_PX,
+  MIN_APP_FONT_SIZE_PX,
   normalizeAppFontSizePx,
 } from "@/lib/fontSize";
 import { useFileTreeStore } from "@/stores/fileTreeStore";
@@ -36,9 +38,6 @@ const LANGUAGE_OPTIONS = [
   { value: "de-DE", label: "Deutsch" },
   { value: "es-ES", label: "Español" },
 ];
-
-const FONT_SIZE_OPTIONS = Array.from({ length: 11 }, (_, index) => index + 10);
-
 
 export function Settings({ onClose }: SettingsProps) {
   const { t, i18n } = useTranslation();
@@ -108,10 +107,14 @@ export function Settings({ onClose }: SettingsProps) {
     await saveVaultConfig({ mode });
   };
 
-  const changeFontSize = async (value: string) => {
+  const changeFontSize = async (value: number | string) => {
     const nextFontSizePx = normalizeAppFontSizePx(value, fontSizePx);
     setFontSizePx(nextFontSizePx);
     await saveVaultConfig({ font_size_px: nextFontSizePx });
+  };
+
+  const adjustFontSize = (delta: number) => {
+    void changeFontSize(fontSizePx + delta);
   };
 
   const removeExt = useCallback(async (ext: string) => {
@@ -277,20 +280,36 @@ export function Settings({ onClose }: SettingsProps) {
                 {t("settings.fontSizeDescription")}
               </p>
             </div>
-            <label className="settings-font-size-control">
-              <select
+            <div className="settings-font-size-control" aria-label={t("settings.fontSize")}>
+              <button
+                type="button"
+                onClick={() => adjustFontSize(-1)}
+                disabled={fontSizePx <= MIN_APP_FONT_SIZE_PX}
+                title={`${t("settings.fontSize")} - 1`}
+                aria-label={`${t("settings.fontSize")} - 1`}
+              >
+                <Minus size={14} />
+              </button>
+              <input
+                type="range"
+                min={MIN_APP_FONT_SIZE_PX}
+                max={MAX_APP_FONT_SIZE_PX}
+                step={1}
                 value={fontSizePx}
                 onChange={(e) => changeFontSize(e.target.value)}
                 aria-label={t("settings.fontSize")}
+              />
+              <button
+                type="button"
+                onClick={() => adjustFontSize(1)}
+                disabled={fontSizePx >= MAX_APP_FONT_SIZE_PX}
+                title={`${t("settings.fontSize")} + 1`}
+                aria-label={`${t("settings.fontSize")} + 1`}
               >
-                {FONT_SIZE_OPTIONS.map((size) => (
-                  <option key={size} value={size}>
-                    {size}
-                  </option>
-                ))}
-              </select>
-              <span>px</span>
-            </label>
+                <Plus size={14} />
+              </button>
+              <span>{fontSizePx}px</span>
+            </div>
           </div>
 
           {/* Display Types */}
