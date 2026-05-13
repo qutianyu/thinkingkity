@@ -21,7 +21,7 @@
       }
     ],
     "security": {
-      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://api.openai.com https://api.anthropic.com ipc: http://ipc.localhost; img-src 'self' asset: http://asset.localhost https: data: blob:",
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://api.openai.com https://api.anthropic.com ipc: http://ipc.localhost data: blob:; img-src 'self' asset: http://asset.localhost https: data: blob:",
       "assetProtocol": {
         "enable": true,
         "scope": ["$HOME/**/*", "$HOME/**", "$DESKTOP/**/*", "$DOCUMENT/**/*", "$TEMP/**/*"]

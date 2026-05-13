@@ -35,6 +35,16 @@ interface PdfOutlineItem {
 }
 
 async function sourceToBytes(src: string): Promise<Uint8Array> {
+  const base64Marker = ";base64,";
+  const base64Index = src.indexOf(base64Marker);
+  if (src.startsWith("data:") && base64Index !== -1) {
+    const binary = atob(src.slice(base64Index + base64Marker.length));
+    const bytes = new Uint8Array(binary.length);
+    for (let index = 0; index < binary.length; index++) {
+      bytes[index] = binary.charCodeAt(index);
+    }
+    return bytes;
+  }
   return new Uint8Array(await (await fetch(src)).arrayBuffer());
 }
 

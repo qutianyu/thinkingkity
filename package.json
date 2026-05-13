@@ -13,6 +13,7 @@
     "build:web": "npm run build && cargo build --release --manifest-path src-tauri/Cargo.toml --bin thinkingkity-server && cp src-tauri/target/release/thinkingkity-server ./thinkingkity-server",
     "build:desktop": "tauri build",
     "tauri:build": "tauri build",
+    "clean": "node scripts/clean.js",
     "release": "node scripts/release.js",
     "script": "node scripts/release.js",
     "sync-version": "node scripts/sync-version.js",
