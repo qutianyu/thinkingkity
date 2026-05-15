@@ -81,6 +81,8 @@ jobs:
             curl \
             wget \
             file \
+            pkg-config \
+            libglib2.0-dev \
             libwebkit2gtk-4.1-dev \
             libxdo-dev \
             libssl-dev \
