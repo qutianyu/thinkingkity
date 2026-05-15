@@ -99,18 +99,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Import Apple signing certificate
-        if: matrix.platform == 'macos' && env.APPLE_CERTIFICATE != ''
-        run: |
-          KEYCHAIN_PASSWORD="$(uuidgen)"
-          echo "$APPLE_CERTIFICATE" | base64 --decode > certificate.p12
-          security create-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
-          security default-keychain -s build.keychain
-          security unlock-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
-          security import certificate.p12 -k build.keychain -P "$APPLE_CERTIFICATE_PASSWORD" -T /usr/bin/codesign
-          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" build.keychain
-          rm certificate.p12
-
       - name: Build desktop bundle
         run: npm run build:desktop -- ${{ matrix.tauri-args }}
 

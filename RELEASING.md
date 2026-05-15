@@ -45,7 +45,7 @@ Configure these repository secrets before shipping macOS releases publicly:
 | `APPLE_PASSWORD` | App-specific password for that Apple ID |
 | `APPLE_TEAM_ID` | Apple Developer Team ID |
 
-When those secrets are present, the macOS release job imports the certificate before `tauri build`. Tauri then uses the `APPLE_*` environment variables to sign and notarize the generated bundle.
+When those secrets are present, `tauri build` uses the `APPLE_*` environment variables to import the certificate, sign the generated app bundle, and notarize it with Apple.
 
 If those secrets are missing, CI can still produce a DMG for internal smoke testing, but a DMG downloaded from GitHub is expected to be blocked by Gatekeeper on other Macs with messages such as `“ThinkingKity” is damaged and can’t be opened`.
 
