@@ -6,6 +6,9 @@ on:
     tags:
       - "v*"
 
+permissions:
+  contents: write
+
 jobs:
   build:
     name: Build Web
@@ -53,5 +56,11 @@ jobs:
           name: ThinkingKity-web
           path: |
             dist/**
-            thinkingkity-server
+            thinkingkity
           if-no-files-found: error
+
+      - name: Upload Linux web binary
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: thinkingkity

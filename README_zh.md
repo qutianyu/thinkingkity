@@ -123,16 +123,22 @@ npm run build:desktop
 npm run build:web
 
 # 运行 — 单文件部署，无需额外文件
-./thinkingkity-server
+./thinkingkity
 # → http://localhost:19840
+
+# 自定义端口
+./thinkingkity --port 1010
+# → http://localhost:1010
 ```
 
-前端在编译时嵌入到二进制中。部署只需一个文件。
+前端在编译时嵌入到二进制中。部署时只需一个名为 `thinkingkity` 的 Linux 二进制文件。
 
 | 环境变量 | 默认值 | 说明 |
 |----------|--------|------|
 | `THINKINGKITY_PORT` | `19840` | Server 监听端口 |
 | `THINKINGKITY_DEV` | — | 设为 `1` 时，前端请求代理到 Vite `:1420`（开发模式） |
+
+命令行参数 `--port` 的优先级高于 `THINKINGKITY_PORT`。
 
 如果在 `~/.thinkingkity/vaults.json` 中配置了 `auth.username` 和 `auth.password`，Web UI 会先展示登录页，再进入选择 Vault 页面。登录会话 48 小时后过期，受保护的 `/api/*` 接口需要携带登录后签发的 token。任一字段缺失或为空时，不启用登录。
 

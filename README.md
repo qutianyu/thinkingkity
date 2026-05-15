@@ -123,16 +123,22 @@ Desktop packages are configured for systems released in the last three years:
 npm run build:web
 
 # Run — single binary, no extra files needed
-./thinkingkity-server
+./thinkingkity
 # → http://localhost:19840
+
+# Custom port
+./thinkingkity --port 1010
+# → http://localhost:1010
 ```
 
-The frontend is embedded into the binary at compile time. Deploy just one file.
+The frontend is embedded into the binary at compile time. Deploy just one Linux binary named `thinkingkity`.
 
 | Env | Default | Description |
 |-----|---------|-------------|
 | `THINKINGKITY_PORT` | `19840` | Server listen port |
 | `THINKINGKITY_DEV` | — | Set to `1` in dev mode to proxy frontend to Vite `:1420` |
+
+`--port` takes precedence over `THINKINGKITY_PORT`.
 
 If `auth.username` and `auth.password` are configured in `~/.thinkingkity/vaults.json`, the web UI shows a login page before the vault picker. Login sessions expire after 48 hours, and protected `/api/*` routes require the issued token. If either field is missing or empty, login is disabled.
 

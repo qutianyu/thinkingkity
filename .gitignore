@@ -50,4 +50,5 @@ test-results/
 # Debug builds
 *.map
 
-thinkingkity-server
+/thinkingkity
+/thinkingkity-server

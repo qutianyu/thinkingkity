@@ -687,10 +687,11 @@ fn handle_options() -> Response<std::io::Cursor<Vec<u8>>> {
 
 // ── public entry ──
 
-pub fn start(static_dir: Option<String>) {
-    let port = std::env::var("THINKINGKITY_PORT")
+pub fn start(static_dir: Option<String>, port_override: Option<u16>) {
+    let port = port_override
+        .or_else(|| std::env::var("THINKINGKITY_PORT")
         .ok()
-        .and_then(|p| p.parse().ok())
+        .and_then(|p| p.parse().ok()))
         .unwrap_or(DEFAULT_PORT);
 
     let addr = format!("0.0.0.0:{}", port);

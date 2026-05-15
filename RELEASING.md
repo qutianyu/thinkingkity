@@ -7,7 +7,7 @@
 | macOS | Ready | GitHub Release DMG |
 | Linux | Ready | GitHub Release AppImage and deb |
 | Windows | Ready | GitHub Release NSIS and MSI |
-| Web | Ready | Workflow artifact for now |
+| Web | Ready | GitHub Release Linux binary |
 | Android | CI build wired | Workflow artifact until signing is configured |
 
 ## Desktop release flow
@@ -16,7 +16,7 @@
 2. Run `npm run release -- X.Y.Z`.
 3. The release script updates version files, creates a `Release vX.Y.Z` commit, creates tag `vX.Y.Z`, then pushes the commit and tag.
 4. Pushing the tag starts `.github/workflows/desktop-release.yml`, `.github/workflows/android-build.yml`, and `.github/workflows/web-build.yml`.
-5. Desktop bundles are attached to the GitHub Release for the pushed tag, then `latest.json` is generated and attached to the same release as the update manifest. Workflow artifacts are also kept on the Actions run for debugging.
+5. Desktop bundles and the Linux web binary `thinkingkity` are attached to the GitHub Release for the pushed tag, then `latest.json` is generated and attached to the same release as the update manifest. Workflow artifacts are also kept on the Actions run for debugging.
 
 Use `npm run release -- X.Y.Z --no-push` when you want to inspect the version commit and tag locally before pushing them yourself.
 
