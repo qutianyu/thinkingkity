@@ -1,3 +1,5 @@
+import { JSON_DOC_TYPES } from "@/json";
+
 export interface CodeType {
   exts: string[];
   labelKey: string;
@@ -45,7 +47,7 @@ export function expandCodeTypes(): TypeChip[] {
 
 export const DOC_TYPES: TypeChip[] = [
   { ext: "csv", labelKey: "sidebar.newCsv", titleKey: "dialog.newCsvTitle", descKey: "dialog.newCsvDescription" },
-  { ext: "json", labelKey: "sidebar.newJson", titleKey: "dialog.newJsonTitle", descKey: "dialog.newJsonDescription" },
+  ...JSON_DOC_TYPES,
   { ext: "yaml", labelKey: "sidebar.newYaml", titleKey: "dialog.newYamlTitle", descKey: "dialog.newYamlDescription" },
   { ext: "yml", labelKey: "sidebar.newYaml", titleKey: "dialog.newYamlTitle", descKey: "dialog.newYamlDescription" },
   { ext: "toml", labelKey: "sidebar.newToml", titleKey: "dialog.newTomlTitle", descKey: "dialog.newTomlDescription" },

@@ -26,6 +26,8 @@ import { blockHandlePlugin, setBlockHandleCallbacks } from "./BlockHandlePlugin"
 import { prism, prismConfig } from "@milkdown/plugin-prism";
 import toml from "refractor/toml";
 import properties from "refractor/properties";
+import { JSON_CODE_LANGUAGES } from "@/json";
+import { configureJsonRefractor, normalizeJsonPrismLanguage } from "@/json/prism";
 import { InsertMenu } from "./InsertMenu";
 import { ImagePickerModal } from "./ImagePickerModal";
 import { linkClickPlugin } from "./LinkClickPlugin";
@@ -104,7 +106,7 @@ const CODE_LANGUAGES = [
   "sql",
   "html",
   "css",
-  "json",
+  ...JSON_CODE_LANGUAGES,
   "yaml",
   "toml",
   "properties",
@@ -562,11 +564,12 @@ function MilkdownEditorInner({ content, onChange }: MilkdownEditorProps) {
           configureRefractor: (refractor) => {
             if (!refractor.registered("toml")) refractor.register(toml);
             if (!refractor.registered("properties")) refractor.register(properties);
+            configureJsonRefractor(refractor);
             // Skip markdown highlighting — code fences in a markdown doc don't need it
             const original = refractor.highlight.bind(refractor);
             refractor.highlight = ((text: string, language: any) => {
               if (language === "markdown" || language === "md") return text as any;
-              return original(text, language);
+              return original(text, normalizeJsonPrismLanguage(language));
             }) as typeof refractor.highlight;
             return refractor;
           },

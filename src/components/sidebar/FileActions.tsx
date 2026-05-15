@@ -6,6 +6,7 @@ import { useFileOperations } from "@/hooks/useFileOperations";
 import { useVaultStore } from "@/stores/vaultStore";
 import { expandCodeTypes, DOC_TYPES } from "@/lib/codeTypes";
 import { getIconEntryForExt } from "@/lib/fileIcons";
+import { isJsonExtension } from "@/json";
 
 const EXT_LUCIDE_MAP: Record<string, React.ReactNode> = {
   csv: <Table2 size={16} className="text-[var(--color-file-csv)]" />,
@@ -130,8 +131,8 @@ export function FileActions() {
           y={fileTypePicker.y}
           onClose={() => setFileTypePicker(null)}
           onSelect={(ext, titleKey, descKey) => {
-            if (ext === "json") {
-              handleNewJsonFile(fileTypePicker.parentPath);
+            if (isJsonExtension(ext)) {
+              handleNewJsonFile(fileTypePicker.parentPath, ext, titleKey, descKey);
             } else {
               handleNewCodeFile(fileTypePicker.parentPath, ext, titleKey, descKey);
             }

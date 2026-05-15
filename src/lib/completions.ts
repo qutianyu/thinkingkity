@@ -1,4 +1,6 @@
 import type { CompletionContext, CompletionResult } from "@codemirror/autocomplete";
+import { JSON_EXTENSION, JSONC_EXTENSION } from "@/json";
+import { jsonKeywords } from "@/json/completions";
 
 interface KeywordGroup {
   label: string;
@@ -897,12 +899,6 @@ const yamlKeywords: KeywordGroup[] = [
   { label: "off", type: "constant" },
 ];
 
-const jsonKeywords: KeywordGroup[] = [
-  { label: "true", type: "constant", boost: 2 },
-  { label: "false", type: "constant", boost: 2 },
-  { label: "null", type: "constant", boost: 2 },
-];
-
 const markdownKeywords: KeywordGroup[] = [
   { label: "# ", type: "keyword", detail: "heading 1", boost: 2 },
   { label: "## ", type: "keyword", detail: "heading 2", boost: 2 },
@@ -946,7 +942,8 @@ const allCompletions: LanguageCompletions = {
   xml: xmlKeywords,
   yaml: yamlKeywords,
   toml: yamlKeywords,
-  json: jsonKeywords,
+  [JSON_EXTENSION]: jsonKeywords,
+  [JSONC_EXTENSION]: jsonKeywords,
   markdown: markdownKeywords,
 };
 

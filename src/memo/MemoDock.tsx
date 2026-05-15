@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { Archive, ArchiveRestore, Check, CheckSquare, Clock, Code2, FileText, Pin, Plus, Sparkles, StickyNote, Trash2, X } from "lucide-react";
 import { CodeEditor } from "@/components/editor/CodeEditor";
+import { JSON_MEMO_LANGUAGE_OPTIONS } from "@/json";
 import { useVaultStore } from "@/stores/vaultStore";
 import { createMemo, deleteMemo, readMemoContent, readMemoIndex, updateMemo } from "./memoStorage";
 import type { MemoItem, MemoType } from "./types";
@@ -39,7 +40,7 @@ const CODE_LANGUAGES = [
   { value: "cpp", label: "C++" },
   { value: "css", label: "CSS" },
   { value: "html", label: "HTML" },
-  { value: "json", label: "JSON" },
+  ...JSON_MEMO_LANGUAGE_OPTIONS,
   { value: "markdown", label: "Markdown" },
   { value: "sql", label: "SQL" },
   { value: "shell", label: "Shell" },

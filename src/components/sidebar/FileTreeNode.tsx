@@ -6,7 +6,8 @@ import type { FileEntry } from "@/types";
 import { useFileTreeStore } from "@/stores/fileTreeStore";
 import { useEditorStore } from "@/stores/editorStore";
 import { useFileOperations } from "@/hooks/useFileOperations";
-import { isImageFile, isJsonFile, isPdfFile, isTextFile, isCodeFile, isMarkdownFile, isMermaidFile, revealInExplorer, isTauri } from "@/lib/tauriCommands";
+import { isImageFile, isPdfFile, isTextFile, isCodeFile, isMarkdownFile, isMermaidFile, revealInExplorer, isTauri } from "@/lib/tauriCommands";
+import { isJsonExtension, isJsonPath } from "@/json";
 import { getIconEntry } from "@/lib/fileIcons";
 import { FileTypePicker, CodeTypePicker } from "./FileActions";
 import { RecoveryCenter } from "@/components/recovery/RecoveryCenter";
@@ -50,7 +51,7 @@ export function FileTreeNode({ entry, depth, dropTarget, onPointerDown }: FileTr
   const lowerName = entry.name.toLowerCase();
   const isMd = isMarkdownFile(entry.path);
   const isCsv = lowerName.endsWith(".csv");
-  const isJson = isJsonFile(entry.path);
+  const isJson = isJsonPath(entry.path);
   const isText = isTextFile(entry.path);
   const isImageFileEntry = isImageFile(entry.path);
   const isPdf = isPdfFile(entry.path);
@@ -308,8 +309,8 @@ export function FileTreeNode({ entry, depth, dropTarget, onPointerDown }: FileTr
           y={fileTypePicker.y}
           onClose={() => setFileTypePicker(null)}
           onSelect={(ext, titleKey, descKey) => {
-            if (ext === "json") {
-              handleNewJsonFile(fileTypePicker.parentPath);
+            if (isJsonExtension(ext)) {
+              handleNewJsonFile(fileTypePicker.parentPath, ext, titleKey, descKey);
             } else {
               handleNewCodeFile(fileTypePicker.parentPath, ext, titleKey, descKey);
             }

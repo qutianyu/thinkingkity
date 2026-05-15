@@ -4,7 +4,7 @@ import { useVaultStore } from "@/stores/vaultStore";
 import { useFileTreeStore } from "@/stores/fileTreeStore";
 import { useEditorStore } from "@/stores/editorStore";
 import { useThemeStore } from "@/stores/themeStore";
-import { DEFAULT_AI_CONFIG, useAiStore } from "@/ai";
+import { DEFAULT_AI_CONFIG, ensureAiConfig, useAiStore } from "@/ai";
 import { pathBasename } from "@/lib/tauriCommands";
 import { ensureVaultConfig, ALL_DISPLAY_TYPES } from "@/lib/vaultConfig";
 import { DEFAULT_APP_FONT_SIZE_PX } from "@/lib/fontSize";
@@ -41,19 +41,19 @@ export function VaultSelector() {
 
   const openVaultPath = async (path: string) => {
     useEditorStore.getState().closeAll();
+    const aiConfig = await ensureAiConfig(path, DEFAULT_AI_CONFIG);
     const config = await ensureVaultConfig(path, {
       language: i18n.language || "zh-CN",
       mode: preference,
       font_size_px: DEFAULT_APP_FONT_SIZE_PX,
       display_type: ALL_DISPLAY_TYPES,
-      ai: DEFAULT_AI_CONFIG,
       sync: DEFAULT_SYNC_CONFIG,
     });
     await i18n.changeLanguage(config.language);
     setPreference(config.mode);
     setFontSizePx(config.font_size_px);
     setDisplayType(config.display_type);
-    setAi(config.ai);
+    setAi(aiConfig);
     useSyncStore.getState().setConfig(config.sync);
     setVault(path);
     await refreshTree(path);

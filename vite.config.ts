@@ -5,6 +5,16 @@ import path from "path";
 import fs from "fs";
 
 const pdfjsAssetDirs = ["cmaps", "iccs", "standard_fonts", "wasm"];
+const appVersion = JSON.parse(fs.readFileSync(path.resolve(__dirname, "package.json"), "utf-8")).version;
+const appPlatform = process.env.THINKINGKITY_UPDATE_PLATFORM ?? {
+  darwin: "macos",
+  win32: "windows",
+  linux: "linux",
+}[process.platform] ?? process.platform;
+const appArch = process.env.THINKINGKITY_UPDATE_ARCH ?? {
+  arm64: "aarch64",
+  x64: "x86_64",
+}[process.arch] ?? process.arch;
 
 function pdfjsAssetsPlugin() {
   const pdfjsRoot = path.resolve(__dirname, "node_modules/pdfjs-dist");
@@ -37,6 +47,11 @@ function pdfjsAssetsPlugin() {
 
 export default defineConfig({
   plugins: [react(), tailwindcss(), pdfjsAssetsPlugin()],
+  define: {
+    __APP_VERSION__: JSON.stringify(appVersion),
+    __APP_PLATFORM__: JSON.stringify(appPlatform),
+    __APP_ARCH__: JSON.stringify(appArch),
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),

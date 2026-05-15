@@ -12,12 +12,12 @@ import {
 import { useFileTreeStore } from "@/stores/fileTreeStore";
 import {
   AI_PROVIDER_BASE_URLS,
-  DEFAULT_AI_CONFIG,
   MAX_AI_CONTEXT_COMPACTION_THRESHOLD_KB,
   MIN_AI_CONTEXT_COMPACTION_THRESHOLD_KB,
   normalizeAiContextCompactionThresholdKb,
   testAiConnection,
   useAiStore,
+  writeAiConfig,
   type AiConfig,
   type AiProvider,
 } from "@/ai";
@@ -88,7 +88,6 @@ export function Settings({ onClose }: SettingsProps) {
         mode: preference,
         font_size_px: fontSizePx,
         display_type: ALL_DISPLAY_TYPES,
-        ai: DEFAULT_AI_CONFIG,
         sync: useSyncStore.getState().config,
       });
       await writeVaultConfig(vaultPath, { ...current, ...next });
@@ -139,7 +138,9 @@ export function Settings({ onClose }: SettingsProps) {
   const saveAiConfig = async (nextAi?: AiConfig) => {
     const config = nextAi ?? useAiStore.getState().ai;
     setAi(config);
-    await saveVaultConfig({ ai: config });
+    if (vaultPath) {
+      await writeAiConfig(vaultPath, config);
+    }
   };
 
   const changeAiProvider = async (provider: AiProvider) => {

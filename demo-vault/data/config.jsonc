@@ -1,0 +1,24 @@
+{
+  // JSONC keeps JSON structure while allowing comments for local configuration notes.
+  "app": {
+    "name": "ThinkingKity",
+    "environment": "development",
+    "debug": true,
+  },
+  "editor": {
+    "fontSize": 14,
+    "tabSize": 2,
+    "wordWrap": true,
+  },
+  "sync": {
+    // Demo values only. Replace these with your own remote settings.
+    "method": "git",
+    "branch": "main",
+    "autoPush": false,
+  },
+  "features": [
+    "markdown",
+    "code",
+    "jsonc",
+  ],
+}

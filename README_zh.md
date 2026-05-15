@@ -64,6 +64,26 @@ npm run dev:desktop
 
 两种模式共享同一套 Rust 后端。文件访问受 `~/.thinkingkity/vaults.json` 中的 `allowed_paths` 白名单限制。开发模式下 server 将前端请求代理到 Vite（HMR 仍然可用）。
 
+### npm 脚本
+
+| 命令 | 说明 |
+|------|------|
+| `npm run dev` | 仅启动 Vite 前端开发服务器。 |
+| `npm run dev:web` | 启动 Web 开发模式，包括 Vite 和 Rust HTTP server。 |
+| `npm run dev:desktop` | 启动 Tauri 桌面端开发模式。 |
+| `npm run dev:android` | 通过 Tauri 启动 Android 开发模式。 |
+| `npm run build` | 执行类型检查并构建前端产物。 |
+| `npm run build:web` | 构建前端和独立 Web server 二进制文件。 |
+| `npm run build:desktop` | 使用 Tauri 构建桌面端安装包。 |
+| `npm run build:android` | 使用 Tauri 构建 Android APK/AAB 产物。 |
+| `npm run preview` | 使用 Vite 预览生产环境前端构建结果。 |
+| `npm run init:android` | 初始化 Tauri 生成的 Android 工程。 |
+| `npm run clean` | 清理生成的构建目录和本地构建产物。 |
+| `npm run release -- X.Y.Z` | 更新版本文件，创建发布提交和 tag，并推送。 |
+| `npm run version:sync` | 以 `package.json` 为准同步 Tauri 和 Cargo 版本。 |
+| `npm run postversion` | `npm version` 后触发的生命周期脚本；同步并暂存 Tauri/Cargo 版本文件。 |
+| `npm run tauri -- <command>` | 未封装命令时直接调用 Tauri CLI 的底层入口。 |
+
 ### 构建
 
 ```bash
@@ -82,6 +102,10 @@ npm run build:desktop
 | Linux (AppImage) | `src-tauri/target/release/bundle/appimage/thinkingkity_{version}_amd64.AppImage` |
 
 独立二进制文件（不含安装器包装）在 `src-tauri/target/release/thinkingkity`。
+
+### 发布
+
+桌面端、Android 和 Web 端的发布流程见 [`RELEASING.md`](./RELEASING.md)。
 
 ### 桌面端兼容性
 

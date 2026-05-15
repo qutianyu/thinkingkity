@@ -14,6 +14,7 @@ import { useFileTreeStore } from "@/stores/fileTreeStore";
 import { useEditorStore } from "@/stores/editorStore";
 import { useVaultStore } from "@/stores/vaultStore";
 import { useDialogStore } from "@/stores/dialogStore";
+import { useJsonFileOperations } from "@/json/useJsonFileOperations";
 
 export function useFileOperations() {
   const { t } = useTranslation();
@@ -22,6 +23,7 @@ export function useFileOperations() {
   const closeTab = useEditorStore((s) => s.closeTab);
   const showPrompt = useDialogStore((s) => s.showPrompt);
   const showConfirm = useDialogStore((s) => s.showConfirm);
+  const { handleNewJsonFile } = useJsonFileOperations();
 
   const handleNewFile = useCallback(
     async (parentPath: string) => {
@@ -53,23 +55,6 @@ export function useFileOperations() {
       if (!name) return;
       const filePath = pathJoin(parentPath, name + (name.endsWith(".csv") ? "" : ".csv"));
       await createFile(filePath);
-      if (vaultPath) await refreshTree(vaultPath);
-    },
-    [vaultPath, refreshTree, showPrompt, t],
-  );
-
-  const handleNewJsonFile = useCallback(
-    async (parentPath: string) => {
-      const name = await showPrompt({
-        title: t("dialog.newJsonTitle"),
-        description: t("dialog.newJsonDescription"),
-        placeholder: t("dialog.namePlaceholder"),
-        confirmLabel: t("dialog.create"),
-        cancelLabel: t("dialog.cancel"),
-      });
-      if (!name) return;
-      const filePath = pathJoin(parentPath, name + (name.endsWith(".json") ? "" : ".json"));
-      await writeFile(filePath, "{\n  \n}\n");
       if (vaultPath) await refreshTree(vaultPath);
     },
     [vaultPath, refreshTree, showPrompt, t],

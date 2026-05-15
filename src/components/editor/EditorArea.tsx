@@ -10,7 +10,8 @@ import { PdfViewer } from "@/pdf";
 import { useEditorStore } from "@/stores/editorStore";
 import { useVaultStore } from "@/stores/vaultStore";
 import { useLinkStore } from "@/md/links/linkStore";
-import { isImageFile, isJsonFile, isPdfFile, isTextFile, isCodeFile, isMarkdownFile, isMermaidFile, getCodeLanguage, pathBasename } from "@/lib/tauriCommands";
+import { isImageFile, isPdfFile, isTextFile, isCodeFile, isMarkdownFile, isMermaidFile, getCodeLanguage, pathBasename } from "@/lib/tauriCommands";
+import { isJsonPath } from "@/json";
 import { CodeEditor } from "./CodeEditor";
 import { MermaidEditor } from "./MermaidEditor";
 import { MilkdownEditor, LinkHoverPreview } from "@/md";
@@ -189,7 +190,7 @@ export function EditorArea({ sidebarCollapsed = false }: EditorAreaProps) {
   const frontmatterFields = parseFrontmatter(frontmatterParts.frontmatter);
   const isCsv = activeTabPath?.toLowerCase().endsWith(".csv") ?? false;
   const isMarkdown = activeTabPath ? isMarkdownFile(activeTabPath) : false;
-  const isJson = activeTabPath ? isJsonFile(activeTabPath) : false;
+  const isJson = activeTabPath ? isJsonPath(activeTabPath) : false;
   const isMermaid = activeTabPath ? isMermaidFile(activeTabPath) : false;
   const isText = activeTabPath ? isTextFile(activeTabPath) : false;
   const isCode = activeTabPath ? isCodeFile(activeTabPath) : false;
@@ -364,7 +365,7 @@ export function EditorArea({ sidebarCollapsed = false }: EditorAreaProps) {
           ) : activeTabPath && isJson ? (
             <CodeEditor
               content={activeContent}
-              language="json"
+              language={codeLang}
               onChange={(content) => updateContent(activeTabPath, content)}
             />
           ) : activeTabPath && isText ? (

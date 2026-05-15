@@ -1,9 +1,9 @@
 import type { FileEntry } from "@/types";
 import { createFolder, readFile, writeFile, pathJoin } from "@/lib/tauriCommands";
-import { normalizeAiConfig, type AiConfig } from "@/ai";
 import { ensureVaultToolFiles } from "@/ai/tools/toolPolicy";
 import { DEFAULT_SYNC_CONFIG, type SyncConfig } from "@/sync";
 import { normalizeAppFontSizePx } from "@/lib/fontSize";
+import { JSON_DISPLAY_TYPES, JSON_EXTENSION, JSONC_EXTENSION } from "@/json";
 
 export const THINKINGKITY_DIR = ".thinkingkity";
 const CONFIG_FILE = "config.json";
@@ -18,7 +18,7 @@ interface DisplayTypeGroup {
 const DISPLAY_TYPE_GROUPS: DisplayTypeGroup[] = [
   {
     labelKey: "settings.displayGroupDocuments",
-    types: ["md", "markdown", "csv", "json", "yaml", "yml", "toml", "ini", "cfg", "conf", "env", "properties", "mermaid", "txt", "log", "pdf"],
+    types: ["md", "markdown", "csv", ...JSON_DISPLAY_TYPES, "yaml", "yml", "toml", "ini", "cfg", "conf", "env", "properties", "mermaid", "txt", "log", "pdf"],
   },
   {
     labelKey: "settings.displayGroupImages",
@@ -37,7 +37,6 @@ export interface VaultConfig {
   mode: VaultMode;
   font_size_px: number;
   display_type: string[];
-  ai: AiConfig;
   sync: SyncConfig;
 }
 
@@ -61,6 +60,9 @@ function normalizeDisplayType(raw: unknown, fallback: string[]): string[] {
   // Drop invalid values so hand-edited configs cannot enable unsupported filters.
   if (!Array.isArray(raw)) return fallback;
   const valid = raw.filter((v) => typeof v === "string" && v);
+  if (valid.includes(JSON_EXTENSION) && !valid.includes(JSONC_EXTENSION)) {
+    valid.push(JSONC_EXTENSION);
+  }
   return valid.length > 0 ? valid : fallback;
 }
 
@@ -121,7 +123,6 @@ function normalizeConfig(value: unknown, defaults: VaultConfig): VaultConfig {
     mode: normalizeMode(raw.mode, defaults.mode),
     font_size_px: normalizeAppFontSizePx(raw.font_size_px, defaults.font_size_px),
     display_type: normalizeDisplayType(raw.display_type, defaults.display_type),
-    ai: normalizeAiConfig(raw.ai, defaults.ai),
     sync: normalizeSyncConfig(raw.sync, defaults.sync),
   };
 }

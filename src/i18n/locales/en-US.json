@@ -19,6 +19,7 @@
 		"newMarkdown": "Markdown",
 		"newCsv": "CSV",
 		"newJson": "JSON",
+		"newJsonc": "JSONC",
 		"newYaml": "YAML",
 		"newToml": "TOML",
 		"newIni": "INI",
@@ -119,6 +120,60 @@
 		"aiTestFailed": "Connection failed",
 		"system": "System"
 	},
+	"about": {
+		"title": "About",
+		"back": "Back",
+		"tagline": "Local-first knowledge base and workspace",
+		"whatIsIt": "What it is",
+		"description": "ThinkingKity uses a folder as a vault for Markdown notes, structured data, code snippets, PDFs, and AI-assisted work. Data stays local first, with optional Git sync when you need it.",
+		"capabilities": "Capabilities",
+		"featureNotes": "Markdown notes, wiki links, backlinks, and outline",
+		"featureFormats": "JSONC, CSV, Mermaid, PDF, images, and common code formats",
+		"featureAi": "Configurable AI assistant with contextual files",
+		"featureSync": "Optional Git sync for versioned vault content",
+		"featureLocal": "Local files first, with sensitive AI settings stored separately",
+		"storageLabel": "Storage",
+		"storageValue": "Current vault folder",
+		"syncLabel": "Sync",
+		"syncValue": "Git / local",
+		"aiLabel": "AI config",
+		"aiValue": ".thinkingkity/ai-config.json",
+		"checkUpdates": "Check updates",
+		"currentVersion": "Current version",
+		"latestVersion": "Latest version",
+		"updateChannel": "Update channel",
+		"runtimePlatform": "Runtime platform",
+		"notChecked": "Not checked",
+		"checkFailed": "Check failed",
+		"noPublishedVersion": "No published version",
+		"openRepository": "Open repository",
+		"openReleases": "Open releases",
+		"downloadForPlatform": "Download for this platform",
+		"runtimePlatforms": {
+			"web": "Web",
+			"macos": "MacOS",
+			"windows": "Windows",
+			"linux": "Linux",
+			"android": "Android"
+		},
+		"updateChannels": {
+			"github": "GitHub Releases",
+			"android": "Android release channel"
+		},
+		"updateNotes": {
+			"github": "This reads the update manifest from the latest GitHub release and selects the package for this platform.",
+			"android": "This reads the update manifest from the latest GitHub release and selects the Android package. A store channel can replace it later."
+		},
+		"updateStatus": {
+			"idle": "Repository: github.com/qutianyu/thinkingkity. Check GitHub for the latest release.",
+			"checking": "Checking GitHub for the latest release.",
+			"current": "You are on the latest version.",
+			"available": "A newer version is available, and a package for this platform was found.",
+			"unpublished": "No release is published yet, so there is no remote package to compare against.",
+			"unsupported": "A newer version is available, but the latest release has no package for this platform.",
+			"error": "Could not check for updates. Try again later or open releases directly."
+		}
+	},
 	"aiChat": {
 		"title": "AI Assistant",
 		"panelLabel": "AI Assistant Chat",
@@ -206,6 +261,8 @@
 		"newCsvDescription": "Create a new spreadsheet file.",
 		"newJsonTitle": "New JSON",
 		"newJsonDescription": "Create a new JSON data file.",
+		"newJsoncTitle": "New JSONC",
+		"newJsoncDescription": "Create a new JSON with Comments data file.",
 		"newYamlTitle": "New YAML",
 		"newYamlDescription": "Create a new YAML config file.",
 		"newTomlTitle": "New TOML",

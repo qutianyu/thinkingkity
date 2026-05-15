@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { FolderOpen, LogOut, X } from "lucide-react";
+import { FolderOpen, Info, LogOut, X } from "lucide-react";
 import { useVaultStore } from "@/stores/vaultStore";
 import { useFileTreeStore } from "@/stores/fileTreeStore";
 import { useEditorStore } from "@/stores/editorStore";
 import { useThemeStore } from "@/stores/themeStore";
-import { DEFAULT_AI_CONFIG, useAiStore } from "@/ai";
+import { DEFAULT_AI_CONFIG, ensureAiConfig, useAiStore } from "@/ai";
 import { pathBasename } from "@/lib/tauriCommands";
 import { ensureVaultConfig, ALL_DISPLAY_TYPES } from "@/lib/vaultConfig";
 import { DEFAULT_APP_FONT_SIZE_PX } from "@/lib/fontSize";
@@ -14,6 +14,7 @@ import { DEFAULT_SYNC_CONFIG, useSyncStore } from "@/sync";
 import { ensureDemoVault, logout } from "@/lib/globalVaults";
 import { getAuthToken } from "@/lib/authSession";
 import { VaultPickerModal } from "@/components/common/VaultPickerModal";
+import { AboutModal } from "@/components/AboutPage";
 
 export function HomePage() {
   const { t, i18n } = useTranslation();
@@ -25,6 +26,7 @@ export function HomePage() {
   const setAi = useAiStore((s) => s.setAi);
   const [showVaultPicker, setShowVaultPicker] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
+  const [showAbout, setShowAbout] = useState(false);
 
   useEffect(() => {
     setShowLogout(Boolean(getAuthToken()));
@@ -33,19 +35,19 @@ export function HomePage() {
 
   const openVaultPath = async (path: string) => {
     useEditorStore.getState().closeAll();
+    const aiConfig = await ensureAiConfig(path, DEFAULT_AI_CONFIG);
     const config = await ensureVaultConfig(path, {
       language: i18n.language || "zh-CN",
       mode: preference,
       font_size_px: DEFAULT_APP_FONT_SIZE_PX,
       display_type: ALL_DISPLAY_TYPES,
-      ai: DEFAULT_AI_CONFIG,
       sync: DEFAULT_SYNC_CONFIG,
     });
     await i18n.changeLanguage(config.language);
     setPreference(config.mode);
     setFontSizePx(config.font_size_px);
     setDisplayType(config.display_type);
-    setAi(config.ai);
+    setAi(aiConfig);
     useSyncStore.getState().setConfig(config.sync);
     setVault(path);
     await refreshTree(path);
@@ -66,6 +68,14 @@ export function HomePage() {
 
   return (
     <div className="home-shell flex flex-col items-center justify-center h-full bg-[var(--color-bg-app)] select-none px-6">
+      <button
+        className="home-about-button"
+        onClick={() => setShowAbout(true)}
+        title={t("about.title")}
+      >
+        <Info size={15} />
+        <span>{t("about.title")}</span>
+      </button>
       {showLogout && (
         <button
           className="home-logout-button"
@@ -161,6 +171,7 @@ export function HomePage() {
           onClose={() => setShowVaultPicker(false)}
         />
       )}
+      {showAbout && <AboutModal onClose={() => setShowAbout(false)} />}
     </div>
   );
 }

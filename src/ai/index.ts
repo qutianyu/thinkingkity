@@ -12,6 +12,7 @@ export {
   type AiConfig,
   type AiProvider,
 } from "./config";
+export { ensureAiConfig, getAiConfigPath, writeAiConfig } from "./aiConfigStorage";
 export { streamAiChat, testAiConnection } from "./client";
 export type { AiChatMessage, AiChatRequest, AiChatRole } from "./types";
 export type {

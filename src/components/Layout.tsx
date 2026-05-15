@@ -1,13 +1,15 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { History, Settings } from "lucide-react";
+import { History, Info, Settings } from "lucide-react";
 import { Sidebar } from "./sidebar/Sidebar";
 import { EditorArea } from "./editor/EditorArea";
 import { QuickSwitcher } from "./common/QuickSwitcher";
 import { Settings as SettingsModal } from "./settings/Settings";
 import { RecoveryCenter } from "./recovery/RecoveryCenter";
+import { AboutModal } from "./AboutPage";
 import { SyncButton, SyncToast } from "@/sync";
+import { isJsonPath, JSON_FILE_TYPE } from "@/json";
 import { useVaultStore } from "@/stores/vaultStore";
 import { useFileTreeStore } from "@/stores/fileTreeStore";
 import { useEditorStore } from "@/stores/editorStore";
@@ -16,14 +18,14 @@ import { useLinkStore } from "@/md/links/linkStore";
 const AUTO_SAVE_DELAY = 3000;
 const AUTO_SAVE_POLL_INTERVAL = 500;
 
-type FileType = "markdown" | "csv" | "json" | "code" | "text" | "image" | "pdf" | "unknown";
+type FileType = "markdown" | "csv" | typeof JSON_FILE_TYPE | "code" | "text" | "image" | "pdf" | "unknown";
 
 function getFileType(path: string | null): FileType {
   if (!path) return "unknown";
   const lower = path.toLowerCase();
   if (lower.endsWith(".md") || lower.endsWith(".markdown")) return "markdown";
   if (lower.endsWith(".csv")) return "csv";
-  if (lower.endsWith(".json")) return "json";
+  if (isJsonPath(lower)) return JSON_FILE_TYPE;
   if (lower.endsWith(".txt")) return "text";
   if (/\.(js|ts|jsx|tsx|py|java|rs|c|cpp|h|hpp|css|scss|html|xml|yaml|yml|toml|ini|conf|env|properties|mermaid|sh|bash|sql|go|rb|php|swift|kt|dart|r|m|mm|pl|lua|vim|zig|hs|ml|scala|clj|ex|exs|erl|v|sv|vhd)$/.test(lower)) return "code";
   if (/\.(jpg|jpeg|png|gif|svg|webp|bmp|ico)$/.test(lower)) return "image";
@@ -111,7 +113,7 @@ function getStatusInfo(content: string, path: string | null):
       const { rows, cols } = parseCsvRowsCols(content);
       return { key: "csv", rows, cols };
     }
-    case "json":
+    case JSON_FILE_TYPE:
     case "code":
     case "text": {
       return { key: "lines", value: countLines(content) };
@@ -137,6 +139,7 @@ export function Layout() {
   const [showQuickSwitcher, setShowQuickSwitcher] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showRecovery, setShowRecovery] = useState(false);
+  const [showAbout, setShowAbout] = useState(false);
   const vaultPath = useVaultStore((s) => s.vaultPath);
   const fileCount = useFileTreeStore((s) => s.fileCount);
   const vaultSize = useFileTreeStore((s) => s.vaultSize);
@@ -253,6 +256,13 @@ export function Layout() {
             <History size={13} />
           </button>
           <button
+            onClick={() => setShowAbout(true)}
+            className="bottom-settings-button"
+            title={t("about.title")}
+          >
+            <Info size={13} />
+          </button>
+          <button
             onClick={() => setShowSettings(true)}
             className="bottom-settings-button"
             title="Settings"
@@ -263,6 +273,7 @@ export function Layout() {
       </div>
       {showRecovery && <RecoveryCenter onClose={() => setShowRecovery(false)} />}
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
+      {showAbout && <AboutModal onClose={() => setShowAbout(false)} />}
       <SyncToast />
     </div>
   );

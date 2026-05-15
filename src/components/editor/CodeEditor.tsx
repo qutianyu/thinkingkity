@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef } from "react";
 import { basicSetup, EditorView } from "codemirror";
-import { json } from "@codemirror/lang-json";
 import { sql } from "@codemirror/lang-sql";
 import { javascript } from "@codemirror/lang-javascript";
 import { python } from "@codemirror/lang-python";
@@ -33,6 +32,7 @@ import type { Extension } from "@codemirror/state";
 import { Compartment, EditorState } from "@codemirror/state";
 import { useThemeStore } from "@/stores/themeStore";
 import { completionSourceFor } from "@/lib/completions";
+import { jsonLanguageExtension } from "@/json/codeMirror";
 import { wikiLinkCmExtension } from "./WikiLinkCodeMirror";
 
 interface CodeEditorProps {
@@ -42,9 +42,10 @@ interface CodeEditorProps {
 }
 
 function languageExtension(language: string): Extension {
+  const jsonExtension = jsonLanguageExtension(language);
+  if (jsonExtension) return jsonExtension;
+
   switch (language) {
-    case "json":
-      return json();
     case "sql":
       return sql();
     case "javascript":

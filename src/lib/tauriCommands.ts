@@ -1,6 +1,7 @@
 import { invoke, convertFileSrc } from "@tauri-apps/api/core";
 import type { FileEntry } from "@/types";
 import { authHeaders, clearAuthTokens } from "@/lib/authSession";
+import { getJsonLanguage, isJsonPath } from "@/json";
 
 const IS_TAURI = typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
 // Relative paths work in both dev (Vite proxies /api) and production (same origin).
@@ -312,10 +313,6 @@ export function isPdfFile(path: string): boolean {
   return path.toLowerCase().endsWith(".pdf");
 }
 
-export function isJsonFile(path: string): boolean {
-  return path.toLowerCase().endsWith(".json");
-}
-
 export function isMarkdownFile(path: string): boolean {
   const lower = path.toLowerCase();
   return lower.endsWith(".md") || lower.endsWith(".markdown");
@@ -370,7 +367,6 @@ const CODE_EXTENSIONS: Record<string, string> = {
   ".properties": "properties",
   ".mermaid": "mermaid",
   ".csv": "csv",
-  ".json": "json",
   ".txt": "text",
 };
 
@@ -379,7 +375,7 @@ export function isCodeFile(path: string): boolean {
   if (isMarkdownFile(path)) return false;
   if (isMermaidFile(path)) return false;
   if (lower.endsWith(".csv")) return false;
-  if (lower.endsWith(".json")) return false;
+  if (isJsonPath(path)) return false;
   if (lower.endsWith(".txt")) return false;
   if (isImageFile(path)) return false;
   if (isPdfFile(path)) return false;
@@ -398,6 +394,8 @@ export function getCodeLanguage(path: string): string {
   const lower = path.toLowerCase();
   const basename = lower.split("/").pop()?.split("\\").pop() ?? lower;
   if (basename === "dockerfile") return "dockerfile";
+  const jsonLanguage = getJsonLanguage(path);
+  if (jsonLanguage) return jsonLanguage;
   for (const [ext, lang] of Object.entries(CODE_EXTENSIONS)) {
     if (lower.endsWith(ext)) return lang;
   }

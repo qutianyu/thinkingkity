@@ -1,6 +1,6 @@
+use crate::sync_common::SyncResult;
 use std::path::PathBuf;
 use std::process::Command;
-use crate::sync_common::SyncResult;
 
 const COMMIT_MSG: &str = "thinkingkity vault sync";
 
@@ -9,7 +9,8 @@ fn resolve_vault_path(vault_path: &str) -> Result<PathBuf, String> {
     if !path.is_dir() {
         return Err("Vault path is not a directory.".to_string());
     }
-    path.canonicalize().map_err(|e| format!("Invalid vault path: {}", e))
+    path.canonicalize()
+        .map_err(|e| format!("Invalid vault path: {}", e))
 }
 
 fn check_git_installed() -> Result<(), String> {
@@ -34,7 +35,11 @@ fn run_git(vault_path: &PathBuf, args: &[&str]) -> Result<String, String> {
     let stderr = String::from_utf8_lossy(&output.stderr).to_string();
 
     if !output.status.success() {
-        let msg = if !stderr.trim().is_empty() { stderr } else { stdout };
+        let msg = if !stderr.trim().is_empty() {
+            stderr
+        } else {
+            stdout
+        };
         return Err(msg.trim().to_string());
     }
 
@@ -52,14 +57,31 @@ fn ensure_git_repo(vault_path: &PathBuf) -> Result<(), String> {
 
 fn ensure_gitignore(vault_path: &PathBuf) -> Result<(), String> {
     let gitignore = vault_path.join(".gitignore");
-    let entry = ".thinkingkity/";
+    let entry = ".thinkingkity/ai-config.json";
     if gitignore.exists() {
         let content = std::fs::read_to_string(&gitignore).unwrap_or_default();
-        if content.lines().any(|l| l.trim() == entry) {
-            return Ok(());
+        let mut lines: Vec<String> = content
+            .lines()
+            .filter_map(|line| {
+                let trimmed = line.trim();
+                if trimmed == ".thinkingkity/"
+                    || trimmed == ".thinkingkity"
+                    || trimmed == ".thinkingkity/*"
+                    || trimmed == ".thinkingkity/**"
+                    || trimmed == entry
+                {
+                    None
+                } else {
+                    Some(line.to_string())
+                }
+            })
+            .collect();
+        lines.push(entry.to_string());
+        let mut updated = lines.join("\n");
+        updated.push('\n');
+        if updated != content {
+            std::fs::write(&gitignore, updated).map_err(|e| e.to_string())?;
         }
-        let updated = format!("{}\n{}\n", content.trim_end(), entry);
-        std::fs::write(&gitignore, updated).map_err(|e| e.to_string())?;
     } else {
         std::fs::write(&gitignore, format!("{}\n", entry)).map_err(|e| e.to_string())?;
     }
@@ -201,25 +223,23 @@ pub fn sync_git_sync(
                 files_changed: file_count,
                 errors,
             }),
-            Err(_) => {
-                match run_git(&vault, &["push", "--force", "origin", &branch]) {
-                    Ok(_) => {
-                        messages.push("Force-pushed, local took precedence over remote.".to_string());
-                        Ok(SyncResult {
-                            success: true,
-                            message: messages.join("\n"),
-                            files_changed: file_count,
-                            errors,
-                        })
-                    }
-                    Err(e2) => Ok(SyncResult {
-                        success: false,
-                        message: "Push failed after retry.".to_string(),
+            Err(_) => match run_git(&vault, &["push", "--force", "origin", &branch]) {
+                Ok(_) => {
+                    messages.push("Force-pushed, local took precedence over remote.".to_string());
+                    Ok(SyncResult {
+                        success: true,
+                        message: messages.join("\n"),
                         files_changed: file_count,
-                        errors: vec![e2],
-                    }),
+                        errors,
+                    })
                 }
-            }
+                Err(e2) => Ok(SyncResult {
+                    success: false,
+                    message: "Push failed after retry.".to_string(),
+                    files_changed: file_count,
+                    errors: vec![e2],
+                }),
+            },
         }
     } else {
         Ok(SyncResult {

@@ -3,7 +3,6 @@ import type { FileEntry } from "@/types";
 import {
   isCodeFile,
   isImageFile,
-  isJsonFile,
   isPdfFile,
   isTextFile,
   readDirectory,
@@ -11,6 +10,7 @@ import {
   renameFile,
   getVaultSize,
 } from "@/lib/tauriCommands";
+import { isJsonPath } from "@/json";
 import { isVaultSystemEntry } from "@/lib/vaultConfig";
 import { useVaultStore } from "@/stores/vaultStore";
 import {
@@ -166,7 +166,7 @@ function canSearchFileContent(entry: FileEntry): boolean {
   if (entry.is_dir || isImageFile(entry.path) || isPdfFile(entry.path)) {
     return false;
   }
-  if (isJsonFile(entry.path) || isTextFile(entry.path) || isCodeFile(entry.path)) {
+  if (isJsonPath(entry.path) || isTextFile(entry.path) || isCodeFile(entry.path)) {
     return true;
   }
   const lower = entry.name.toLowerCase();

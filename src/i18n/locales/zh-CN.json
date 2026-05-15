@@ -19,6 +19,7 @@
 		"newMarkdown": "Markdown",
 		"newCsv": "CSV",
 		"newJson": "JSON",
+		"newJsonc": "JSONC",
 		"newYaml": "YAML",
 		"newToml": "TOML",
 		"newIni": "INI",
@@ -119,6 +120,60 @@
 		"aiTestFailed": "连接失败",
 		"system": "跟随系统"
 	},
+	"about": {
+		"title": "关于",
+		"back": "返回",
+		"tagline": "本地优先的知识库与工作台",
+		"whatIsIt": "这是什么",
+		"description": "ThinkingKity 用文件夹作为 Vault，围绕 Markdown、结构化数据、代码片段、PDF 和 AI 助手组织个人知识。数据优先保存在本地，必要时可以通过 Git 同步。",
+		"capabilities": "能力",
+		"featureNotes": "Markdown 笔记、双链、反链和大纲",
+		"featureFormats": "JSONC、CSV、Mermaid、PDF、图片和常见代码格式",
+		"featureAi": "可配置的 AI 助手和上下文管理",
+		"featureSync": "可选 Git 同步，Vault 内容可版本化",
+		"featureLocal": "本地文件优先，敏感 AI 配置独立保存",
+		"storageLabel": "数据位置",
+		"storageValue": "当前 Vault 文件夹",
+		"syncLabel": "同步",
+		"syncValue": "Git / 本地",
+		"aiLabel": "AI 配置",
+		"aiValue": ".thinkingkity/ai-config.json",
+		"checkUpdates": "检查更新",
+		"currentVersion": "当前版本",
+		"latestVersion": "最新版本",
+		"updateChannel": "更新渠道",
+		"runtimePlatform": "当前平台",
+		"notChecked": "未检查",
+		"checkFailed": "检查失败",
+		"noPublishedVersion": "暂无发布版本",
+		"openRepository": "打开仓库",
+		"openReleases": "打开发布页",
+		"downloadForPlatform": "下载当前平台版本",
+		"runtimePlatforms": {
+			"web": "Web",
+			"macos": "MacOS",
+			"windows": "Windows",
+			"linux": "Linux",
+			"android": "Android"
+		},
+		"updateChannels": {
+			"github": "GitHub Releases",
+			"android": "Android 发布渠道"
+		},
+		"updateNotes": {
+			"github": "当前读取 GitHub 最新 release 的更新清单，并从清单里选择当前平台安装包。",
+			"android": "当前读取 GitHub 最新 release 的更新清单，并从清单里选择 Android 安装包；后续可切换到应用商店渠道。"
+		},
+		"updateStatus": {
+			"idle": "仓库定位到 github.com/qutianyu/thinkingkity。点击检查更新获取最新 release。",
+			"checking": "正在从 GitHub 检查最新 release。",
+			"current": "当前已经是最新版本。",
+			"available": "发现新版本，已匹配当前平台安装包。",
+			"unpublished": "仓库还没有可用于版本检查的 release。",
+			"unsupported": "发现新版本，但最新 release 里没有匹配当前平台的安装包。",
+			"error": "无法检查更新，请稍后重试或直接打开发布页。"
+		}
+	},
 	"aiChat": {
 		"title": "AI 助手",
 		"panelLabel": "AI 助手对话",
@@ -206,6 +261,8 @@
 		"newCsvDescription": "创建一个新的表格文件。",
 		"newJsonTitle": "新建 JSON",
 		"newJsonDescription": "创建一个新的 JSON 数据文件。",
+		"newJsoncTitle": "新建 JSONC",
+		"newJsoncDescription": "创建一个新的带注释 JSON 数据文件。",
 		"newYamlTitle": "新建 YAML",
 		"newYamlDescription": "创建一个新的 YAML 配置文件。",
 		"newTomlTitle": "新建 TOML",

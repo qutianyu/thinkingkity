@@ -15,7 +15,6 @@ import {
   SiXml,
   SiMysql,
   SiGnubash,
-  SiJson,
   SiMarkdown,
   SiMermaid,
   SiYaml,
@@ -30,6 +29,7 @@ import {
 } from "@icons-pack/react-simple-icons";
 
 import type { ComponentType, SVGProps } from "react";
+import { JSON_ICON_ENTRIES } from "@/json/icons";
 
 interface IconEntry {
   component: ComponentType<SVGProps<SVGSVGElement>>;
@@ -60,7 +60,7 @@ const EXT_ICON_MAP: Record<string, IconEntry> = {
   ".sh": { component: SiGnubash, color: "#4EAA25" },
   ".bash": { component: SiGnubash, color: "#4EAA25" },
   ".zsh": { component: SiGnubash, color: "#4EAA25" },
-  ".json": { component: SiJson, color: "#5B5B5B" },
+  ...JSON_ICON_ENTRIES,
   ".md": { component: SiMarkdown, color: "#083FA1" },
   ".markdown": { component: SiMarkdown, color: "#083FA1" },
   ".yaml": { component: SiYaml, color: "#CB171E" },

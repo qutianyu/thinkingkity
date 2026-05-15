@@ -10,13 +10,14 @@
     "tauri": "tauri",
     "dev:web": "lsof -ti:1420 | xargs kill -9 2>/dev/null; lsof -ti:19840 | xargs kill -9 2>/dev/null; vite & THINKINGKITY_DEV=1 cargo run --manifest-path src-tauri/Cargo.toml --bin thinkingkity-server",
     "dev:desktop": "lsof -ti:1420 | xargs kill -9 2>/dev/null; tauri dev",
+    "dev:android": "tauri android dev",
     "build:web": "npm run build && cargo build --release --manifest-path src-tauri/Cargo.toml --bin thinkingkity-server && cp src-tauri/target/release/thinkingkity-server ./thinkingkity-server",
     "build:desktop": "tauri build",
-    "tauri:build": "tauri build",
+    "build:android": "tauri android build",
+    "init:android": "tauri android init",
     "clean": "node scripts/clean.js",
     "release": "node scripts/release.js",
-    "script": "node scripts/release.js",
-    "sync-version": "node scripts/sync-version.js",
+    "version:sync": "node scripts/sync-version.js",
     "postversion": "node scripts/sync-version.js && git add src-tauri/tauri.conf.json src-tauri/Cargo.toml"
   },
   "dependencies": {

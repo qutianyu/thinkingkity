@@ -1,0 +1,87 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R 4 0 R 5 0 R] /Count 3 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 6 0 R >> >> /Contents 7 0 R >>
+endobj
+4 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 6 0 R >> >> /Contents 8 0 R >>
+endobj
+5 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 6 0 R >> >> /Contents 9 0 R >>
+endobj
+6 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+7 0 obj
+<< /Length 193 >>
+stream
+BT
+/F1 24 Tf
+72 720 Td
+(ThinkingKity PDF Demo) Tj
+/F1 12 Tf
+0 -34 Td
+(Page 1 of 3) Tj
+0 -22 Td
+(This page verifies basic PDF rendering.) Tj
+0 -22 Td
+(Use the toolbar to zoom in and out.) Tj
+ET
+endstream
+endobj
+8 0 obj
+<< /Length 204 >>
+stream
+BT
+/F1 24 Tf
+72 720 Td
+(Navigation Test) Tj
+/F1 12 Tf
+0 -34 Td
+(Page 2 of 3) Tj
+0 -22 Td
+(This page verifies multi-page navigation.) Tj
+0 -22 Td
+(Scroll or use page controls to move between pages.) Tj
+ET
+endstream
+endobj
+9 0 obj
+<< /Length 223 >>
+stream
+BT
+/F1 24 Tf
+72 720 Td
+(Document Preview) Tj
+/F1 12 Tf
+0 -34 Td
+(Page 3 of 3) Tj
+0 -22 Td
+(This page verifies the viewer handles multiple pages.) Tj
+0 -22 Td
+(The demo file is intentionally small and self-contained.) Tj
+ET
+endstream
+endobj
+xref
+0 10
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000127 00000 n 
+0000000253 00000 n 
+0000000379 00000 n 
+0000000505 00000 n 
+0000000575 00000 n 
+0000000818 00000 n 
+0000001072 00000 n 
+trailer
+<< /Size 10 /Root 1 0 R >>
+startxref
+1345
+%%EOF

@@ -61,6 +61,7 @@ This vault contains sample files across multiple languages and formats to showca
 |------|------|--------|
 | `sample.csv` | CSV | Handsontable spreadsheet |
 | `config.json` | JSON | CodeMirror json |
+| `config.jsonc` | JSON with Comments | CodeMirror jsonc |
 | `config.yaml` | YAML | CodeMirror yaml |
 | `config.toml` | TOML | CodeMirror toml |
 | `config.ini` | INI | CodeMirror ini |
@@ -72,6 +73,12 @@ This vault contains sample files across multiple languages and formats to showca
 |------|------|--------|
 | `plain.txt` | Notes / scratchpad | CodeMirror text |
 
+### `documents/` — Documents
+
+| File | Type | Viewer |
+|------|------|--------|
+| `sample.pdf` | 3-page PDF | Built-in PDF viewer |
+
 ## Editor Types at a Glance
 
 | Extension(s) | Editor | Highlights |
@@ -79,6 +86,7 @@ This vault contains sample files across multiple languages and formats to showca
 | `.md` | Milkdown (rich) / CodeMirror (source) | WYSIWYG, frontmatter table, outline, two-way toggle |
 | `.csv` | Handsontable | Grid, sort, add/remove rows & columns |
 | `.mermaid` | Mermaid editor | Live preview, source/preview/split modes |
-| `.json` `.yaml` `.toml` `.ini` `.properties` | CodeMirror | Syntax highlighting + bracket matching |
+| `.json` `.jsonc` `.yaml` `.toml` `.ini` `.properties` | CodeMirror | Syntax highlighting + bracket matching |
 | `.py` `.ts` `.tsx` `.java` `.rs` `.go` `.c` `.cpp` `.cs` `.rb` `.js` `.sql` `.sh` `.css` `.scss` `.sass` `.less` `.html` `.xml` `.vue` `.lua` `.r` `.groovy` | CodeMirror | Syntax highlighting where a language mode is available |
 | `.txt` `.log` | CodeMirror (plain) | Line numbers, word wrap |
+| `.pdf` | PDF viewer | Page rendering, zoom, navigation |
