@@ -58,6 +58,12 @@ jobs:
     env:
       THINKINGKITY_UPDATE_PLATFORM: ${{ matrix.platform }}
       THINKINGKITY_UPDATE_ARCH: ${{ matrix.arch }}
+      APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+      APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+      APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+      APPLE_ID: ${{ secrets.APPLE_ID }}
+      APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
 
     steps:
       - name: Checkout
@@ -92,6 +98,18 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Import Apple signing certificate
+        if: matrix.platform == 'macos' && env.APPLE_CERTIFICATE != ''
+        run: |
+          KEYCHAIN_PASSWORD="$(uuidgen)"
+          echo "$APPLE_CERTIFICATE" | base64 --decode > certificate.p12
+          security create-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+          security import certificate.p12 -k build.keychain -P "$APPLE_CERTIFICATE_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" build.keychain
+          rm certificate.p12
 
       - name: Build desktop bundle
         run: npm run build:desktop -- ${{ matrix.tauri-args }}

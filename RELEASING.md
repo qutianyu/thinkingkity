@@ -4,7 +4,7 @@
 
 | Surface | Current repository support | Distribution path |
 | --- | --- | --- |
-| macOS | Ready | GitHub Release DMG |
+| macOS | Ready after Apple signing/notarization secrets are configured | GitHub Release DMG |
 | Linux | Ready | GitHub Release AppImage and deb |
 | Windows | Ready | GitHub Release NSIS and MSI |
 | Web | Ready | GitHub Release Linux binary |
@@ -29,6 +29,25 @@ Use the GitHub Actions UI and run either:
 - `Web Build` for the web bundle
 
 Manual runs upload workflow artifacts only. GitHub Release assets are uploaded only for tag builds.
+
+## macOS public distribution
+
+The macOS GitHub Release artifact is only suitable for normal end-user download after it has been signed with a `Developer ID Application` certificate and notarized by Apple.
+
+Configure these repository secrets before shipping macOS releases publicly:
+
+| Secret | Purpose |
+| --- | --- |
+| `APPLE_CERTIFICATE` | Base64-encoded `.p12` export of the `Developer ID Application` certificate |
+| `APPLE_CERTIFICATE_PASSWORD` | Password used when exporting the `.p12` file |
+| `APPLE_SIGNING_IDENTITY` | Signing identity name, for example `Developer ID Application: Example Inc. (TEAMID)` |
+| `APPLE_ID` | Apple ID used for notarization |
+| `APPLE_PASSWORD` | App-specific password for that Apple ID |
+| `APPLE_TEAM_ID` | Apple Developer Team ID |
+
+When those secrets are present, the macOS release job imports the certificate before `tauri build`. Tauri then uses the `APPLE_*` environment variables to sign and notarize the generated bundle.
+
+If those secrets are missing, CI can still produce a DMG for internal smoke testing, but a DMG downloaded from GitHub is expected to be blocked by Gatekeeper on other Macs with messages such as `“ThinkingKity” is damaged and can’t be opened`.
 
 ## Platform mapping
 
