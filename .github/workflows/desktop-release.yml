@@ -99,6 +99,43 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Validate Apple signing certificate
+        if: matrix.platform == 'macos' && env.APPLE_CERTIFICATE != ''
+        run: |
+          python3 - <<'PY'
+          import base64
+          import os
+          from pathlib import Path
+
+          encoded = os.environ["APPLE_CERTIFICATE"]
+          try:
+              decoded = base64.b64decode(encoded, validate=True)
+          except Exception as exc:
+              raise SystemExit(f"APPLE_CERTIFICATE is not valid base64: {exc}")
+
+          if not decoded:
+              raise SystemExit("APPLE_CERTIFICATE decoded to an empty file")
+
+          Path("certificate.p12").write_bytes(decoded)
+          PY
+
+          openssl pkcs12 \
+            -in certificate.p12 \
+            -info \
+            -noout \
+            -passin env:APPLE_CERTIFICATE_PASSWORD >/dev/null
+
+          if ! openssl pkcs12 \
+            -in certificate.p12 \
+            -nocerts \
+            -nodes \
+            -passin env:APPLE_CERTIFICATE_PASSWORD 2>/dev/null | grep -q "BEGIN .*PRIVATE KEY"; then
+            echo "APPLE_CERTIFICATE is readable, but the .p12 does not contain a private key"
+            exit 1
+          fi
+
+          rm certificate.p12
+
       - name: Build desktop bundle
         run: npm run build:desktop -- ${{ matrix.tauri-args }}
 

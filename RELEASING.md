@@ -49,6 +49,12 @@ When those secrets are present, `tauri build` uses the `APPLE_*` environment var
 
 If those secrets are missing, CI can still produce a DMG for internal smoke testing, but a DMG downloaded from GitHub is expected to be blocked by Gatekeeper on other Macs with messages such as `“ThinkingKity” is damaged and can’t be opened`.
 
+The workflow validates `APPLE_CERTIFICATE` before bundling. If validation fails:
+
+- `APPLE_CERTIFICATE is not valid base64` means the secret is not the raw base64 text of the exported `.p12`
+- `Mac verify error` or a decryption error from `openssl pkcs12` usually means `APPLE_CERTIFICATE_PASSWORD` does not match the `.p12` export password
+- `the .p12 does not contain a private key` means the certificate was exported without its matching private key and cannot be used for signing
+
 ## Platform mapping
 
 Desktop builds inject the update identity at build time:
