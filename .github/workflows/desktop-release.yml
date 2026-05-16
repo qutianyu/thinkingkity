@@ -99,7 +99,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Validate Apple signing certificate
+      - name: Prepare Apple signing certificate
         if: matrix.platform == 'macos' && env.APPLE_CERTIFICATE != ''
         run: |
           python3 - <<'PY'
@@ -125,19 +125,82 @@ jobs:
             -noout \
             -passin env:APPLE_CERTIFICATE_PASSWORD >/dev/null
 
-          if ! openssl pkcs12 \
+          # Re-export through OpenSSL's legacy PKCS#12 mode so macOS security import
+          # receives a Keychain-compatible bundle even when the uploaded .p12 was
+          # created by a newer OpenSSL version.
+          openssl pkcs12 \
             -in certificate.p12 \
             -nocerts \
             -nodes \
-            -passin env:APPLE_CERTIFICATE_PASSWORD 2>/dev/null | grep -q "BEGIN .*PRIVATE KEY"; then
+            -passin env:APPLE_CERTIFICATE_PASSWORD \
+            -out signing-key.pem
+
+          if ! grep -q "BEGIN .*PRIVATE KEY" signing-key.pem; then
             echo "APPLE_CERTIFICATE is readable, but the .p12 does not contain a private key"
             exit 1
           fi
 
-          rm certificate.p12
+          openssl pkcs12 \
+            -in certificate.p12 \
+            -clcerts \
+            -nokeys \
+            -passin env:APPLE_CERTIFICATE_PASSWORD \
+            -out signing-cert.pem
+
+          openssl pkcs12 \
+            -export \
+            -legacy \
+            -inkey signing-key.pem \
+            -in signing-cert.pem \
+            -out certificate-legacy.p12 \
+            -passout env:APPLE_CERTIFICATE_PASSWORD
+
+          KEYCHAIN_PASSWORD="$(uuidgen)"
+          security create-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+          security list-keychains -d user -s build.keychain login.keychain-db
+          security import certificate-legacy.p12 \
+            -k build.keychain \
+            -P "$APPLE_CERTIFICATE_PASSWORD" \
+            -T /usr/bin/codesign
+          security set-key-partition-list \
+            -S apple-tool:,apple:,codesign: \
+            -s \
+            -k "$KEYCHAIN_PASSWORD" \
+            build.keychain
+
+          if [ -z "$APPLE_SIGNING_IDENTITY" ]; then
+            CERT_ID="$(security find-identity -v -p codesigning build.keychain | sed -n 's/.*\"\\(.*\\)\"/\\1/p' | head -n 1)"
+            if [ -z "$CERT_ID" ]; then
+              echo "Could not infer APPLE_SIGNING_IDENTITY from imported certificate"
+              exit 1
+            fi
+            echo "APPLE_SIGNING_IDENTITY=$CERT_ID" >> "$GITHUB_ENV"
+          fi
+
+          rm -f certificate.p12 certificate-legacy.p12 signing-key.pem signing-cert.pem
 
       - name: Build desktop bundle
+        env:
+          # The certificate is already normalized and imported above. Leaving this
+          # empty prevents Tauri from attempting a second import of the original
+          # uploaded PKCS#12 bundle.
+          APPLE_CERTIFICATE: ''
         run: npm run build:desktop -- ${{ matrix.tauri-args }}
+
+      - name: Verify macOS bundle signature
+        if: matrix.platform == 'macos'
+        run: |
+          APP_PATH="$(find src-tauri/target/release/bundle/macos -maxdepth 1 -name '*.app' -print -quit)"
+          if [ -z "$APP_PATH" ]; then
+            echo "No macOS .app bundle found to verify"
+            exit 1
+          fi
+
+          codesign --verify --deep --strict --verbose=2 "$APP_PATH"
+          codesign -dv --verbose=4 "$APP_PATH"
+          spctl --assess --type execute --verbose=4 "$APP_PATH"
 
       - name: Upload workflow artifacts
         uses: actions/upload-artifact@v4

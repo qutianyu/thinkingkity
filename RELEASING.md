@@ -45,15 +45,19 @@ Configure these repository secrets before shipping macOS releases publicly:
 | `APPLE_PASSWORD` | App-specific password for that Apple ID |
 | `APPLE_TEAM_ID` | Apple Developer Team ID |
 
-When those secrets are present, `tauri build` uses the `APPLE_*` environment variables to import the certificate, sign the generated app bundle, and notarize it with Apple.
+When those secrets are present, the macOS workflow decodes the uploaded `.p12`, re-exports it in a Keychain-compatible legacy PKCS#12 format, imports it into a temporary CI keychain, and then lets `tauri build` sign and notarize the generated app bundle.
 
 If those secrets are missing, CI can still produce a DMG for internal smoke testing, but a DMG downloaded from GitHub is expected to be blocked by Gatekeeper on other Macs with messages such as `“ThinkingKity” is damaged and can’t be opened`.
 
-The workflow validates `APPLE_CERTIFICATE` before bundling. If validation fails:
+The workflow validates and normalizes `APPLE_CERTIFICATE` before bundling. If validation fails:
 
 - `APPLE_CERTIFICATE is not valid base64` means the secret is not the raw base64 text of the exported `.p12`
 - `Mac verify error` or a decryption error from `openssl pkcs12` usually means `APPLE_CERTIFICATE_PASSWORD` does not match the `.p12` export password
 - `the .p12 does not contain a private key` means the certificate was exported without its matching private key and cannot be used for signing
+
+The explicit normalization step avoids a class of CI failures where OpenSSL can read a PKCS#12 bundle but macOS `security import` rejects that original bundle format.
+
+After bundling, the macOS job also verifies the generated `.app` with `codesign --verify` and `spctl --assess`. A green release job therefore means the app was not only built, but also accepted by macOS code-signing and Gatekeeper checks on the CI runner.
 
 ## Platform mapping
 
