@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { RefreshCw } from "lucide-react";
 import { useSyncStore } from "./syncStore";
 import { useVaultStore } from "@/stores/vaultStore";
-import { syncGitSync } from "@/lib/tauriCommands";
+import { githubPushLocal } from "@/lib/tauriCommands";
 import { useFileTreeStore } from "@/stores/fileTreeStore";
 
 export function SyncButton() {
@@ -19,34 +19,29 @@ export function SyncButton() {
     if (!vaultPath || config.method === "none" || status === "syncing") return;
 
     setStatus("syncing");
+    showToast("loading", t("sync.syncing"));
     try {
       let result;
-      if (config.method === "git") {
-        result = await syncGitSync(
-          vaultPath,
-          config.git.remoteUrl,
-          config.git.branch,
-        );
-      } else {
-        showToast(false, "WebDAV sync is not yet implemented.");
-        setStatus("error", "WebDAV sync is not yet implemented.");
-        return;
-      }
+      result = await githubPushLocal(
+        vaultPath,
+        config.git.remoteUrl,
+        config.git.branch,
+      );
 
       if (result.success) {
         setStatus("success", result.message);
-        showToast(true, result.message);
+        showToast("success", result.message);
         await refreshTree(vaultPath);
       } else {
         setStatus("error", result.message || result.errors.join("\n"));
-        showToast(false, result.message || result.errors.join("\n"));
+        showToast("error", result.message || result.errors.join("\n"));
       }
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Sync failed.";
       setStatus("error", msg);
-      showToast(false, msg);
+      showToast("error", msg);
     }
-  }, [vaultPath, status, config, setStatus, showToast, refreshTree]);
+  }, [vaultPath, status, config, setStatus, showToast, refreshTree, t]);
 
   const syncing = status === "syncing";
   const disabled = !vaultPath || config.method === "none";
@@ -59,6 +54,8 @@ export function SyncButton() {
       title={
         disabled
           ? t("sync.notConfigured")
+          : syncing
+            ? t("sync.syncing")
           :
         status === "error"
           ? `${t("sync.statusError")}: ${useSyncStore.getState().statusMessage}`

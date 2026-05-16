@@ -37,7 +37,8 @@
 		"noVaultOpen": "No hay ningún Vault abierto",
 		"collapse": "Contraer barra lateral",
 		"expand": "Expandir barra lateral",
-		"removeRecent": "Eliminar"
+		"removeRecent": "Eliminar",
+		"newTkdoc": "Texto enriquecido"
 	},
 	"recovery": {
 		"title": "Centro de recuperación",
@@ -59,7 +60,15 @@
 		"deletePermanentlyTitle": "Eliminar permanentemente",
 		"deletePermanentlyDescription": "¿Eliminar permanentemente {{path}}? Esta acción no se puede deshacer.",
 		"reasonManualSave": "Guardado manual",
-		"reasonBeforeRestore": "Antes de restaurar"
+		"reasonBeforeRestore": "Antes de restaurar",
+		"clear": "Vaciar",
+		"clearHistory": "Vaciar historial",
+		"deleteSnapshotTitle": "Eliminar instantánea",
+		"deleteSnapshotDescription": "¿Eliminar esta instantánea de {{path}}? Esta acción no se puede deshacer.",
+		"clearFileSnapshotsTitle": "Vaciar historial del archivo",
+		"clearFileSnapshotsDescription": "¿Eliminar todas las instantáneas de {{path}}? Esta acción no se puede deshacer.",
+		"clearAllSnapshotsTitle": "Vaciar todo el historial de archivos",
+		"clearAllSnapshotsDescription": "¿Eliminar todas las instantáneas del historial de archivos de esta bóveda? Esta acción no se puede deshacer."
 	},
 	"about": {
 		"title": "Acerca de ThinkingKity",
@@ -266,7 +275,9 @@
 		"renameDescription": "Actualizar el nombre de este elemento.",
 		"renameDescriptionWithExtension": "Actualizar el nombre de este elemento. La extensión {{extension}} se conservará.",
 		"deleteTitle": "Eliminar elemento",
-		"deleteDescription": "¿Eliminar \"{{name}}\"? Esta acción no se puede deshacer."
+		"deleteDescription": "¿Eliminar \"{{name}}\"? Esta acción no se puede deshacer.",
+		"newTkdocTitle": "Nuevo documento enriquecido",
+		"newTkdocDescription": "Crear un nuevo documento de texto enriquecido."
 	},
 	"insertMenu": {
 		"filter": "Filtrar...",
@@ -298,27 +309,18 @@
 		"title": "Sync",
 		"method": "Sync Method",
 		"methodNone": "Local",
-		"methodWebDAV": "WebDAV",
-		"methodGit": "Git",
-		"direction": "Direction",
-		"directionPush": "Push",
-		"directionPull": "Pull",
-		"webdavUrl": "Server URL",
-		"webdavUsername": "Username",
-		"webdavPassword": "Password",
+		"methodGitHub": "GitHub",
 		"gitRemoteUrl": "Remote URL",
 		"gitBranch": "Branch",
 		"gitAuthorName": "Author Name",
 		"gitAuthorEmail": "Author Email",
 		"show": "Show",
 		"hide": "Hide",
-		"testConnection": "Test Connection",
-		"testSuccess": "Connection succeeded",
-		"testFailed": "Connection failed",
-		"initGit": "Inicializar repositorio",
 		"syncNow": "Sincronizar ahora",
 		"statusError": "Error de sincronización",
-		"notConfigured": "La sincronización no está configurada"
+		"notConfigured": "La sincronización no está configurada",
+		"pullFromGitHub": "Traer desde GitHub",
+		"pushToGitHub": "Subir a GitHub"
 	},
 	"hoverPreview": {
 		"resolved": "Resuelto",
@@ -328,5 +330,28 @@
 		"lines": "líneas",
 		"openFile": "Abrir",
 		"createFile": "Crear"
+	},
+	"tkdoc": {
+		"toolbar": "Barra de texto enriquecido",
+		"undo": "Deshacer",
+		"redo": "Rehacer",
+		"heading1": "Título 1",
+		"heading2": "Título 2",
+		"heading3": "Título 3",
+		"bold": "Negrita",
+		"italic": "Cursiva",
+		"strike": "Tachado",
+		"link": "Enlace",
+		"linkTitle": "Insertar enlace",
+		"linkDescription": "Introduce una URL para el texto seleccionado. Déjalo vacío para quitar el enlace.",
+		"bulletList": "Lista con viñetas",
+		"orderedList": "Lista numerada",
+		"blockquote": "Cita",
+		"codeBlock": "Bloque de código",
+		"invalidTitle": "No se puede abrir este documento enriquecido",
+		"invalidDescription": "El archivo .tkdoc no es válido o usa una versión no compatible.",
+		"apply": "Aplicar",
+		"image": "Imagen",
+		"video": "Vídeo"
 	}
 }

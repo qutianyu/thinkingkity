@@ -168,6 +168,56 @@ npm run build:web
 | `vaults` | 最近打开的 Vault 列表（自动管理）。 |
 | `auth` | 可选 Web 登录配置。只有 `username` 和 `password` 都非空时才启用登录；token 48 小时后过期。 |
 
+## GitHub 同步
+
+ThinkingKity 使用 **GitHub 用户名 + Personal Access Token（PAT）** 进行 HTTPS 认证。GitHub 账号密码不能再用于 Git 操作。
+
+### 1. 在 GitHub 创建 Personal Access Token
+
+1. 在浏览器中打开 GitHub。
+2. 进入 **右上角头像菜单 → Settings → Developer settings → Personal access tokens → Fine-grained tokens**。
+3. 点击 **Generate new token**。
+4. 建议按下面方式配置：
+   - **Token name**：例如 `thinkingkity-sync`
+   - **Expiration**：按你的安全偏好选择有效期
+   - **Resource owner**：通常选择你自己的 GitHub 账号
+   - **Repository access**：
+     - 如果只需要同步一个文档仓库，选择 **Only select repositories**
+     - 再勾选目标仓库
+   - **Repository permissions**：
+     - 将 **Contents** 设置为 **Read and write**
+5. 生成 token 后立即复制保存。GitHub 只会完整展示一次。
+
+如果仓库属于 organization，新 token 访问私有仓库时可能还需要组织管理员审批。
+
+### 2. 在 ThinkingKity 中配置 GitHub
+
+1. 打开目标 Vault。
+2. 进入 **设置 → 同步**。
+3. 选择 **GitHub** 作为同步方式。
+4. 填写：
+   - **远程仓库**：例如 `https://github.com/your-name/your-vault.git`
+   - **分支**：通常是 `main`
+   - **GitHub 用户名**：你的 GitHub 登录名
+   - **Personal Access Token**：上一步创建的 PAT
+
+ThinkingKity 会把 GitHub 凭据保存在本地：
+
+```text
+<vault>/.thinkingkity/github-config.json
+```
+
+这个文件包含敏感凭据，会自动加入 `.gitignore`；兼容迁移用的旧路径 `.thinkingkity/git-config.json` 也会一起忽略，因此不会被提交到文档仓库。
+
+### 3. 选择正确的 GitHub 动作
+
+| 动作 | 适用场景 |
+|------|----------|
+| **从 GitHub 拉取** | GitHub 上已经有仓库，你想把远端文件下载到当前本地 Vault。 |
+| **上传到 GitHub** | 当前本地 Vault 是准的，你想把现有文件发布到 GitHub。 |
+
+`从 GitHub 拉取` 要求远端已存在你填写的分支；`上传到 GitHub` 则可以在远端还没有该分支时创建它。
+
 ## 项目结构
 
 ```
@@ -206,7 +256,7 @@ src-tauri/
     │   └── server.rs      # 独立 HTTP server 入口
     ├── global_config.rs   # 全局 Vault 列表 + allowed_paths 配置 + Demo Vault
     ├── sync_common.rs     # 同步通用工具
-    └── sync_git.rs        # Git 同步实现
+    └── sync_git.rs        # GitHub 同步实现
 
 demo-vault/               # 内置示例 Vault（通过 build.rs 自动嵌入）
 
@@ -262,13 +312,14 @@ AI 助手基于 LangGraph 智能体，可规划多步骤任务并执行工具。
     "model": ""
   },
   "sync": {
-    "method": "none",
+    "method": "github",
     "direction": "push",
-    "webdav": { "url": "", "username": "", "password": "" },
     "git": { "remoteUrl": "", "branch": "main" }
   }
 }
 ```
+
+当 `"method"` 为 `"github"` 时，仓库地址和分支仍保存在上面的主配置文件中，并沿用历史字段名 `git`；敏感的 GitHub 凭据则单独保存在 `<vault>/.thinkingkity/github-config.json`。
 
 ## 双链（Wiki Links）与反向链接
 

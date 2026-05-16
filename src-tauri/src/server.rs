@@ -371,6 +371,41 @@ fn handle_restore_snapshot(request: &mut Request) -> Response<std::io::Cursor<Ve
     }
 }
 
+fn handle_delete_snapshot(request: &mut Request) -> Response<std::io::Cursor<Vec<u8>>> {
+    let body = match parse_json_body(request) {
+        Ok(b) => b,
+        Err(e) => return err_json(StatusCode(400), &e),
+    };
+    let vault_path = match read_json_field(&body, "vaultPath") {
+        Some(p) => p,
+        None => return err_json(StatusCode(400), "Missing 'vaultPath' field"),
+    };
+    let snapshot_id = match read_json_field(&body, "snapshotId") {
+        Some(p) => p,
+        None => return err_json(StatusCode(400), "Missing 'snapshotId' field"),
+    };
+    match fs_ops::delete_snapshot(&vault_path, &snapshot_id) {
+        Ok(()) => ok_json(r#"{"ok":true}"#),
+        Err(e) => err_json(StatusCode(500), &e),
+    }
+}
+
+fn handle_clear_snapshots(request: &mut Request) -> Response<std::io::Cursor<Vec<u8>>> {
+    let body = match parse_json_body(request) {
+        Ok(b) => b,
+        Err(e) => return err_json(StatusCode(400), &e),
+    };
+    let vault_path = match read_json_field(&body, "vaultPath") {
+        Some(p) => p,
+        None => return err_json(StatusCode(400), "Missing 'vaultPath' field"),
+    };
+    let file_path = read_json_field(&body, "filePath");
+    match fs_ops::clear_snapshots(&vault_path, file_path.as_deref()) {
+        Ok(()) => ok_json(r#"{"ok":true}"#),
+        Err(e) => err_json(StatusCode(500), &e),
+    }
+}
+
 fn handle_move_to_trash(request: &mut Request) -> Response<std::io::Cursor<Vec<u8>>> {
     let body = match parse_json_body(request) {
         Ok(b) => b,
@@ -779,6 +814,8 @@ pub fn start(static_dir: Option<String>, port_override: Option<u16>) {
             (&Method::Post, "/api/rename-file") => handle_rename_file(&mut request),
             (&Method::Post, "/api/create-snapshot") => handle_create_snapshot(&mut request),
             (&Method::Post, "/api/restore-snapshot") => handle_restore_snapshot(&mut request),
+            (&Method::Post, "/api/delete-snapshot") => handle_delete_snapshot(&mut request),
+            (&Method::Post, "/api/clear-snapshots") => handle_clear_snapshots(&mut request),
             (&Method::Post, "/api/move-to-trash") => handle_move_to_trash(&mut request),
             (&Method::Post, "/api/restore-trash") => handle_restore_trash(&mut request),
             (&Method::Post, "/api/delete-trash-entry") => handle_delete_trash_entry(&mut request),

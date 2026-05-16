@@ -37,7 +37,8 @@
 		"noVaultOpen": "Aucun Vault ouvert",
 		"collapse": "Réduire la barre latérale",
 		"expand": "Développer la barre latérale",
-		"removeRecent": "Supprimer"
+		"removeRecent": "Supprimer",
+		"newTkdoc": "Texte enrichi"
 	},
 	"recovery": {
 		"title": "Centre de récupération",
@@ -59,7 +60,15 @@
 		"deletePermanentlyTitle": "Supprimer définitivement",
 		"deletePermanentlyDescription": "Supprimer définitivement {{path}} ? Cette action est irréversible.",
 		"reasonManualSave": "Enregistrement manuel",
-		"reasonBeforeRestore": "Avant restauration"
+		"reasonBeforeRestore": "Avant restauration",
+		"clear": "Vider",
+		"clearHistory": "Vider l’historique",
+		"deleteSnapshotTitle": "Supprimer l’instantané",
+		"deleteSnapshotDescription": "Supprimer cet instantané de {{path}} ? Cette action est irréversible.",
+		"clearFileSnapshotsTitle": "Vider l’historique du fichier",
+		"clearFileSnapshotsDescription": "Supprimer tous les instantanés de {{path}} ? Cette action est irréversible.",
+		"clearAllSnapshotsTitle": "Vider tout l’historique des fichiers",
+		"clearAllSnapshotsDescription": "Supprimer tous les instantanés d’historique de fichiers de ce coffre ? Cette action est irréversible."
 	},
 	"about": {
 		"title": "À propos de ThinkingKity",
@@ -266,7 +275,9 @@
 		"renameDescription": "Modifier le nom de cet élément.",
 		"renameDescriptionWithExtension": "Modifier le nom de cet élément. L'extension {{extension}} sera conservée.",
 		"deleteTitle": "Supprimer l'élément",
-		"deleteDescription": "Supprimer « {{name}} » ? Cette action est irréversible."
+		"deleteDescription": "Supprimer « {{name}} » ? Cette action est irréversible.",
+		"newTkdocTitle": "Nouveau document enrichi",
+		"newTkdocDescription": "Créer un nouveau document de texte enrichi."
 	},
 	"insertMenu": {
 		"filter": "Filtrer...",
@@ -298,27 +309,18 @@
 		"title": "Sync",
 		"method": "Sync Method",
 		"methodNone": "Local",
-		"methodWebDAV": "WebDAV",
-		"methodGit": "Git",
-		"direction": "Direction",
-		"directionPush": "Push",
-		"directionPull": "Pull",
-		"webdavUrl": "Server URL",
-		"webdavUsername": "Username",
-		"webdavPassword": "Password",
+		"methodGitHub": "GitHub",
 		"gitRemoteUrl": "Remote URL",
 		"gitBranch": "Branch",
 		"gitAuthorName": "Author Name",
 		"gitAuthorEmail": "Author Email",
 		"show": "Show",
 		"hide": "Hide",
-		"testConnection": "Test Connection",
-		"testSuccess": "Connection succeeded",
-		"testFailed": "Connection failed",
-		"initGit": "Initialiser le dépôt",
 		"syncNow": "Synchroniser maintenant",
 		"statusError": "Échec de la synchronisation",
-		"notConfigured": "La synchronisation n'est pas configurée"
+		"notConfigured": "La synchronisation n'est pas configurée",
+		"pullFromGitHub": "Récupérer depuis GitHub",
+		"pushToGitHub": "Envoyer vers GitHub"
 	},
 	"hoverPreview": {
 		"resolved": "Résolu",
@@ -328,5 +330,28 @@
 		"lines": "lignes",
 		"openFile": "Ouvrir",
 		"createFile": "Créer"
+	},
+	"tkdoc": {
+		"toolbar": "Barre de texte enrichi",
+		"undo": "Annuler",
+		"redo": "Rétablir",
+		"heading1": "Titre 1",
+		"heading2": "Titre 2",
+		"heading3": "Titre 3",
+		"bold": "Gras",
+		"italic": "Italique",
+		"strike": "Barré",
+		"link": "Lien",
+		"linkTitle": "Insérer un lien",
+		"linkDescription": "Saisissez une URL pour le texte sélectionné. Laissez vide pour supprimer le lien.",
+		"bulletList": "Liste à puces",
+		"orderedList": "Liste numérotée",
+		"blockquote": "Citation",
+		"codeBlock": "Bloc de code",
+		"invalidTitle": "Impossible d’ouvrir ce document enrichi",
+		"invalidDescription": "Le fichier .tkdoc est invalide ou utilise une version non prise en charge.",
+		"apply": "Appliquer",
+		"image": "Image",
+		"video": "Vidéo"
 	}
 }

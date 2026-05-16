@@ -4,8 +4,6 @@ export interface RenderHtmlImagesOptions {
   resolveAssetUrl?: (path: string) => Promise<string>;
 }
 
-const BLANK_LINE_PLACEHOLDER = "\u200B";
-
 export function escapeHtmlAttribute(value: string): string {
   // HTML image snippets are stored as Markdown content, so attributes must be escaped.
   return value
@@ -150,7 +148,6 @@ export function brToHardbreak(markdown: string): string {
       result += parts[i];
     } else {
       let part = stripLegacyBlankLinePlaceholders(parts[i]);
-      part = preserveMarkdownBlankLines(part);
       part = part.replace(/<br\s*\/?>/gi, "\n");
       result += part;
     }
@@ -170,7 +167,6 @@ export function hardbreakToBr(markdown: string): string {
         .replace(/<br\s*\/?>/gi, "\n");
     }
   }
-  result = result.replace(/^[ \t]*\u200B[ \t]*$/gm, "");
   result = stripLegacyBlankLinePlaceholders(result);
   return result;
 }
@@ -206,16 +202,12 @@ function normalizeEscapedWikiLinksInText(markdown: string): string {
   return result;
 }
 
-function preserveMarkdownBlankLines(markdown: string): string {
-  return markdown.replace(/\n{3,}/g, (match) => {
-    const blankLineCount = match.length - 1;
-    return `\n\n${Array.from({ length: blankLineCount - 1 }, () => BLANK_LINE_PLACEHOLDER).join("\n")}\n\n`;
-  });
+function stripLegacyBlankLinePlaceholders(markdown: string): string {
+  return markdown
+    .replace(/<span\s+data-thinkingkity-blank-line=["']true["']\s*><\/span>/gim, "")
+    .replace(/^[ \t]+$/gm, "");
 }
 
-function stripLegacyBlankLinePlaceholders(markdown: string): string {
-  return markdown.replace(/^[ \t]*<span\s+data-thinkingkity-blank-line=["']true["']\s*><\/span>[ \t]*$/gim, "");
-}
 
 
 export function uniqueFileName(fileName: string, existingNames: Set<string>): string {

@@ -217,7 +217,7 @@ struct RecoveryIndex {
 
 const MAX_SNAPSHOTS_PER_FILE: usize = 30;
 const TEXT_SNAPSHOT_EXTENSIONS: &[&str] = &[
-    "md", "markdown", "txt", "json", "yaml", "yml", "toml", "ini", "properties", "csv",
+    "md", "markdown", "tkdoc", "txt", "json", "yaml", "yml", "toml", "ini", "properties", "csv",
     "mermaid", "js", "jsx", "ts", "tsx", "py", "java", "rs", "go", "c", "cpp", "h", "hpp",
     "cs", "rb", "lua", "r", "groovy", "sh", "bash", "zsh", "css", "scss", "sass", "less",
     "html", "xml", "vue", "log",
@@ -246,6 +246,10 @@ fn recovery_dir(vault: &Path) -> PathBuf {
 
 fn recovery_index_path(vault: &Path) -> PathBuf {
     recovery_dir(vault).join("index.json")
+}
+
+fn snapshots_dir(vault: &Path) -> PathBuf {
+    recovery_dir(vault).join("snapshots")
 }
 
 fn ensure_vault(vault_path: &str) -> Result<PathBuf, String> {
@@ -340,6 +344,32 @@ fn unique_existing_target(path: &Path) -> PathBuf {
     parent.join(format!("{}.restored-{}", stem, now_stamp()))
 }
 
+fn remove_snapshot_file_and_empty_parents(vault: &Path, snapshot_path: &str) -> Result<(), String> {
+    let absolute_path = vault.join(snapshot_path);
+    if absolute_path.exists() {
+        fs::remove_file(&absolute_path).map_err(|e| e.to_string())?;
+    }
+
+    let snapshots_root = snapshots_dir(vault);
+    let mut current = absolute_path.parent();
+    while let Some(dir) = current {
+        if dir == snapshots_root || !dir.starts_with(&snapshots_root) {
+            break;
+        }
+        let is_empty = fs::read_dir(dir)
+            .map_err(|e| e.to_string())?
+            .next()
+            .is_none();
+        if !is_empty {
+            break;
+        }
+        fs::remove_dir(dir).map_err(|e| e.to_string())?;
+        current = dir.parent();
+    }
+
+    Ok(())
+}
+
 fn cleanup_snapshots_for_file(vault: &Path, index: &mut RecoveryIndex, file_path: &str) {
     let mut entries: Vec<_> = index
         .snapshots
@@ -349,7 +379,7 @@ fn cleanup_snapshots_for_file(vault: &Path, index: &mut RecoveryIndex, file_path
         .collect();
     entries.sort_by(|a, b| b.created_at.cmp(&a.created_at));
     for old in entries.into_iter().skip(MAX_SNAPSHOTS_PER_FILE) {
-        let _ = fs::remove_file(vault.join(&old.snapshot_path));
+        let _ = remove_snapshot_file_and_empty_parents(vault, &old.snapshot_path);
         index.snapshots.retain(|entry| entry.id != old.id);
     }
 }
@@ -365,7 +395,7 @@ fn delete_snapshots_after(
         .iter()
         .filter(|entry| entry.file_path == file_path && entry.created_at.as_str() > created_at)
         .map(|entry| {
-            let _ = fs::remove_file(vault.join(&entry.snapshot_path));
+            let _ = remove_snapshot_file_and_empty_parents(vault, &entry.snapshot_path);
             entry.id.clone()
         })
         .collect();
@@ -480,6 +510,60 @@ pub fn restore_snapshot(vault_path: &str, snapshot_id: &str) -> Result<String, S
     write_recovery_index(&vault, &index)?;
 
     Ok(target.to_string_lossy().to_string())
+}
+
+pub fn delete_snapshot(vault_path: &str, snapshot_id: &str) -> Result<(), String> {
+    let vault = ensure_vault(vault_path)?;
+    let mut index = read_recovery_index(&vault);
+    let entry = index
+        .snapshots
+        .iter()
+        .find(|entry| entry.id == snapshot_id)
+        .cloned()
+        .ok_or_else(|| "Snapshot not found.".to_string())?;
+
+    remove_snapshot_file_and_empty_parents(&vault, &entry.snapshot_path)?;
+    index.snapshots.retain(|item| item.id != snapshot_id);
+    write_recovery_index(&vault, &index)
+}
+
+pub fn clear_snapshots(vault_path: &str, file_path: Option<&str>) -> Result<(), String> {
+    let vault = ensure_vault(vault_path)?;
+    let filter = match file_path {
+        Some(path) if !path.trim().is_empty() => {
+            let target = path_inside_vault(&vault, path)?;
+            Some(relative_to_vault(&vault, &target)?)
+        }
+        _ => None,
+    };
+
+    let mut index = read_recovery_index(&vault);
+    let entries_to_delete: Vec<SnapshotEntry> = index
+        .snapshots
+        .iter()
+        .filter(|entry| {
+            filter
+                .as_ref()
+                .map(|filter_path| &entry.file_path == filter_path)
+                .unwrap_or(true)
+        })
+        .cloned()
+        .collect();
+
+    for entry in &entries_to_delete {
+        remove_snapshot_file_and_empty_parents(&vault, &entry.snapshot_path)?;
+    }
+
+    if let Some(filter_path) = filter {
+        index.snapshots.retain(|entry| entry.file_path != filter_path);
+    } else {
+        index.snapshots.clear();
+        let snapshots_root = snapshots_dir(&vault);
+        if snapshots_root.exists() {
+            fs::remove_dir_all(snapshots_root).map_err(|e| e.to_string())?;
+        }
+    }
+    write_recovery_index(&vault, &index)
 }
 
 pub fn move_to_trash(vault_path: &str, path: &str) -> Result<TrashEntry, String> {

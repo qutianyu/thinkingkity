@@ -2045,9 +2045,28 @@ h3 { font-size: 1.25rem; font-weight: 600; line-height: 1.4; }
 }
 
 .recovery-list,
+.recovery-history-pane,
 .recovery-preview-pane,
 .recovery-trash-list {
   min-height: 0;
+}
+
+.recovery-history-pane {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.recovery-history-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 8px;
+  border-bottom: 1px solid var(--color-border-light);
+  background: var(--color-bg-app);
 }
 
 .recovery-preview-pane {
@@ -2056,9 +2075,8 @@ h3 { font-size: 1.25rem; font-weight: 600; line-height: 1.4; }
 }
 
 .recovery-list {
+  flex: 1;
   overflow: auto;
-  border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-md);
 }
 
 .recovery-list-item {

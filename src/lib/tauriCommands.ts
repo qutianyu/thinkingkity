@@ -231,6 +231,20 @@ export async function restoreSnapshot(vaultPath: string, snapshotId: string): Pr
   return res.text();
 }
 
+export async function deleteSnapshot(vaultPath: string, snapshotId: string): Promise<void> {
+  if (IS_TAURI) {
+    return invoke("delete_snapshot", { vaultPath, snapshotId });
+  }
+  await apiPost("/api/delete-snapshot", { vaultPath, snapshotId });
+}
+
+export async function clearSnapshots(vaultPath: string, filePath?: string): Promise<void> {
+  if (IS_TAURI) {
+    return invoke("clear_snapshots", { vaultPath, filePath: filePath ?? null });
+  }
+  await apiPost("/api/clear-snapshots", { vaultPath, filePath: filePath ?? null });
+}
+
 export async function moveToTrash(vaultPath: string, path: string): Promise<TrashEntry> {
   if (IS_TAURI) {
     return invoke<TrashEntry>("move_to_trash", { vaultPath, path });
@@ -326,6 +340,10 @@ export function isTextFile(path: string): boolean {
   return path.toLowerCase().endsWith(".txt");
 }
 
+export function isTkdocFile(path: string): boolean {
+  return path.toLowerCase().endsWith(".tkdoc");
+}
+
 const CODE_EXTENSIONS: Record<string, string> = {
   ".js": "javascript",
   ".jsx": "javascript",
@@ -377,6 +395,7 @@ export function isCodeFile(path: string): boolean {
   if (lower.endsWith(".csv")) return false;
   if (isJsonPath(path)) return false;
   if (lower.endsWith(".txt")) return false;
+  if (isTkdocFile(path)) return false;
   if (isImageFile(path)) return false;
   if (isPdfFile(path)) return false;
   for (const ext of Object.keys(CODE_EXTENSIONS)) {
@@ -411,24 +430,24 @@ export interface SyncResult {
   errors: string[];
 }
 
-export async function syncGitInit(
+export async function githubPullRemote(
   vaultPath: string,
   remoteUrl: string,
   branch: string,
 ): Promise<SyncResult> {
   if (IS_TAURI) {
-    return invoke<SyncResult>("sync_git_init", { vaultPath, remoteUrl, branch });
+    return invoke<SyncResult>("github_pull_remote", { vaultPath, remoteUrl, branch });
   }
   return { success: false, message: "Not available in browser mode.", files_changed: 0, errors: [] };
 }
 
-export async function syncGitSync(
+export async function githubPushLocal(
   vaultPath: string,
   remoteUrl: string,
   branch: string,
 ): Promise<SyncResult> {
   if (IS_TAURI) {
-    return invoke<SyncResult>("sync_git_sync", { vaultPath, remoteUrl, branch });
+    return invoke<SyncResult>("github_push_local", { vaultPath, remoteUrl, branch });
   }
   return { success: false, message: "Not available in browser mode.", files_changed: 0, errors: [] };
 }

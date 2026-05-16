@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { DEFAULT_SYNC_CONFIG, type SyncConfig, type SyncMethod, type SyncDirection, type WebDAVConfig, type GitConfig, type SyncStatus } from "./types";
+import { DEFAULT_SYNC_CONFIG, type SyncConfig, type SyncMethod, type SyncDirection, type GitConfig, type SyncStatus } from "./types";
 
 interface SyncState {
   config: SyncConfig;
@@ -8,12 +8,11 @@ interface SyncState {
   setConfig: (config: SyncConfig) => void;
   setMethod: (method: SyncMethod) => void;
   setDirection: (direction: SyncDirection) => void;
-  updateWebDAVConfig: (partial: Partial<WebDAVConfig>) => void;
   updateGitConfig: (partial: Partial<GitConfig>) => void;
   setStatus: (status: SyncStatus, message?: string) => void;
 
-  toast: { visible: boolean; success: boolean; message: string };
-  showToast: (success: boolean, message: string) => void;
+  toast: { visible: boolean; kind: "loading" | "success" | "error"; message: string };
+  showToast: (kind: "loading" | "success" | "error", message: string) => void;
   dismissToast: () => void;
 }
 
@@ -22,7 +21,7 @@ export const useSyncStore = create<SyncState>((set) => ({
   status: "idle",
   statusMessage: "",
 
-  toast: { visible: false, success: true, message: "" },
+  toast: { visible: false, kind: "success", message: "" },
 
   setConfig: (config) => set({ config }),
 
@@ -31,14 +30,6 @@ export const useSyncStore = create<SyncState>((set) => ({
 
   setDirection: (direction) =>
     set((state) => ({ config: { ...state.config, direction } })),
-
-  updateWebDAVConfig: (partial) =>
-    set((state) => ({
-      config: {
-        ...state.config,
-        webdav: { ...state.config.webdav, ...partial },
-      },
-    })),
 
   updateGitConfig: (partial) =>
     set((state) => ({
@@ -51,9 +42,9 @@ export const useSyncStore = create<SyncState>((set) => ({
   setStatus: (status, message = "") =>
     set({ status, statusMessage: message }),
 
-  showToast: (success, message) =>
-    set({ toast: { visible: true, success, message } }),
+  showToast: (kind, message) =>
+    set({ toast: { visible: true, kind, message } }),
 
   dismissToast: () =>
-    set({ toast: { visible: false, success: true, message: "" } }),
+    set({ toast: { visible: false, kind: "success", message: "" } }),
 }));

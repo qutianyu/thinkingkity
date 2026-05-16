@@ -1,11 +1,5 @@
-export type SyncMethod = "none" | "webdav" | "git";
+export type SyncMethod = "none" | "github";
 export type SyncDirection = "push" | "pull";
-
-export interface WebDAVConfig {
-  url: string;
-  username: string;
-  password: string;
-}
 
 export interface GitConfig {
   remoteUrl: string;
@@ -15,14 +9,12 @@ export interface GitConfig {
 export interface SyncConfig {
   method: SyncMethod;
   direction: SyncDirection;
-  webdav: WebDAVConfig;
   git: GitConfig;
 }
 
 export const DEFAULT_SYNC_CONFIG: SyncConfig = {
   method: "none",
   direction: "push",
-  webdav: { url: "", username: "", password: "" },
   git: { remoteUrl: "", branch: "main" },
 };
 

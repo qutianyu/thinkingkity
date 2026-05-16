@@ -87,6 +87,16 @@ pub fn restore_snapshot(vault_path: &str, snapshot_id: &str) -> Result<String, S
 }
 
 #[tauri::command]
+pub fn delete_snapshot(vault_path: &str, snapshot_id: &str) -> Result<(), String> {
+    fs_ops::delete_snapshot(vault_path, snapshot_id)
+}
+
+#[tauri::command]
+pub fn clear_snapshots(vault_path: &str, file_path: Option<&str>) -> Result<(), String> {
+    fs_ops::clear_snapshots(vault_path, file_path)
+}
+
+#[tauri::command]
 pub fn move_to_trash(vault_path: &str, path: &str) -> Result<TrashEntry, String> {
     fs_ops::move_to_trash(vault_path, path)
 }

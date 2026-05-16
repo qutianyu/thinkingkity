@@ -37,7 +37,8 @@
 		"noVaultOpen": "열린 Vault 없음",
 		"collapse": "사이드바 접기",
 		"expand": "사이드바 펼치기",
-		"removeRecent": "삭제"
+		"removeRecent": "삭제",
+		"newTkdoc": "서식 있는 텍스트"
 	},
 	"recovery": {
 		"title": "복구 센터",
@@ -59,7 +60,15 @@
 		"deletePermanentlyTitle": "영구 삭제",
 		"deletePermanentlyDescription": "{{path}}을(를) 영구 삭제할까요? 이 작업은 되돌릴 수 없습니다.",
 		"reasonManualSave": "수동 저장",
-		"reasonBeforeRestore": "복원 전"
+		"reasonBeforeRestore": "복원 전",
+		"clear": "비우기",
+		"clearHistory": "기록 비우기",
+		"deleteSnapshotTitle": "스냅샷 삭제",
+		"deleteSnapshotDescription": "{{path}}의 이 스냅샷을 삭제할까요? 이 작업은 되돌릴 수 없습니다.",
+		"clearFileSnapshotsTitle": "파일 기록 비우기",
+		"clearFileSnapshotsDescription": "{{path}}의 모든 스냅샷을 삭제할까요? 이 작업은 되돌릴 수 없습니다.",
+		"clearAllSnapshotsTitle": "모든 파일 기록 비우기",
+		"clearAllSnapshotsDescription": "이 vault의 모든 파일 기록 스냅샷을 삭제할까요? 이 작업은 되돌릴 수 없습니다."
 	},
 	"about": {
 		"title": "ThinkingKity 정보",
@@ -266,7 +275,9 @@
 		"renameDescription": "이 항목의 이름을 변경합니다.",
 		"renameDescriptionWithExtension": "이 항목의 이름을 변경합니다. {{extension}} 확장자는 유지됩니다.",
 		"deleteTitle": "항목 삭제",
-		"deleteDescription": "\"{{name}}\"을(를) 삭제할까요? 이 작업은 되돌릴 수 없습니다."
+		"deleteDescription": "\"{{name}}\"을(를) 삭제할까요? 이 작업은 되돌릴 수 없습니다.",
+		"newTkdocTitle": "새 서식 있는 텍스트 문서",
+		"newTkdocDescription": "새 서식 있는 텍스트 문서를 만듭니다."
 	},
 	"insertMenu": {
 		"filter": "필터...",
@@ -298,27 +309,18 @@
 		"title": "Sync",
 		"method": "Sync Method",
 		"methodNone": "로컬",
-		"methodWebDAV": "WebDAV",
-		"methodGit": "Git",
-		"direction": "Direction",
-		"directionPush": "Push",
-		"directionPull": "Pull",
-		"webdavUrl": "Server URL",
-		"webdavUsername": "Username",
-		"webdavPassword": "Password",
+		"methodGitHub": "GitHub",
 		"gitRemoteUrl": "Remote URL",
 		"gitBranch": "Branch",
 		"gitAuthorName": "Author Name",
 		"gitAuthorEmail": "Author Email",
 		"show": "Show",
 		"hide": "Hide",
-		"testConnection": "Test Connection",
-		"testSuccess": "Connection succeeded",
-		"testFailed": "Connection failed",
-		"initGit": "저장소 초기화",
 		"syncNow": "지금 동기화",
 		"statusError": "동기화 실패",
-		"notConfigured": "동기화가 설정되지 않았습니다"
+		"notConfigured": "동기화가 설정되지 않았습니다",
+		"pullFromGitHub": "GitHub에서 가져오기",
+		"pushToGitHub": "GitHub에 업로드"
 	},
 	"hoverPreview": {
 		"resolved": "확인됨",
@@ -328,5 +330,28 @@
 		"lines": "행",
 		"openFile": "파일 열기",
 		"createFile": "파일 만들기"
+	},
+	"tkdoc": {
+		"toolbar": "서식 있는 텍스트 도구 모음",
+		"undo": "실행 취소",
+		"redo": "다시 실행",
+		"heading1": "제목 1",
+		"heading2": "제목 2",
+		"heading3": "제목 3",
+		"bold": "굵게",
+		"italic": "기울임꼴",
+		"strike": "취소선",
+		"link": "링크",
+		"linkTitle": "링크 삽입",
+		"linkDescription": "선택한 텍스트의 URL을 입력하세요. 비워 두면 링크가 제거됩니다.",
+		"bulletList": "글머리 기호 목록",
+		"orderedList": "번호 매기기 목록",
+		"blockquote": "인용문",
+		"codeBlock": "코드 블록",
+		"invalidTitle": "이 서식 있는 텍스트 문서를 열 수 없습니다",
+		"invalidDescription": ".tkdoc 파일이 올바르지 않거나 지원되지 않는 버전입니다.",
+		"apply": "적용",
+		"image": "이미지",
+		"video": "동영상"
 	}
 }

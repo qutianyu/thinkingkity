@@ -1,5 +1,6 @@
 pub mod commands;
 pub mod fs_ops;
+pub mod git_config;
 pub mod global_config;
 pub mod server;
 pub mod sync_common;
@@ -31,13 +32,15 @@ pub fn run() {
             commands::list_snapshots,
             commands::read_snapshot,
             commands::restore_snapshot,
+            commands::delete_snapshot,
+            commands::clear_snapshots,
             commands::move_to_trash,
             commands::list_trash,
             commands::restore_trash,
             commands::delete_trash_entry,
             commands::list_vaults,
-            sync_git::sync_git_init,
-            sync_git::sync_git_sync,
+            sync_git::github_pull_remote,
+            sync_git::github_push_local,
             global_config::read_global_vaults,
             global_config::write_global_vaults,
             global_config::read_login_status,

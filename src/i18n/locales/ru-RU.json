@@ -37,7 +37,8 @@
 		"noVaultOpen": "Vault не открыт",
 		"collapse": "Свернуть боковую панель",
 		"expand": "Развернуть боковую панель",
-		"removeRecent": "Удалить"
+		"removeRecent": "Удалить",
+		"newTkdoc": "Форматированный текст"
 	},
 	"recovery": {
 		"title": "Центр восстановления",
@@ -59,7 +60,15 @@
 		"deletePermanentlyTitle": "Удалить навсегда",
 		"deletePermanentlyDescription": "Удалить {{path}} навсегда? Это действие нельзя отменить.",
 		"reasonManualSave": "Ручное сохранение",
-		"reasonBeforeRestore": "Перед восстановлением"
+		"reasonBeforeRestore": "Перед восстановлением",
+		"clear": "Очистить",
+		"clearHistory": "Очистить историю",
+		"deleteSnapshotTitle": "Удалить снимок",
+		"deleteSnapshotDescription": "Удалить этот снимок {{path}}? Это действие нельзя отменить.",
+		"clearFileSnapshotsTitle": "Очистить историю файла",
+		"clearFileSnapshotsDescription": "Удалить все снимки для {{path}}? Это действие нельзя отменить.",
+		"clearAllSnapshotsTitle": "Очистить всю историю файлов",
+		"clearAllSnapshotsDescription": "Удалить все снимки истории файлов в этом хранилище? Это действие нельзя отменить."
 	},
 	"about": {
 		"title": "О ThinkingKity",
@@ -266,7 +275,9 @@
 		"renameDescription": "Изменить имя этого элемента.",
 		"renameDescriptionWithExtension": "Изменить имя этого элемента. Расширение {{extension}} будет сохранено.",
 		"deleteTitle": "Удалить элемент",
-		"deleteDescription": "Удалить «{{name}}»? Это действие нельзя отменить."
+		"deleteDescription": "Удалить «{{name}}»? Это действие нельзя отменить.",
+		"newTkdocTitle": "Новый форматированный документ",
+		"newTkdocDescription": "Создать новый документ с форматированным текстом."
 	},
 	"insertMenu": {
 		"filter": "Фильтр...",
@@ -298,27 +309,18 @@
 		"title": "Sync",
 		"method": "Sync Method",
 		"methodNone": "Локально",
-		"methodWebDAV": "WebDAV",
-		"methodGit": "Git",
-		"direction": "Direction",
-		"directionPush": "Push",
-		"directionPull": "Pull",
-		"webdavUrl": "Server URL",
-		"webdavUsername": "Username",
-		"webdavPassword": "Password",
+		"methodGitHub": "GitHub",
 		"gitRemoteUrl": "Remote URL",
 		"gitBranch": "Branch",
 		"gitAuthorName": "Author Name",
 		"gitAuthorEmail": "Author Email",
 		"show": "Show",
 		"hide": "Hide",
-		"testConnection": "Test Connection",
-		"testSuccess": "Connection succeeded",
-		"testFailed": "Connection failed",
-		"initGit": "Инициализировать репозиторий",
 		"syncNow": "Синхронизировать сейчас",
 		"statusError": "Ошибка синхронизации",
-		"notConfigured": "Синхронизация не настроена"
+		"notConfigured": "Синхронизация не настроена",
+		"pullFromGitHub": "Загрузить из GitHub",
+		"pushToGitHub": "Отправить в GitHub"
 	},
 	"hoverPreview": {
 		"resolved": "Найден",
@@ -328,5 +330,28 @@
 		"lines": "строк",
 		"openFile": "Открыть",
 		"createFile": "Создать"
+	},
+	"tkdoc": {
+		"toolbar": "Панель форматированного текста",
+		"undo": "Отменить",
+		"redo": "Повторить",
+		"heading1": "Заголовок 1",
+		"heading2": "Заголовок 2",
+		"heading3": "Заголовок 3",
+		"bold": "Жирный",
+		"italic": "Курсив",
+		"strike": "Зачёркнутый",
+		"link": "Ссылка",
+		"linkTitle": "Вставить ссылку",
+		"linkDescription": "Введите URL для выделенного текста. Оставьте пустым, чтобы удалить ссылку.",
+		"bulletList": "Маркированный список",
+		"orderedList": "Нумерованный список",
+		"blockquote": "Цитата",
+		"codeBlock": "Блок кода",
+		"invalidTitle": "Не удалось открыть этот форматированный документ",
+		"invalidDescription": "Файл .tkdoc недействителен или использует неподдерживаемую версию.",
+		"apply": "Применить",
+		"image": "Изображение",
+		"video": "Видео"
 	}
 }

@@ -46,6 +46,7 @@ export function expandCodeTypes(): TypeChip[] {
 }
 
 export const DOC_TYPES: TypeChip[] = [
+  { ext: "tkdoc", labelKey: "sidebar.newTkdoc", titleKey: "dialog.newTkdocTitle", descKey: "dialog.newTkdocDescription" },
   { ext: "csv", labelKey: "sidebar.newCsv", titleKey: "dialog.newCsvTitle", descKey: "dialog.newCsvDescription" },
   ...JSON_DOC_TYPES,
   { ext: "yaml", labelKey: "sidebar.newYaml", titleKey: "dialog.newYamlTitle", descKey: "dialog.newYamlDescription" },

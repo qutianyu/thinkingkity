@@ -37,7 +37,8 @@
 		"noVaultOpen": "尚未開啟任何 Vault",
 		"collapse": "收合側邊欄",
 		"expand": "展開側邊欄",
-		"removeRecent": "移除"
+		"removeRecent": "移除",
+		"newTkdoc": "富文字"
 	},
 	"recovery": {
 		"title": "復原中心",
@@ -59,7 +60,15 @@
 		"deletePermanentlyTitle": "永久刪除",
 		"deletePermanentlyDescription": "永久刪除 {{path}}？此操作無法復原。",
 		"reasonManualSave": "手動儲存",
-		"reasonBeforeRestore": "復原前"
+		"reasonBeforeRestore": "復原前",
+		"clear": "清空",
+		"clearHistory": "清空歷史",
+		"deleteSnapshotTitle": "刪除快照",
+		"deleteSnapshotDescription": "刪除 {{path}} 的這個快照？此操作無法復原。",
+		"clearFileSnapshotsTitle": "清空檔案歷史",
+		"clearFileSnapshotsDescription": "刪除 {{path}} 的全部快照？此操作無法復原。",
+		"clearAllSnapshotsTitle": "清空全部檔案歷史",
+		"clearAllSnapshotsDescription": "刪除這個 vault 中的全部檔案歷史快照？此操作無法復原。"
 	},
 	"about": {
 		"title": "關於 ThinkingKity",
@@ -266,7 +275,9 @@
 		"renameDescription": "修改目前項目的名稱。",
 		"renameDescriptionWithExtension": "修改目前項目的名稱，副檔名 {{extension}} 會自動保留。",
 		"deleteTitle": "刪除項目",
-		"deleteDescription": "確定要刪除「{{name}}」嗎？此操作無法復原。"
+		"deleteDescription": "確定要刪除「{{name}}」嗎？此操作無法復原。",
+		"newTkdocTitle": "新增富文字文件",
+		"newTkdocDescription": "建立新的富文字文件。"
 	},
 	"insertMenu": {
 		"filter": "篩選...",
@@ -298,27 +309,18 @@
 		"title": "Sync",
 		"method": "Sync Method",
 		"methodNone": "本地",
-		"methodWebDAV": "WebDAV",
-		"methodGit": "Git",
-		"direction": "Direction",
-		"directionPush": "Push",
-		"directionPull": "Pull",
-		"webdavUrl": "Server URL",
-		"webdavUsername": "Username",
-		"webdavPassword": "Password",
+		"methodGitHub": "GitHub",
 		"gitRemoteUrl": "Remote URL",
 		"gitBranch": "Branch",
 		"gitAuthorName": "Author Name",
 		"gitAuthorEmail": "Author Email",
 		"show": "Show",
 		"hide": "Hide",
-		"testConnection": "Test Connection",
-		"testSuccess": "Connection succeeded",
-		"testFailed": "Connection failed",
-		"initGit": "初始化倉庫",
 		"syncNow": "立即同步",
 		"statusError": "同步失敗",
-		"notConfigured": "未設定同步"
+		"notConfigured": "未設定同步",
+		"pullFromGitHub": "從 GitHub 拉取",
+		"pushToGitHub": "上傳到 GitHub"
 	},
 	"hoverPreview": {
 		"resolved": "已解析",
@@ -328,5 +330,28 @@
 		"lines": "行",
 		"openFile": "開啟檔案",
 		"createFile": "建立檔案"
+	},
+	"tkdoc": {
+		"toolbar": "富文字工具列",
+		"undo": "復原",
+		"redo": "重做",
+		"heading1": "一級標題",
+		"heading2": "二級標題",
+		"heading3": "三級標題",
+		"bold": "粗體",
+		"italic": "斜體",
+		"strike": "刪除線",
+		"link": "連結",
+		"linkTitle": "插入連結",
+		"linkDescription": "為選取文字輸入連結網址。留空則移除連結。",
+		"bulletList": "項目符號清單",
+		"orderedList": "編號清單",
+		"blockquote": "引用",
+		"codeBlock": "程式碼區塊",
+		"invalidTitle": "無法開啟這個富文字文件",
+		"invalidDescription": ".tkdoc 檔案無效，或使用了目前不支援的版本。",
+		"apply": "套用",
+		"image": "圖片",
+		"video": "影片"
 	}
 }

@@ -37,7 +37,8 @@
 		"noVaultOpen": "Vault が開かれていません",
 		"collapse": "サイドバーを折りたたむ",
 		"expand": "サイドバーを展開",
-		"removeRecent": "削除"
+		"removeRecent": "削除",
+		"newTkdoc": "リッチテキスト"
 	},
 	"recovery": {
 		"title": "復元センター",
@@ -59,7 +60,15 @@
 		"deletePermanentlyTitle": "完全に削除",
 		"deletePermanentlyDescription": "{{path}} を完全に削除しますか？この操作は元に戻せません。",
 		"reasonManualSave": "手動保存",
-		"reasonBeforeRestore": "復元前"
+		"reasonBeforeRestore": "復元前",
+		"clear": "クリア",
+		"clearHistory": "履歴をクリア",
+		"deleteSnapshotTitle": "スナップショットを削除",
+		"deleteSnapshotDescription": "{{path}} のこのスナップショットを削除しますか？この操作は元に戻せません。",
+		"clearFileSnapshotsTitle": "ファイル履歴をクリア",
+		"clearFileSnapshotsDescription": "{{path}} のすべてのスナップショットを削除しますか？この操作は元に戻せません。",
+		"clearAllSnapshotsTitle": "すべてのファイル履歴をクリア",
+		"clearAllSnapshotsDescription": "この vault 内のすべてのファイル履歴スナップショットを削除しますか？この操作は元に戻せません。"
 	},
 	"about": {
 		"title": "ThinkingKity について",
@@ -266,7 +275,9 @@
 		"renameDescription": "この項目の名前を変更します。",
 		"renameDescriptionWithExtension": "この項目の名前を変更します。拡張子 {{extension}} は保持されます。",
 		"deleteTitle": "項目を削除",
-		"deleteDescription": "「{{name}}」を削除しますか？この操作は元に戻せません。"
+		"deleteDescription": "「{{name}}」を削除しますか？この操作は元に戻せません。",
+		"newTkdocTitle": "新規リッチテキスト文書",
+		"newTkdocDescription": "新しいリッチテキスト文書を作成します。"
 	},
 	"insertMenu": {
 		"filter": "絞り込み...",
@@ -298,27 +309,18 @@
 		"title": "Sync",
 		"method": "Sync Method",
 		"methodNone": "ローカル",
-		"methodWebDAV": "WebDAV",
-		"methodGit": "Git",
-		"direction": "Direction",
-		"directionPush": "Push",
-		"directionPull": "Pull",
-		"webdavUrl": "Server URL",
-		"webdavUsername": "Username",
-		"webdavPassword": "Password",
+		"methodGitHub": "GitHub",
 		"gitRemoteUrl": "Remote URL",
 		"gitBranch": "Branch",
 		"gitAuthorName": "Author Name",
 		"gitAuthorEmail": "Author Email",
 		"show": "Show",
 		"hide": "Hide",
-		"testConnection": "Test Connection",
-		"testSuccess": "Connection succeeded",
-		"testFailed": "Connection failed",
-		"initGit": "リポジトリを初期化",
 		"syncNow": "今すぐ同期",
 		"statusError": "同期に失敗しました",
-		"notConfigured": "同期は設定されていません"
+		"notConfigured": "同期は設定されていません",
+		"pullFromGitHub": "GitHub から取得",
+		"pushToGitHub": "GitHub へアップロード"
 	},
 	"hoverPreview": {
 		"resolved": "解決済み",
@@ -328,5 +330,28 @@
 		"lines": "行",
 		"openFile": "ファイルを開く",
 		"createFile": "ファイルを作成"
+	},
+	"tkdoc": {
+		"toolbar": "リッチテキストツールバー",
+		"undo": "元に戻す",
+		"redo": "やり直し",
+		"heading1": "見出し 1",
+		"heading2": "見出し 2",
+		"heading3": "見出し 3",
+		"bold": "太字",
+		"italic": "斜体",
+		"strike": "取り消し線",
+		"link": "リンク",
+		"linkTitle": "リンクを挿入",
+		"linkDescription": "選択したテキストの URL を入力します。空欄にするとリンクを削除します。",
+		"bulletList": "箇条書き",
+		"orderedList": "番号付きリスト",
+		"blockquote": "引用",
+		"codeBlock": "コードブロック",
+		"invalidTitle": "このリッチテキスト文書を開けません",
+		"invalidDescription": ".tkdoc ファイルが無効か、未対応のバージョンです。",
+		"apply": "適用",
+		"image": "画像",
+		"video": "動画"
 	}
 }

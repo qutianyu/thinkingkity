@@ -54,7 +54,8 @@
 		"noVaultOpen": "No vault opened",
 		"collapse": "Collapse sidebar",
 		"expand": "Expand sidebar",
-		"removeRecent": "Remove"
+		"removeRecent": "Remove",
+		"newTkdoc": "Rich text"
 	},
 	"recovery": {
 		"title": "Recovery Center",
@@ -67,12 +68,20 @@
 		"openFile": "Open file",
 		"restore": "Restore",
 		"delete": "Delete",
+		"clear": "Clear",
+		"clearHistory": "Clear history",
 		"selectSnapshot": "Select a snapshot to preview.",
 		"trashEmpty": "Trash is empty.",
 		"deletedAt": "Deleted {{time}}",
 		"folder": "folder",
 		"restoreSnapshotTitle": "Restore snapshot",
 		"restoreSnapshotDescription": "Restore {{path}} to this saved version? Newer snapshots for this file will be deleted.",
+		"deleteSnapshotTitle": "Delete snapshot",
+		"deleteSnapshotDescription": "Delete this snapshot of {{path}}? This cannot be undone.",
+		"clearFileSnapshotsTitle": "Clear file history",
+		"clearFileSnapshotsDescription": "Delete all snapshots for {{path}}? This cannot be undone.",
+		"clearAllSnapshotsTitle": "Clear all file history",
+		"clearAllSnapshotsDescription": "Delete every file-history snapshot in this vault? This cannot be undone.",
 		"deletePermanentlyTitle": "Delete permanently",
 		"deletePermanentlyDescription": "Permanently delete {{path}}? This cannot be undone.",
 		"reasonManualSave": "Manual save",
@@ -319,7 +328,9 @@
 		"renameDescription": "Update the name for this item.",
 		"renameDescriptionWithExtension": "Update the name for this item. The {{extension}} extension will be kept.",
 		"deleteTitle": "Delete Item",
-		"deleteDescription": "Delete \"{{name}}\"? This action cannot be undone."
+		"deleteDescription": "Delete \"{{name}}\"? This action cannot be undone.",
+		"newTkdocTitle": "New rich text document",
+		"newTkdocDescription": "Create a new rich text document."
 	},
 	"insertMenu": {
 		"filter": "Filter...",
@@ -351,27 +362,21 @@
 		"title": "Sync",
 		"method": "Sync Method",
 		"methodNone": "Local",
-		"methodWebDAV": "WebDAV",
-		"methodGit": "Git",
-		"direction": "Direction",
-		"directionPush": "Push",
-		"directionPull": "Pull",
-		"webdavUrl": "Server URL",
-		"webdavUsername": "Username",
-		"webdavPassword": "Password",
+		"methodGitHub": "GitHub",
 		"gitRemoteUrl": "Remote URL",
 		"gitBranch": "Branch",
+		"gitUsername": "GitHub Username",
+		"gitToken": "Personal Access Token",
 		"gitAuthorName": "Author Name",
 		"gitAuthorEmail": "Author Email",
 		"show": "Show",
 		"hide": "Hide",
-		"testConnection": "Test Connection",
-		"testSuccess": "Connection succeeded",
-		"testFailed": "Connection failed",
-		"initGit": "Init Repository",
 		"syncNow": "Sync now",
+		"syncing": "Syncing...",
 		"statusError": "Sync failed",
-		"notConfigured": "Sync is not configured"
+		"notConfigured": "Sync is not configured",
+		"pullFromGitHub": "Pull from GitHub",
+		"pushToGitHub": "Upload to GitHub"
 	},
 	"imagePicker": {
 		"title": "Pick an image",
@@ -380,7 +385,7 @@
 		"empty": "No images in this folder.",
 		"noWorkspaces": "No workspaces configured."
 	},
-"vaultPicker": {
+	"vaultPicker": {
 		"title": "Open Vault",
 		"step1Desc": "Select a workspace.",
 		"loading": "Loading...",
@@ -401,5 +406,28 @@
 		"lines": "lines",
 		"openFile": "Open file",
 		"createFile": "Create file"
+	},
+	"tkdoc": {
+		"toolbar": "Rich text toolbar",
+		"undo": "Undo",
+		"redo": "Redo",
+		"heading1": "Heading 1",
+		"heading2": "Heading 2",
+		"heading3": "Heading 3",
+		"bold": "Bold",
+		"italic": "Italic",
+		"strike": "Strikethrough",
+		"link": "Link",
+		"linkTitle": "Insert link",
+		"linkDescription": "Enter a URL for the selected text. Leave empty to remove the link.",
+		"bulletList": "Bullet list",
+		"orderedList": "Ordered list",
+		"blockquote": "Blockquote",
+		"codeBlock": "Code block",
+		"invalidTitle": "Cannot open this rich text document",
+		"invalidDescription": "The .tkdoc file is not valid or uses an unsupported version.",
+		"apply": "Apply",
+		"image": "Image",
+		"video": "Video"
 	}
 }

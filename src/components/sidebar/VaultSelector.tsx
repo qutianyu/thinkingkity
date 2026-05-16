@@ -8,7 +8,7 @@ import { DEFAULT_AI_CONFIG, ensureAiConfig, useAiStore } from "@/ai";
 import { pathBasename } from "@/lib/tauriCommands";
 import { ensureVaultConfig, ALL_DISPLAY_TYPES } from "@/lib/vaultConfig";
 import { DEFAULT_APP_FONT_SIZE_PX } from "@/lib/fontSize";
-import { DEFAULT_SYNC_CONFIG, useSyncStore } from "@/sync";
+import { DEFAULT_SYNC_CONFIG, ensureGitConfig, useSyncStore } from "@/sync";
 import { ensureDemoVault } from "@/lib/globalVaults";
 import { useState, useRef, useEffect } from "react";
 import { VaultPickerModal } from "@/components/common/VaultPickerModal";
@@ -49,12 +49,18 @@ export function VaultSelector() {
       display_type: ALL_DISPLAY_TYPES,
       sync: DEFAULT_SYNC_CONFIG,
     });
+    await ensureGitConfig(path);
     await i18n.changeLanguage(config.language);
     setPreference(config.mode);
     setFontSizePx(config.font_size_px);
     setDisplayType(config.display_type);
     setAi(aiConfig);
-    useSyncStore.getState().setConfig(config.sync);
+    useSyncStore.getState().setConfig({
+      ...config.sync,
+      git: {
+        ...config.sync.git,
+      },
+    });
     setVault(path);
     await refreshTree(path);
   };

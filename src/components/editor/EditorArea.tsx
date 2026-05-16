@@ -10,11 +10,12 @@ import { PdfViewer } from "@/pdf";
 import { useEditorStore } from "@/stores/editorStore";
 import { useVaultStore } from "@/stores/vaultStore";
 import { useLinkStore } from "@/md/links/linkStore";
-import { isImageFile, isPdfFile, isTextFile, isCodeFile, isMarkdownFile, isMermaidFile, getCodeLanguage, pathBasename } from "@/lib/tauriCommands";
+import { isImageFile, isPdfFile, isTextFile, isCodeFile, isMarkdownFile, isMermaidFile, isTkdocFile, getCodeLanguage, pathBasename } from "@/lib/tauriCommands";
 import { isJsonPath } from "@/json";
 import { CodeEditor } from "./CodeEditor";
 import { MermaidEditor } from "./MermaidEditor";
 import { MilkdownEditor, LinkHoverPreview } from "@/md";
+import { TkdocEditor } from "@/tkdoc";
 import { BacklinksPanel } from "@/md/BacklinksPanel";
 import { UnresolvedLinkDialog } from "@/md/UnresolvedLinkDialog";
 import { TabBar } from "./TabBar";
@@ -193,6 +194,7 @@ export function EditorArea({ sidebarCollapsed = false }: EditorAreaProps) {
   const isJson = activeTabPath ? isJsonPath(activeTabPath) : false;
   const isMermaid = activeTabPath ? isMermaidFile(activeTabPath) : false;
   const isText = activeTabPath ? isTextFile(activeTabPath) : false;
+  const isTkdoc = activeTabPath ? isTkdocFile(activeTabPath) : false;
   const isCode = activeTabPath ? isCodeFile(activeTabPath) : false;
   const codeLang = activeTabPath ? getCodeLanguage(activeTabPath) : "text";
   const isImage = activeTabPath ? isImageFile(activeTabPath) : false;
@@ -364,18 +366,21 @@ export function EditorArea({ sidebarCollapsed = false }: EditorAreaProps) {
             />
           ) : activeTabPath && isJson ? (
             <CodeEditor
+              key={`${activeTabPath}:${codeLang}`}
               content={activeContent}
               language={codeLang}
               onChange={(content) => updateContent(activeTabPath, content)}
             />
           ) : activeTabPath && isText ? (
             <CodeEditor
+              key={`${activeTabPath}:text`}
               content={activeContent}
               language="text"
               onChange={(content) => updateContent(activeTabPath, content)}
             />
           ) : activeTabPath && isCode ? (
             <CodeEditor
+              key={`${activeTabPath}:${codeLang}`}
               content={activeContent}
               language={codeLang}
               onChange={(content) => updateContent(activeTabPath, content)}
@@ -388,6 +393,13 @@ export function EditorArea({ sidebarCollapsed = false }: EditorAreaProps) {
               filename={pathBasename(activeTabPath)}
               filePath={activeTabPath}
               vaultPath={vaultPath}
+            />
+          ) : activeTabPath && isTkdoc ? (
+            <TkdocEditor
+              key={activeTabPath}
+              filePath={activeTabPath}
+              content={activeContent}
+              onChange={(content) => updateContent(activeTabPath, content)}
             />
           ) : activeTabPath && mode === "rich" ? (
             <>
@@ -462,6 +474,7 @@ export function EditorArea({ sidebarCollapsed = false }: EditorAreaProps) {
             </>
           ) : activeTabPath ? (
             <CodeEditor
+              key={`${activeTabPath}:markdown`}
               content={activeContent}
               language="markdown"
               onChange={(content) => updateContent(activeTabPath, content)}

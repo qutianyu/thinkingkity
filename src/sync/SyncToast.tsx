@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { CheckCircle2, XCircle } from "lucide-react";
+import { CheckCircle2, Loader2, XCircle } from "lucide-react";
 import { useSyncStore } from "./syncStore";
 
 export function SyncToast() {
@@ -8,7 +8,7 @@ export function SyncToast() {
 
   useEffect(() => {
     if (!toast.visible) return;
-    const timer = setTimeout(dismissToast, 4000);
+    const timer = setTimeout(dismissToast, 10000);
     return () => clearTimeout(timer);
   }, [toast.visible, dismissToast]);
 
@@ -29,14 +29,22 @@ export function SyncToast() {
         padding: "10px 20px",
         borderRadius: "var(--radius-md)",
         background: "var(--color-bg-surface)",
-        border: `1px solid ${toast.success ? "#16a34a" : "#ef4444"}`,
+        border: `1px solid ${
+          toast.kind === "success"
+            ? "#16a34a"
+            : toast.kind === "error"
+              ? "#ef4444"
+              : "var(--color-border)"
+        }`,
         boxShadow: "var(--shadow-lg)",
         fontSize: 13,
         color: "var(--color-text-primary)",
         maxWidth: "calc(100vw - 40px)",
       }}
     >
-      {toast.success ? (
+      {toast.kind === "loading" ? (
+        <Loader2 size={16} className="animate-spin" color="var(--color-primary)" />
+      ) : toast.kind === "success" ? (
         <CheckCircle2 size={16} color="#16a34a" />
       ) : (
         <XCircle size={16} color="#ef4444" />

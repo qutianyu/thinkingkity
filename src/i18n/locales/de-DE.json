@@ -37,7 +37,8 @@
 		"noVaultOpen": "Kein Vault geöffnet",
 		"collapse": "Seitenleiste einklappen",
 		"expand": "Seitenleiste ausklappen",
-		"removeRecent": "Entfernen"
+		"removeRecent": "Entfernen",
+		"newTkdoc": "Rich Text"
 	},
 	"recovery": {
 		"title": "Wiederherstellungszentrum",
@@ -59,7 +60,15 @@
 		"deletePermanentlyTitle": "Endgültig löschen",
 		"deletePermanentlyDescription": "{{path}} endgültig löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
 		"reasonManualSave": "Manuelles Speichern",
-		"reasonBeforeRestore": "Vor Wiederherstellung"
+		"reasonBeforeRestore": "Vor Wiederherstellung",
+		"clear": "Leeren",
+		"clearHistory": "Verlauf leeren",
+		"deleteSnapshotTitle": "Snapshot löschen",
+		"deleteSnapshotDescription": "Diesen Snapshot von {{path}} löschen? Dies kann nicht rückgängig gemacht werden.",
+		"clearFileSnapshotsTitle": "Dateiverlauf leeren",
+		"clearFileSnapshotsDescription": "Alle Snapshots für {{path}} löschen? Dies kann nicht rückgängig gemacht werden.",
+		"clearAllSnapshotsTitle": "Gesamten Dateiverlauf leeren",
+		"clearAllSnapshotsDescription": "Alle Dateiverlauf-Snapshots in diesem Vault löschen? Dies kann nicht rückgängig gemacht werden."
 	},
 	"about": {
 		"title": "Über ThinkingKity",
@@ -266,7 +275,9 @@
 		"renameDescription": "Den Namen dieses Elements ändern.",
 		"renameDescriptionWithExtension": "Den Namen dieses Elements ändern. Die Erweiterung {{extension}} bleibt erhalten.",
 		"deleteTitle": "Element löschen",
-		"deleteDescription": "„{{name}}“ löschen? Diese Aktion kann nicht rückgängig gemacht werden."
+		"deleteDescription": "„{{name}}“ löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+		"newTkdocTitle": "Neues Rich-Text-Dokument",
+		"newTkdocDescription": "Ein neues Rich-Text-Dokument erstellen."
 	},
 	"insertMenu": {
 		"filter": "Filtern...",
@@ -298,27 +309,18 @@
 		"title": "Sync",
 		"method": "Sync Method",
 		"methodNone": "Lokal",
-		"methodWebDAV": "WebDAV",
-		"methodGit": "Git",
-		"direction": "Direction",
-		"directionPush": "Push",
-		"directionPull": "Pull",
-		"webdavUrl": "Server URL",
-		"webdavUsername": "Username",
-		"webdavPassword": "Password",
+		"methodGitHub": "GitHub",
 		"gitRemoteUrl": "Remote URL",
 		"gitBranch": "Branch",
 		"gitAuthorName": "Author Name",
 		"gitAuthorEmail": "Author Email",
 		"show": "Show",
 		"hide": "Hide",
-		"testConnection": "Test Connection",
-		"testSuccess": "Connection succeeded",
-		"testFailed": "Connection failed",
-		"initGit": "Repository initialisieren",
 		"syncNow": "Jetzt synchronisieren",
 		"statusError": "Synchronisierung fehlgeschlagen",
-		"notConfigured": "Synchronisierung ist nicht konfiguriert"
+		"notConfigured": "Synchronisierung ist nicht konfiguriert",
+		"pullFromGitHub": "Von GitHub abrufen",
+		"pushToGitHub": "Zu GitHub hochladen"
 	},
 	"hoverPreview": {
 		"resolved": "Aufgelöst",
@@ -328,5 +330,28 @@
 		"lines": "Zeilen",
 		"openFile": "Öffnen",
 		"createFile": "Erstellen"
+	},
+	"tkdoc": {
+		"toolbar": "Rich-Text-Werkzeugleiste",
+		"undo": "Rückgängig",
+		"redo": "Wiederholen",
+		"heading1": "Überschrift 1",
+		"heading2": "Überschrift 2",
+		"heading3": "Überschrift 3",
+		"bold": "Fett",
+		"italic": "Kursiv",
+		"strike": "Durchgestrichen",
+		"link": "Link",
+		"linkTitle": "Link einfügen",
+		"linkDescription": "Gib eine URL für den ausgewählten Text ein. Leer lassen, um den Link zu entfernen.",
+		"bulletList": "Aufzählung",
+		"orderedList": "Nummerierte Liste",
+		"blockquote": "Zitat",
+		"codeBlock": "Codeblock",
+		"invalidTitle": "Dieses Rich-Text-Dokument kann nicht geöffnet werden",
+		"invalidDescription": "Die .tkdoc-Datei ist ungültig oder verwendet eine nicht unterstützte Version.",
+		"apply": "Anwenden",
+		"image": "Bild",
+		"video": "Video"
 	}
 }

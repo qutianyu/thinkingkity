@@ -18,7 +18,7 @@ interface DisplayTypeGroup {
 const DISPLAY_TYPE_GROUPS: DisplayTypeGroup[] = [
   {
     labelKey: "settings.displayGroupDocuments",
-    types: ["md", "markdown", "csv", ...JSON_DISPLAY_TYPES, "yaml", "yml", "toml", "ini", "cfg", "conf", "env", "properties", "mermaid", "txt", "log", "pdf"],
+    types: ["md", "markdown", "tkdoc", "csv", ...JSON_DISPLAY_TYPES, "yaml", "yml", "toml", "ini", "cfg", "conf", "env", "properties", "mermaid", "txt", "log", "pdf"],
   },
   {
     labelKey: "settings.displayGroupImages",
@@ -60,6 +60,12 @@ function normalizeDisplayType(raw: unknown, fallback: string[]): string[] {
   // Drop invalid values so hand-edited configs cannot enable unsupported filters.
   if (!Array.isArray(raw)) return fallback;
   const valid = raw.filter((v) => typeof v === "string" && v);
+  // `.tkdoc` was added after the original display-type defaults shipped.
+  // Existing vaults should gain the new first-party document type on upgrade
+  // instead of silently hiding files created by the new editor.
+  if (!valid.includes("tkdoc")) {
+    valid.push("tkdoc");
+  }
   if (valid.includes(JSON_EXTENSION) && !valid.includes(JSONC_EXTENSION)) {
     valid.push(JSONC_EXTENSION);
   }
@@ -74,28 +80,14 @@ function normalizeSyncConfig(
   const s = raw as Partial<SyncConfig>;
 
   const method: SyncConfig["method"] =
-    s.method === "webdav" || s.method === "git" || s.method === "none"
+    s.method === "github" || s.method === "none"
       ? s.method
+      : s.method === "git"
+        ? "github"
       : defaults.method;
 
   const direction: SyncConfig["direction"] =
     s.direction === "pull" ? "pull" : defaults.direction;
-
-  const webdavRaw = s.webdav as Record<string, unknown> | undefined;
-  const webdav = {
-    url:
-      typeof webdavRaw?.url === "string" && webdavRaw.url
-        ? webdavRaw.url
-        : defaults.webdav.url,
-    username:
-      typeof webdavRaw?.username === "string"
-        ? webdavRaw.username
-        : defaults.webdav.username,
-    password:
-      typeof webdavRaw?.password === "string"
-        ? webdavRaw.password
-        : defaults.webdav.password,
-  };
 
   const gitRaw = s.git as Record<string, unknown> | undefined;
   const git = {
@@ -109,7 +101,7 @@ function normalizeSyncConfig(
         : defaults.git.branch,
   };
 
-  return { method, direction, webdav, git };
+  return { method, direction, git };
 }
 
 function normalizeConfig(value: unknown, defaults: VaultConfig): VaultConfig {
@@ -132,7 +124,18 @@ export async function writeVaultConfig(
   config: VaultConfig,
 ): Promise<void> {
   await createFolder(getVaultConfigDir(vaultPath));
-  await writeFile(getVaultConfigPath(vaultPath), JSON.stringify(config, null, 2));
+  await writeFile(getVaultConfigPath(vaultPath), serializeVaultConfig(config));
+}
+
+function serializeVaultConfig(config: VaultConfig): string {
+  const { ...git } = config.sync.git;
+  return JSON.stringify({
+    ...config,
+    sync: {
+      ...config.sync,
+      git,
+    },
+  }, null, 2);
 }
 
 export async function ensureVaultConfig(
@@ -147,7 +150,7 @@ export async function ensureVaultConfig(
   try {
     const raw = await readFile(getVaultConfigPath(vaultPath));
     config = normalizeConfig(JSON.parse(raw), defaults);
-    shouldWrite = raw !== JSON.stringify(config, null, 2);
+    shouldWrite = raw !== serializeVaultConfig(config);
   } catch {
     // First open or corrupt config: continue with defaults and rewrite a valid file.
     config = defaults;

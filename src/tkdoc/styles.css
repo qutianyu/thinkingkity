@@ -1,0 +1,130 @@
+.tkdoc-shell {
+  width: min(100%, 980px);
+  min-height: calc(100vh - 120px);
+  margin: 0 auto;
+  padding: 24px 28px 42px;
+}
+
+.tkdoc-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  width: fit-content;
+  max-width: 100%;
+  margin-bottom: 18px;
+  padding: 6px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--color-bg-surface) 92%, transparent);
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(12px);
+}
+
+.tkdoc-toolbar-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.tkdoc-toolbar-button:hover:not(:disabled),
+.tkdoc-toolbar-button-active {
+  background: var(--color-bg-hover);
+  color: var(--color-text-primary);
+}
+
+.tkdoc-toolbar-button-active {
+  color: var(--color-primary);
+}
+
+.tkdoc-toolbar-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.tkdoc-toolbar-separator {
+  width: 1px;
+  height: 18px;
+  margin: 0 3px;
+  background: var(--color-border-light);
+}
+
+.tkdoc-editor .ProseMirror {
+  min-height: 520px;
+  padding: 26px 30px;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-surface);
+  color: var(--color-text-primary);
+  line-height: 1.7;
+  outline: none;
+}
+
+.tkdoc-editor .ProseMirror h1,
+.tkdoc-editor .ProseMirror h2,
+.tkdoc-editor .ProseMirror h3 {
+  margin: 1.2em 0 0.55em;
+  line-height: 1.25;
+}
+
+.tkdoc-editor .ProseMirror h1:first-child,
+.tkdoc-editor .ProseMirror h2:first-child,
+.tkdoc-editor .ProseMirror h3:first-child {
+  margin-top: 0;
+}
+
+.tkdoc-editor .ProseMirror p,
+.tkdoc-editor .ProseMirror ul,
+.tkdoc-editor .ProseMirror ol,
+.tkdoc-editor .ProseMirror blockquote,
+.tkdoc-editor .ProseMirror pre {
+  margin: 0.7em 0;
+}
+
+.tkdoc-editor .ProseMirror blockquote {
+  padding-left: 14px;
+  border-left: 3px solid var(--color-border);
+  color: var(--color-text-secondary);
+}
+
+.tkdoc-editor .ProseMirror pre {
+  overflow: auto;
+  padding: 14px;
+  border-radius: var(--radius-md);
+  background: var(--color-bg-app);
+}
+
+.tkdoc-editor .ProseMirror a {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
+.tkdoc-invalid {
+  display: grid;
+  gap: 8px;
+  max-width: 720px;
+  margin: 48px auto;
+  padding: 18px;
+  border: 1px solid color-mix(in srgb, var(--color-danger) 35%, var(--color-border));
+  border-radius: var(--radius-md);
+  background: var(--color-bg-surface);
+  color: var(--color-text-primary);
+}
+
+.tkdoc-invalid span {
+  color: var(--color-text-secondary);
+}
+
+.tkdoc-invalid code {
+  color: var(--color-danger);
+}

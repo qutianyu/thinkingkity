@@ -15,6 +15,7 @@ import { useEditorStore } from "@/stores/editorStore";
 import { useVaultStore } from "@/stores/vaultStore";
 import { useDialogStore } from "@/stores/dialogStore";
 import { useJsonFileOperations } from "@/json/useJsonFileOperations";
+import { EMPTY_TKDOC_FILE } from "@/tkdoc";
 
 export function useFileOperations() {
   const { t } = useTranslation();
@@ -91,6 +92,8 @@ export function useFileOperations() {
       const filePath = pathJoin(parentPath, name + (name.endsWith(`.${ext}`) ? "" : `.${ext}`));
       if (ext === "mermaid") {
         await writeFile(filePath, "flowchart TD\n  A[Start] --> B[End]\n");
+      } else if (ext === "tkdoc") {
+        await writeFile(filePath, EMPTY_TKDOC_FILE);
       } else {
         await createFile(filePath);
       }

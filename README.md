@@ -168,6 +168,56 @@ If `auth.username` and `auth.password` are configured in `~/.thinkingkity/vaults
 | `vaults` | Recently opened vaults (managed automatically). |
 | `auth` | Optional web login configuration. Login is enabled only when both `username` and `password` are non-empty. Tokens expire after 48 hours. |
 
+## GitHub Sync
+
+ThinkingKity uses GitHub HTTPS authentication with a **GitHub username + Personal Access Token (PAT)**. GitHub account passwords are not accepted for Git operations.
+
+### 1. Create a GitHub Personal Access Token
+
+1. Open GitHub in the browser.
+2. Go to **Profile menu → Settings → Developer settings → Personal access tokens → Fine-grained tokens**.
+3. Click **Generate new token**.
+4. Configure the token:
+   - **Token name**: for example, `thinkingkity-sync`
+   - **Expiration**: choose an expiry that matches your security preference
+   - **Resource owner**: usually your own GitHub account
+   - **Repository access**:
+     - choose **Only select repositories** when you only want to sync one vault repository
+     - select the target document repository
+   - **Repository permissions**:
+     - set **Contents** to **Read and write**
+5. Generate the token and copy it immediately. GitHub only shows the full token once.
+
+If the repository belongs to an organization, the organization may require approval before a new token can access private repositories.
+
+### 2. Configure GitHub in ThinkingKity
+
+1. Open the target vault.
+2. Open **Settings → Sync**.
+3. Choose **GitHub** as the sync method.
+4. Fill in:
+   - **Remote URL**: for example, `https://github.com/your-name/your-vault.git`
+   - **Branch**: usually `main`
+   - **GitHub username**: your GitHub login name
+   - **Personal Access Token**: the PAT created above
+
+ThinkingKity stores these credentials locally in:
+
+```text
+<vault>/.thinkingkity/github-config.json
+```
+
+That file contains sensitive credentials and is automatically added to `.gitignore` together with the legacy `.thinkingkity/git-config.json` path, so it is not committed into the vault repository.
+
+### 3. Choose the right GitHub action
+
+| Action | Use when |
+|--------|----------|
+| **Pull from GitHub** | The repository already exists on GitHub and you want to download its files into the local vault. |
+| **Upload to GitHub** | The local vault is the source of truth and you want to publish its current files to GitHub. |
+
+`Pull from GitHub` expects the configured branch to already exist remotely. `Upload to GitHub` can create the remote branch when it does not exist yet.
+
 ## Project Structure
 
 ```
@@ -206,7 +256,7 @@ src-tauri/
     │   └── server.rs      # Standalone HTTP server entry point
     ├── global_config.rs   # Global vault list + allowed_paths config + demo vault
     ├── sync_common.rs     # Shared sync utilities
-    └── sync_git.rs        # Git sync implementation
+    └── sync_git.rs        # GitHub sync implementation
 
 demo-vault/               # Bundled demo vault with examples (auto-embedded via build.rs)
 
@@ -262,13 +312,14 @@ Each vault stores its settings in `<vault>/.thinkingkity/config.json`:
     "model": ""
   },
   "sync": {
-    "method": "none",
+    "method": "github",
     "direction": "push",
-    "webdav": { "url": "", "username": "", "password": "" },
     "git": { "remoteUrl": "", "branch": "main" }
   }
 }
 ```
+
+When `"method"` is `"github"`, the repository URL and branch remain in the main vault config above under the historical `git` key, while sensitive GitHub credentials are stored separately in `<vault>/.thinkingkity/github-config.json`.
 
 ## Wiki Links & Backlinks
 

@@ -364,6 +364,10 @@
   vertical-align: baseline;
 }
 
+.milkdown .ProseMirror .md-blank-line {
+  min-height: 1.6em;
+}
+
 .milkdown .ProseMirror code {
   background: var(--color-bg-sidebar);
   border-radius: 4px;

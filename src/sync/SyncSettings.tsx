@@ -1,10 +1,11 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { ChevronDown, Eye, EyeOff, RefreshCw, Loader2 } from "lucide-react";
 import { useSyncStore } from "./syncStore";
 import { useVaultStore } from "@/stores/vaultStore";
-import { syncGitInit } from "@/lib/tauriCommands";
-import type { SyncMethod, SyncDirection } from "./types";
+import { githubPullRemote, githubPushLocal } from "@/lib/tauriCommands";
+import { writeGitConfig, ensureGitConfig } from "./gitConfigStorage";
+import type { SyncMethod } from "./types";
 
 interface SyncSettingsProps {
   onSave: () => Promise<void>;
@@ -14,16 +15,26 @@ export function SyncSettings({ onSave }: SyncSettingsProps) {
   const { t } = useTranslation();
   const config = useSyncStore((s) => s.config);
   const setMethod = useSyncStore((s) => s.setMethod);
-  const setDirection = useSyncStore((s) => s.setDirection);
-  const updateWebDAVConfig = useSyncStore((s) => s.updateWebDAVConfig);
   const updateGitConfig = useSyncStore((s) => s.updateGitConfig);
 
   const vaultPath = useVaultStore((s) => s.vaultPath);
   const showToast = useSyncStore((s) => s.showToast);
 
   const [expanded, setExpanded] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [initLoading, setInitLoading] = useState(false);
+  const [showGitHubToken, setShowGitHubToken] = useState(false);
+  const [githubAction, setGithubAction] = useState<"pull" | "push" | null>(null);
+  const [githubUsername, setGithubUsername] = useState("");
+  const [githubToken, setGithubToken] = useState("");
+
+  useEffect(() => {
+    if (!vaultPath) return;
+    ensureGitConfig(vaultPath)
+      .then((creds) => {
+        setGithubUsername(creds.username || "");
+        setGithubToken(creds.token || "");
+      })
+      .catch(() => {});
+  }, [vaultPath]);
 
   const changeMethod = useCallback(
     async (method: SyncMethod) => {
@@ -33,64 +44,52 @@ export function SyncSettings({ onSave }: SyncSettingsProps) {
     [setMethod, onSave],
   );
 
-  const changeDirection = useCallback(
-    async (direction: SyncDirection) => {
-      setDirection(direction);
-      await onSave();
-    },
-    [setDirection, onSave],
-  );
-
-  const handleWebDAVBlur = useCallback(async () => {
+  const handleGitHubConfigBlur = useCallback(async () => {
     await onSave();
-  }, [onSave]);
+    if (!vaultPath) return;
+    await writeGitConfig(vaultPath, {
+      username: githubUsername.trim(),
+      token: githubToken.trim(),
+    });
+  }, [githubToken, githubUsername, onSave, vaultPath]);
 
-  const handleGitBlur = useCallback(async () => {
-    await onSave();
-  }, [onSave]);
-
-  const handleInit = useCallback(async () => {
-    if (!vaultPath || initLoading) return;
-    setInitLoading(true);
+  const runGitHubAction = useCallback(async (action: "pull" | "push") => {
+    if (!vaultPath || githubAction) return;
+    setGithubAction(action);
     try {
-      const result = await syncGitInit(
-        vaultPath,
-        config.git.remoteUrl,
-        config.git.branch,
-      );
+      await writeGitConfig(vaultPath, {
+        username: githubUsername.trim(),
+        token: githubToken.trim(),
+      });
+      const result =
+        action === "pull"
+          ? await githubPullRemote(vaultPath, config.git.remoteUrl, config.git.branch)
+          : await githubPushLocal(vaultPath, config.git.remoteUrl, config.git.branch);
       await onSave();
-      showToast(result.success, result.message);
+      showToast(
+        result.success ? "success" : "error",
+        result.message || result.errors.join("\n"),
+      );
     } catch (e) {
-      showToast(false, e instanceof Error ? e.message : "Init failed.");
+      showToast("error", e instanceof Error ? e.message : "GitHub operation failed.");
     } finally {
-      setInitLoading(false);
+      setGithubAction(null);
     }
-  }, [vaultPath, initLoading, config.git, onSave, showToast]);
+  }, [vaultPath, githubAction, githubUsername, githubToken, config.git, onSave, showToast]);
 
   const methodLabel = () => {
-    if (config.method === "webdav") return t("sync.methodWebDAV");
-    if (config.method === "git") return t("sync.methodGit");
+    if (config.method === "github") return t("sync.methodGitHub");
     return t("sync.methodNone");
   };
 
   const METHODS: { value: SyncMethod; label: string }[] = [
     { value: "none", label: t("sync.methodNone") },
-    { value: "webdav", label: t("sync.methodWebDAV") },
-    { value: "git", label: t("sync.methodGit") },
-  ];
-
-  const DIRECTIONS: { value: SyncDirection; label: string }[] = [
-    { value: "push", label: t("sync.directionPush") },
-    { value: "pull", label: t("sync.directionPull") },
+    { value: "github", label: t("sync.methodGitHub") },
   ];
 
   return (
     <div className="settings-card">
-      <button
-        type="button"
-        onClick={() => setExpanded(!expanded)}
-        className="settings-card-toggle"
-      >
+      <button type="button" onClick={() => setExpanded(!expanded)} className="settings-card-toggle">
         <div className="w-9 h-9 rounded-[var(--radius-md)] bg-[var(--color-accent-bg)] flex items-center justify-center shrink-0">
           <RefreshCw size={18} className="text-[var(--color-primary)]" />
         </div>
@@ -112,7 +111,6 @@ export function SyncSettings({ onSave }: SyncSettingsProps) {
 
       {expanded && (
         <div className="settings-ai-form">
-          {/* Method selector */}
           <div className="settings-ai-row">
             <label className="settings-ai-label">{t("sync.method")}</label>
             <div className="flex gap-1.5">
@@ -130,92 +128,60 @@ export function SyncSettings({ onSave }: SyncSettingsProps) {
             </div>
           </div>
 
-          {/* Direction selector — only for WebDAV */}
-          {config.method === "webdav" && (
-            <div className="settings-ai-row">
-              <label className="settings-ai-label">
-                {t("sync.direction")}
-              </label>
-              <div className="flex gap-1.5">
-                {DIRECTIONS.map((d) => (
-                  <button
-                    key={d.value}
-                    onClick={() => changeDirection(d.value)}
-                    className={`display-type-chip ${
-                      config.direction === d.value
-                        ? "display-type-chip-active"
-                        : ""
-                    }`}
-                  >
-                    {d.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* WebDAV config */}
-          {config.method === "webdav" && (
+          {config.method === "github" && (
             <>
               <div className="settings-ai-row">
-                <label className="settings-ai-label">
-                  {t("sync.webdavUrl")}
-                </label>
+                <label className="settings-ai-label">{t("sync.gitRemoteUrl")}</label>
                 <input
                   type="text"
-                  value={config.webdav.url}
-                  onChange={(e) => updateWebDAVConfig({ url: e.target.value })}
-                  onBlur={handleWebDAVBlur}
+                  value={config.git.remoteUrl}
+                  onChange={(e) => updateGitConfig({ remoteUrl: e.target.value })}
+                  onBlur={handleGitHubConfigBlur}
                   className="input-base settings-ai-control"
-                  placeholder="https://dav.example.com/remote.php/dav/files/user/vault"
+                  placeholder="https://github.com/user/vault.git"
                 />
               </div>
               <div className="settings-ai-row">
-                <label className="settings-ai-label">
-                  {t("sync.webdavUsername")}
-                </label>
+                <label className="settings-ai-label">{t("sync.gitBranch")}</label>
                 <input
                   type="text"
-                  value={config.webdav.username}
-                  onChange={(e) =>
-                    updateWebDAVConfig({ username: e.target.value })
-                  }
-                  onBlur={handleWebDAVBlur}
+                  value={config.git.branch}
+                  onChange={(e) => updateGitConfig({ branch: e.target.value })}
+                  onBlur={handleGitHubConfigBlur}
                   className="input-base settings-ai-control"
-                  placeholder="admin"
+                  placeholder="main"
                 />
               </div>
               <div className="settings-ai-row">
-                <label className="settings-ai-label">
-                  {t("sync.webdavPassword")}
-                </label>
+                <label className="settings-ai-label">{t("sync.gitUsername")}</label>
+                <input
+                  type="text"
+                  value={githubUsername}
+                  onChange={(e) => setGithubUsername(e.target.value)}
+                  onBlur={handleGitHubConfigBlur}
+                  className="input-base settings-ai-control"
+                  placeholder="octocat"
+                />
+              </div>
+              <div className="settings-ai-row">
+                <label className="settings-ai-label">{t("sync.gitToken")}</label>
                 <div className="settings-ai-secret">
                   <input
-                    type={showPassword ? "text" : "password"}
-                    value={config.webdav.password}
-                    onChange={(e) =>
-                      updateWebDAVConfig({ password: e.target.value })
-                    }
-                    onBlur={handleWebDAVBlur}
+                    type={showGitHubToken ? "text" : "password"}
+                    value={githubToken}
+                    onChange={(e) => setGithubToken(e.target.value)}
+                    onBlur={handleGitHubConfigBlur}
                     className="input-base settings-ai-control"
-                    placeholder="••••••••"
+                    placeholder="github_pat_..."
                   />
                   <button
                     type="button"
-                    onClick={() => setShowPassword(!showPassword)}
+                    onClick={() => setShowGitHubToken(!showGitHubToken)}
                     className="settings-ai-inline-button"
-                    title={
-                      showPassword ? t("sync.hide") : t("sync.show")
-                    }
-                    aria-label={
-                      showPassword ? t("sync.hide") : t("sync.show")
-                    }
+                    title={showGitHubToken ? t("sync.hide") : t("sync.show")}
+                    aria-label={showGitHubToken ? t("sync.hide") : t("sync.show")}
                   >
-                    {showPassword ? (
-                      <EyeOff size={15} />
-                    ) : (
-                      <Eye size={15} />
-                    )}
+                    {showGitHubToken ? <EyeOff size={15} /> : <Eye size={15} />}
                   </button>
                 </div>
               </div>
@@ -223,56 +189,30 @@ export function SyncSettings({ onSave }: SyncSettingsProps) {
                 <button
                   type="button"
                   className="settings-ai-test-button"
-                  disabled
+                  onClick={() => runGitHubAction("pull")}
+                  disabled={
+                    !!githubAction ||
+                    !config.git.remoteUrl ||
+                    !githubUsername.trim() ||
+                    !githubToken.trim()
+                  }
                 >
-                  {t("sync.testConnection")}
+                  {githubAction === "pull" && <Loader2 size={14} className="animate-spin" />}
+                  {t("sync.pullFromGitHub")}
                 </button>
-              </div>
-            </>
-          )}
-
-          {/* Git config */}
-          {config.method === "git" && (
-            <>
-              <div className="settings-ai-row">
-                <label className="settings-ai-label">
-                  {t("sync.gitRemoteUrl")}
-                </label>
-                <input
-                  type="text"
-                  value={config.git.remoteUrl}
-                  onChange={(e) =>
-                    updateGitConfig({ remoteUrl: e.target.value })
-                  }
-                  onBlur={handleGitBlur}
-                  className="input-base settings-ai-control"
-                  placeholder="https://github.com/user/vault.git"
-                />
-              </div>
-              <div className="settings-ai-row">
-                <label className="settings-ai-label">
-                  {t("sync.gitBranch")}
-                </label>
-                <input
-                  type="text"
-                  value={config.git.branch}
-                  onChange={(e) =>
-                    updateGitConfig({ branch: e.target.value })
-                  }
-                  onBlur={handleGitBlur}
-                  className="input-base settings-ai-control"
-                  placeholder="main"
-                />
-              </div>
-              <div className="settings-ai-actions">
                 <button
                   type="button"
                   className="settings-ai-test-button"
-                  onClick={handleInit}
-                  disabled={initLoading || !config.git.remoteUrl}
+                  onClick={() => runGitHubAction("push")}
+                  disabled={
+                    !!githubAction ||
+                    !config.git.remoteUrl ||
+                    !githubUsername.trim() ||
+                    !githubToken.trim()
+                  }
                 >
-                  {initLoading && <Loader2 size={14} className="animate-spin" />}
-                  {t("sync.initGit")}
+                  {githubAction === "push" && <Loader2 size={14} className="animate-spin" />}
+                  {t("sync.pushToGitHub")}
                 </button>
               </div>
             </>

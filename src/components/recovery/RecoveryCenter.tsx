@@ -3,6 +3,8 @@ import { History, RotateCcw, Trash2, X } from "lucide-react";
 import Papa from "papaparse";
 import { useTranslation } from "react-i18next";
 import {
+  clearSnapshots,
+  deleteSnapshot,
   deleteTrashEntry,
   listSnapshots,
   listTrash,
@@ -127,6 +129,36 @@ export function RecoveryCenter({ filePath, onClose }: RecoveryCenterProps) {
     await load();
   }, [closeTab, load, openFile, refreshTree, selectedSnapshot, showConfirm, t, vaultPath]);
 
+  const handleDeleteSnapshot = useCallback(async () => {
+    if (!vaultPath || !selectedSnapshot) return;
+    const confirmed = await showConfirm({
+      title: t("recovery.deleteSnapshotTitle"),
+      description: t("recovery.deleteSnapshotDescription", { path: selectedSnapshot.filePath }),
+      confirmLabel: t("recovery.delete"),
+      cancelLabel: t("dialog.cancel"),
+      variant: "danger",
+    });
+    if (!confirmed) return;
+    await deleteSnapshot(vaultPath, selectedSnapshot.id);
+    await load();
+  }, [load, selectedSnapshot, showConfirm, t, vaultPath]);
+
+  const handleClearSnapshots = useCallback(async () => {
+    if (!vaultPath || snapshots.length === 0) return;
+    const confirmed = await showConfirm({
+      title: filePath ? t("recovery.clearFileSnapshotsTitle") : t("recovery.clearAllSnapshotsTitle"),
+      description: filePath
+        ? t("recovery.clearFileSnapshotsDescription", { path: filePath })
+        : t("recovery.clearAllSnapshotsDescription"),
+      confirmLabel: t("recovery.clear"),
+      cancelLabel: t("dialog.cancel"),
+      variant: "danger",
+    });
+    if (!confirmed) return;
+    await clearSnapshots(vaultPath, filePath);
+    await load();
+  }, [filePath, load, showConfirm, snapshots.length, t, vaultPath]);
+
   const handleRestoreTrash = useCallback(async (entry: TrashEntry) => {
     if (!vaultPath) return;
     const restoredPath = await restoreTrash(vaultPath, entry.id);
@@ -203,31 +235,51 @@ export function RecoveryCenter({ filePath, onClose }: RecoveryCenterProps) {
           <div className="recovery-empty">{t("recovery.loading")}</div>
         ) : tab === "history" ? (
           <div className="recovery-body recovery-history-layout">
-            <div className="recovery-list">
-              {snapshots.length === 0 ? (
-                <div className="recovery-empty">{t("recovery.noSnapshots")}</div>
-              ) : (
-                snapshots.map((entry) => (
-                  <button
-                    key={entry.id}
-                    type="button"
-                    className={
-                      selectedSnapshot?.id === entry.id
-                        ? "recovery-list-item recovery-list-item-active"
-                        : "recovery-list-item"
-                    }
-                    onClick={() => setSelectedSnapshot(entry)}
-                    >
-                    <span className="recovery-list-title">{entry.filePath}</span>
-                    <span className="recovery-list-meta">
-                      {formatTime(entry.createdAt)} · {formatSize(entry.size)} · {formatReason(entry.reason)}
-                    </span>
-                  </button>
-                ))
-              )}
+            <div className="recovery-history-pane">
+              <div className="recovery-history-toolbar">
+                <button
+                  type="button"
+                  className="recovery-button recovery-button-danger"
+                  onClick={handleClearSnapshots}
+                  disabled={snapshots.length === 0}
+                >
+                  {t("recovery.clearHistory")}
+                </button>
+              </div>
+              <div className="recovery-list">
+                {snapshots.length === 0 ? (
+                  <div className="recovery-empty">{t("recovery.noSnapshots")}</div>
+                ) : (
+                  snapshots.map((entry) => (
+                    <button
+                      key={entry.id}
+                      type="button"
+                      className={
+                        selectedSnapshot?.id === entry.id
+                          ? "recovery-list-item recovery-list-item-active"
+                          : "recovery-list-item"
+                      }
+                      onClick={() => setSelectedSnapshot(entry)}
+                      >
+                      <span className="recovery-list-title">{entry.filePath}</span>
+                      <span className="recovery-list-meta">
+                        {formatTime(entry.createdAt)} · {formatSize(entry.size)} · {formatReason(entry.reason)}
+                      </span>
+                    </button>
+                  ))
+                )}
+              </div>
             </div>
             <div className="recovery-preview-pane">
               <div className="recovery-preview-toolbar">
+                <button
+                  type="button"
+                  className="recovery-button recovery-button-danger"
+                  onClick={handleDeleteSnapshot}
+                  disabled={!selectedSnapshot}
+                >
+                  {t("recovery.delete")}
+                </button>
                 <button type="button" className="recovery-button recovery-button-primary" onClick={handleRestoreSnapshot} disabled={!selectedSnapshot}>
                   <RotateCcw size={14} />
                   {t("recovery.restore")}

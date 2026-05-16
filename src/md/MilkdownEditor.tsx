@@ -40,6 +40,14 @@ import {
   wikiLinkSchema,
 } from "./WikiLinkExtension";
 import {
+  blankLineMarkdownHandler,
+  blankLineNodeName,
+  blankLineRemarkPlugin,
+  blankLineSchema,
+  decodeBlankLineSentinels,
+  encodeBlankLinesForRichEditor,
+} from "./BlankLineExtension";
+import {
   createImageHtml,
   dirname,
   getFileName,
@@ -460,6 +468,69 @@ const slashCommandPlugin = $prose(() => {
   });
 });
 
+const preserveHeadingLevelOnBackspacePlugin = $prose(() => {
+  return new Plugin({
+    key: new PluginKey("preserveHeadingLevelOnBackspace"),
+    props: {
+      handleKeyDown(view, event) {
+        if (event.key !== "Backspace") return false;
+
+        const { selection } = view.state;
+        if (!selection.empty) return false;
+
+        const { $from } = selection;
+        if ($from.parent.type.name !== "heading") return false;
+        if ($from.parentOffset !== 0) return false;
+        if ($from.parent.textContent.length === 0) return false;
+
+        // ProseMirror's default backspace behavior at the start of a heading
+        // downgrades h2 -> h1. Prefer a clearer editor action here: exit the
+        // heading block entirely and keep the text as a normal paragraph.
+        const paragraphType = view.state.schema.nodes.paragraph;
+        if (!paragraphType) return false;
+        view.dispatch(view.state.tr.setBlockType(
+          $from.before(),
+          $from.after(),
+          paragraphType,
+        ));
+        event.preventDefault();
+        return true;
+      },
+    },
+  });
+});
+
+const normalizeEmptyParagraphsPlugin = $prose(() => {
+  return new Plugin({
+    key: new PluginKey("normalizeEmptyParagraphs"),
+    appendTransaction(transactions, _oldState, newState) {
+      if (!transactions.some((tr) => tr.docChanged)) return null;
+
+      const blankLineType = newState.schema.nodes[blankLineNodeName];
+      const paragraphType = newState.schema.nodes.paragraph;
+      if (!blankLineType) return null;
+
+      let tr = newState.tr;
+      let changed = false;
+      newState.doc.descendants((node: any, pos: number) => {
+        if (node.type.name === "paragraph" && node.content.size === 0) {
+          tr = tr.replaceWith(pos, pos + node.nodeSize, blankLineType.create());
+          changed = true;
+        } else if (
+          paragraphType &&
+          node.type.name === blankLineNodeName &&
+          node.content.size > 0
+        ) {
+          tr = tr.setNodeMarkup(pos, paragraphType);
+          changed = true;
+        }
+      });
+      return changed ? tr : null;
+    },
+  });
+});
+
+
 // Module-level vars set by the component for the paste plugin to read.
 let vaultPathRef_inner: string | null = null;
 let activeTabPath_inner: string | null = null;
@@ -467,6 +538,8 @@ let activeTabPath_inner: string | null = null;
 function MilkdownEditorInner({ content, onChange }: MilkdownEditorProps) {
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
+  const initialContentRef = useRef(content);
+  const hasAcceptedInitialMarkdownRef = useRef(false);
   const showPrompt = useDialogStore((s) => s.showPrompt);
   const activeTabPath = useEditorStore((s) => s.activeTabPath);
   const vaultPath = useVaultStore((s) => s.vaultPath);
@@ -551,12 +624,13 @@ function MilkdownEditorInner({ content, onChange }: MilkdownEditorProps) {
     return Editor.make()
       .config((ctx) => {
         ctx.set(rootCtx, root);
-        ctx.set(defaultValueCtx, brToHardbreak(content));
+        ctx.set(defaultValueCtx, encodeBlankLinesForRichEditor(brToHardbreak(content)));
         ctx.update(remarkStringifyOptionsCtx, (options) => ({
           ...options,
           handlers: {
             ...options.handlers,
             [wikiLinkNodeName]: (node: any) => node.value || node.raw || "",
+            [blankLineNodeName]: blankLineMarkdownHandler,
           },
         }));
         ctx.update(prismConfig.key, (config) => ({
@@ -575,7 +649,18 @@ function MilkdownEditorInner({ content, onChange }: MilkdownEditorProps) {
           },
         }));
         ctx.get(listenerCtx).markdownUpdated((_, markdown) => {
-          const cleaned = normalizeEscapedWikiLinks(hardbreakToBr(markdown));
+          const cleaned = decodeBlankLineSentinels(
+            normalizeEscapedWikiLinks(hardbreakToBr(markdown)),
+          );
+          // Milkdown emits once while hydrating its initial document. Treat that
+          // as editor setup, not as a user edit, so entering rich mode cannot
+          // rewrite source text or expand preserved blank lines.
+          if (!hasAcceptedInitialMarkdownRef.current) {
+            hasAcceptedInitialMarkdownRef.current = true;
+            return;
+          }
+          if (cleaned === initialContentRef.current) return;
+          initialContentRef.current = cleaned;
           onChangeRef.current(cleaned);
         });
       })
@@ -583,13 +668,17 @@ function MilkdownEditorInner({ content, onChange }: MilkdownEditorProps) {
       .use(commonmark)
       .use(gfm)
       .use(wikiLinkRemarkPlugin)
+      .use(blankLineRemarkPlugin)
       .use(wikiLinkSchema)
+      .use(blankLineSchema)
       .use(wikiLinkInputRule)
       .use(history)
       .use(clipboard)
       .use(listener)
       .use(blockHandlePlugin)
       .use(slashCommandPlugin)
+      .use(preserveHeadingLevelOnBackspacePlugin)
+      .use(normalizeEmptyParagraphsPlugin)
       .use(linkClickPlugin)
       .use(linkHoverPlugin)
       .use(wikiLinkPlugin)
