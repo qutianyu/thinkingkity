@@ -66,7 +66,6 @@ fn ensure_gitignore(vault_path: &PathBuf) -> Result<(), String> {
     let entries = [
         ".DS_Store",
         ".thinkingkity/ai-config.json",
-        ".thinkingkity/git-config.json",
         ".thinkingkity/github-config.json",
     ];
     if gitignore.exists() {
@@ -112,7 +111,7 @@ fn ensure_remote(vault_path: &PathBuf, remote_url: &str) -> Result<(), String> {
     Ok(())
 }
 
-/// Load credentials from `.thinkingkity/git-config.json`.
+/// Load credentials from `.thinkingkity/github-config.json`.
 fn load_git_credentials(vault_path: &PathBuf) -> (String, String) {
     if let Ok(config) = git_config::read_git_config(vault_path) {
         if !config.username.is_empty() && !config.token.is_empty() {
@@ -169,6 +168,16 @@ fn authenticated_remote_url(remote_url: &str, username: &str, token: &str) -> St
     }
 }
 
+fn redact_remote_url(remote_url: &str) -> String {
+    match url::Url::parse(remote_url) {
+        Ok(mut url) => {
+            let _ = url.set_password(None);
+            url.to_string()
+        }
+        Err(_) => remote_url.to_string(),
+    }
+}
+
 #[tauri::command]
 pub fn github_pull_remote(
     vault_path: String,
@@ -186,13 +195,12 @@ pub fn github_pull_remote(
 
     let mut messages: Vec<String> = vec![];
     let mut errors: Vec<String> = vec![];
-
-    // Create branch locally if it doesn't exist
-    let branch_check = run_git(&vault, &["rev-parse", "--verify", &branch]);
-    if branch_check.is_err() {
-        run_git(&vault, &["checkout", "-b", &branch])?;
-        messages.push(format!("Created branch '{}'.", branch));
-    }
+    let mut logs = vec![
+        format!("Vault: {}", vault.display()),
+        format!("Remote: {}", redact_remote_url(&auth_remote)),
+        format!("Branch: {}", branch),
+        "Action: pull from GitHub".to_string(),
+    ];
 
     // Check if remote branch exists
     let remote_has_branch = match run_git(&vault, &["ls-remote", "--heads", &auth_remote, &branch]) {
@@ -204,6 +212,7 @@ pub fn github_pull_remote(
                     message: "Failed to access remote repository.".to_string(),
                     files_changed: 0,
                     errors: vec![hint],
+                    logs,
                 });
             }
             false
@@ -216,6 +225,7 @@ pub fn github_pull_remote(
             message: format!("Remote branch '{}' does not exist.", branch),
             files_changed: 0,
             errors: vec!["Nothing can be downloaded from GitHub yet.".to_string()],
+            logs,
         });
     }
 
@@ -224,6 +234,7 @@ pub fn github_pull_remote(
         match run_git(&vault, &["pull", "--rebase", &auth_remote, &branch]) {
             Ok(_) => {
                 messages.push("Downloaded latest files from GitHub.".to_string());
+                logs.push("git pull --rebase succeeded.".to_string());
             }
             Err(e) => {
                 if let Some(hint) = maybe_auth_error(&e) {
@@ -237,6 +248,7 @@ pub fn github_pull_remote(
         run_git(&vault, &["fetch", &auth_remote, &branch])?;
         run_git(&vault, &["checkout", "-B", &branch, "FETCH_HEAD"])?;
         messages.push("Downloaded repository from GitHub.".to_string());
+        logs.push("git fetch + checkout succeeded.".to_string());
     }
 
     if messages.is_empty() {
@@ -248,6 +260,7 @@ pub fn github_pull_remote(
         message: messages.join("\n"),
         files_changed: 0,
         errors,
+        logs,
     })
 }
 
@@ -268,6 +281,23 @@ pub fn github_push_local(
 
     let mut messages: Vec<String> = vec![];
     let errors: Vec<String> = vec![];
+    let mut logs = vec![
+        format!("Vault: {}", vault.display()),
+        format!("Remote: {}", redact_remote_url(&auth_remote)),
+        format!("Branch: {}", branch),
+        "Action: upload to GitHub".to_string(),
+    ];
+
+    // A newly initialized local repository has no named branch yet until the
+    // first commit. Make the intended upload branch explicit up front so a
+    // fresh vault publishes to `main` (or the configured branch) deterministically.
+    if run_git(&vault, &["rev-parse", "--verify", &branch]).is_err() {
+        run_git(&vault, &["checkout", "-b", &branch])?;
+        messages.push(format!("Created local branch '{}'.", branch));
+        logs.push(format!("Created local branch '{}'.", branch));
+    } else {
+        logs.push(format!("Local branch '{}' already exists.", branch));
+    }
 
     // Check if remote branch exists
     let remote_has_branch = match run_git(&vault, &["ls-remote", "--heads", &auth_remote, &branch]) {
@@ -279,6 +309,7 @@ pub fn github_push_local(
                     message: "Failed to access remote repository.".to_string(),
                     files_changed: 0,
                     errors: vec![hint],
+                    logs,
                 });
             }
             false
@@ -287,35 +318,60 @@ pub fn github_push_local(
 
     if !remote_has_branch {
         messages.push(format!("Remote branch '{}' does not exist yet; it will be created.", branch));
+        logs.push(format!("Remote branch '{}' does not exist.", branch));
+    } else {
+        logs.push(format!("Remote branch '{}' exists.", branch));
     }
 
     run_git(&vault, &["add", "-A"])?;
+    logs.push("git add -A succeeded.".to_string());
 
     let status = run_git(&vault, &["status", "--porcelain"]).unwrap_or_default();
     let has_changes = !status.trim().is_empty();
+    let has_commits = run_git(&vault, &["rev-parse", "--verify", "HEAD"]).is_ok();
+    let needs_initial_commit = !has_commits;
+    let needs_publish_existing_branch = has_commits && !remote_has_branch;
+    logs.push(format!(
+        "Working tree changes: {}. Existing commits: {}.",
+        if has_changes { "yes" } else { "no" },
+        if has_commits { "yes" } else { "no" }
+    ));
 
-    if has_changes {
+    if has_changes || needs_initial_commit || needs_publish_existing_branch {
         let file_count = status.lines().count() as u32;
         let message = commit_message();
-        run_git(&vault, &["commit", "-m", &message])?;
+        if has_changes {
+            run_git(&vault, &["commit", "-m", &message])?;
+            logs.push(format!("Created commit for {} changed file(s).", file_count));
+        } else if needs_initial_commit {
+            run_git(&vault, &["commit", "--allow-empty", "-m", &message])?;
+            messages.push("Created initial empty commit.".to_string());
+            logs.push("Created initial empty commit.".to_string());
+        } else {
+            logs.push("No new commit needed; publishing existing local branch.".to_string());
+        }
 
         match run_git(&vault, &["push", "-u", &auth_remote, &branch]) {
             Ok(_) => {
                 messages.push(format!("Committed and pushed {} file(s).", file_count));
+                logs.push("git push -u succeeded.".to_string());
                 Ok(SyncResult {
                     success: true,
                     message: messages.join("\n"),
                     files_changed: file_count,
                     errors,
+                    logs,
                 })
             }
             Err(e1) => {
+                logs.push(format!("git push -u failed: {}", e1.trim()));
                 if let Some(hint) = maybe_auth_error(&e1) {
                     return Ok(SyncResult {
                         success: false,
                         message: "Push failed.".to_string(),
                         files_changed: file_count,
                         errors: vec![hint],
+                        logs,
                     });
                 }
 
@@ -325,6 +381,7 @@ pub fn github_push_local(
                         message: "Push failed.".to_string(),
                         files_changed: file_count,
                         errors: vec![e1],
+                        logs,
                     });
                 }
 
@@ -334,14 +391,17 @@ pub fn github_push_local(
                     Ok(_) => {
                         messages.push("Force-pushed, local took precedence over remote.".to_string());
                         messages.push(format!("Committed and pushed {} file(s).", file_count));
+                        logs.push("git push --force succeeded.".to_string());
                         Ok(SyncResult {
                             success: true,
                             message: messages.join("\n"),
                             files_changed: file_count,
                             errors,
+                            logs,
                         })
                     }
                     Err(e2) => {
+                        logs.push(format!("git push --force failed: {}", e2.trim()));
                         let final_err = maybe_auth_error(&e2).unwrap_or_else(|| {
                             format!(
                                 "Initial push failed: {}\nForce-push retry failed: {}",
@@ -354,6 +414,7 @@ pub fn github_push_local(
                             message: "Push failed after retry.".to_string(),
                             files_changed: file_count,
                             errors: vec![final_err],
+                            logs,
                         })
                     }
                 }
@@ -369,6 +430,7 @@ pub fn github_push_local(
             },
             files_changed: 0,
             errors,
+            logs,
         })
     }
 }

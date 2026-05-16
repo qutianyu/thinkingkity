@@ -68,7 +68,12 @@ export function SyncSettings({ onSave }: SyncSettingsProps) {
       await onSave();
       showToast(
         result.success ? "success" : "error",
-        result.message || result.errors.join("\n"),
+        [
+          result.success ? result.message : result.errors.join("\n") || result.message,
+          ...result.logs,
+        ]
+          .filter(Boolean)
+          .join("\n"),
       );
     } catch (e) {
       showToast("error", e instanceof Error ? e.message : "GitHub operation failed.");

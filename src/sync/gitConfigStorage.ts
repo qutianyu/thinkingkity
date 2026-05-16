@@ -1,5 +1,5 @@
 import { createFolder, pathJoin, readFile, writeFile } from "@/lib/tauriCommands";
-import { getVaultConfigDir, getVaultConfigPath, THINKINGKITY_DIR } from "@/lib/vaultConfig";
+import { getVaultConfigDir, THINKINGKITY_DIR } from "@/lib/vaultConfig";
 
 export interface GitCredentials {
   username?: string;
@@ -12,14 +12,9 @@ export const DEFAULT_GIT_CREDENTIALS: GitCredentials = {
 };
 
 const GITHUB_CONFIG_FILE = "github-config.json";
-const LEGACY_GIT_CONFIG_FILE = "git-config.json";
 
 export function getGitHubConfigPath(vaultPath: string): string {
   return pathJoin(vaultPath, THINKINGKITY_DIR, GITHUB_CONFIG_FILE);
-}
-
-function getLegacyGitConfigPath(vaultPath: string): string {
-  return pathJoin(vaultPath, THINKINGKITY_DIR, LEGACY_GIT_CONFIG_FILE);
 }
 
 function normalizeGitCredentials(raw: unknown): GitCredentials {
@@ -41,16 +36,6 @@ function normalizeGitCredentials(raw: unknown): GitCredentials {
   };
 }
 
-async function readLegacyGitCredentials(vaultPath: string): Promise<unknown> {
-  try {
-    const raw = JSON.parse(await readFile(getVaultConfigPath(vaultPath))) as Record<string, unknown>;
-    const sync = raw.sync as Record<string, unknown> | undefined;
-    return sync?.git;
-  } catch {
-    return undefined;
-  }
-}
-
 export async function writeGitConfig(vaultPath: string, config: GitCredentials): Promise<void> {
   await createFolder(getVaultConfigDir(vaultPath));
   await writeFile(getGitHubConfigPath(vaultPath), JSON.stringify(config, null, 2));
@@ -67,11 +52,7 @@ export async function ensureGitConfig(vaultPath: string): Promise<GitCredentials
     config = normalizeGitCredentials(JSON.parse(raw));
     shouldWrite = raw !== JSON.stringify(config, null, 2);
   } catch {
-    try {
-      config = normalizeGitCredentials(JSON.parse(await readFile(getLegacyGitConfigPath(vaultPath))));
-    } catch {
-      config = normalizeGitCredentials(await readLegacyGitCredentials(vaultPath));
-    }
+    config = { ...DEFAULT_GIT_CREDENTIALS };
   }
 
   if (shouldWrite) {

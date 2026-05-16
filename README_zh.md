@@ -207,7 +207,7 @@ ThinkingKity 会把 GitHub 凭据保存在本地：
 <vault>/.thinkingkity/github-config.json
 ```
 
-这个文件包含敏感凭据，会自动加入 `.gitignore`；兼容迁移用的旧路径 `.thinkingkity/git-config.json` 也会一起忽略，因此不会被提交到文档仓库。
+这个文件包含敏感凭据，会自动加入 `.gitignore`，因此不会被提交到文档仓库。
 
 ### 3. 选择正确的 GitHub 动作
 

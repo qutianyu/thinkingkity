@@ -428,6 +428,7 @@ export interface SyncResult {
   message: string;
   files_changed: number;
   errors: string[];
+  logs: string[];
 }
 
 export async function githubPullRemote(
@@ -438,7 +439,7 @@ export async function githubPullRemote(
   if (IS_TAURI) {
     return invoke<SyncResult>("github_pull_remote", { vaultPath, remoteUrl, branch });
   }
-  return { success: false, message: "Not available in browser mode.", files_changed: 0, errors: [] };
+  return { success: false, message: "Not available in browser mode.", files_changed: 0, errors: [], logs: [] };
 }
 
 export async function githubPushLocal(
@@ -449,7 +450,7 @@ export async function githubPushLocal(
   if (IS_TAURI) {
     return invoke<SyncResult>("github_push_local", { vaultPath, remoteUrl, branch });
   }
-  return { success: false, message: "Not available in browser mode.", files_changed: 0, errors: [] };
+  return { success: false, message: "Not available in browser mode.", files_changed: 0, errors: [], logs: [] };
 }
 
 // ── Vault listing (web mode) ──────────────────────────────────

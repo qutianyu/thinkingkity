@@ -207,7 +207,7 @@ ThinkingKity stores these credentials locally in:
 <vault>/.thinkingkity/github-config.json
 ```
 
-That file contains sensitive credentials and is automatically added to `.gitignore` together with the legacy `.thinkingkity/git-config.json` path, so it is not committed into the vault repository.
+That file contains sensitive credentials and is automatically added to `.gitignore`, so it is not committed into the vault repository.
 
 ### 3. Choose the right GitHub action
 

@@ -6,4 +6,5 @@ pub struct SyncResult {
     pub message: String,
     pub files_changed: u32,
     pub errors: Vec<String>,
+    pub logs: Vec<String>,
 }

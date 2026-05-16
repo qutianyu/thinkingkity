@@ -29,12 +29,16 @@ export function SyncButton() {
       );
 
       if (result.success) {
-        setStatus("success", result.message);
-        showToast("success", result.message);
+        const successMessage = [result.message, ...result.logs].filter(Boolean).join("\n");
+        setStatus("success", successMessage);
+        showToast("success", successMessage);
         await refreshTree(vaultPath);
       } else {
-        setStatus("error", result.message || result.errors.join("\n"));
-        showToast("error", result.message || result.errors.join("\n"));
+        const errorMessage = [result.errors.join("\n") || result.message, ...result.logs]
+          .filter(Boolean)
+          .join("\n");
+        setStatus("error", errorMessage);
+        showToast("error", errorMessage);
       }
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Sync failed.";
