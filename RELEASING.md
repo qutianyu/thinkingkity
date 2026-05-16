@@ -41,21 +41,16 @@ Configure these repository secrets before shipping macOS releases publicly:
 | `APPLE_CERTIFICATE` | Base64-encoded `.p12` export of the `Developer ID Application` certificate |
 | `APPLE_CERTIFICATE_PASSWORD` | Password used when exporting the `.p12` file |
 | `APPLE_SIGNING_IDENTITY` | Signing identity name, for example `Developer ID Application: Example Inc. (TEAMID)` |
-| `APPLE_ID` | Apple ID used for notarization |
-| `APPLE_PASSWORD` | App-specific password for that Apple ID |
 | `APPLE_TEAM_ID` | Apple Developer Team ID |
+| `APPLE_API_ISSUER` | App Store Connect API issuer ID |
+| `APPLE_API_KEY` | App Store Connect API key ID |
+| `APPLE_API_KEY_PATH` | Full contents of the App Store Connect `.p8` private key |
 
-When those secrets are present, the macOS workflow decodes the uploaded `.p12`, re-exports it in a Keychain-compatible legacy PKCS#12 format, imports it into a temporary CI keychain, and then lets `tauri build` sign and notarize the generated app bundle.
+When those secrets are present, the macOS workflow writes the App Store Connect API key to disk and lets `tauri build` handle certificate import, signing, and notarization using the same environment-variable contract already used by the `terax-ai` release workflow.
 
 If those secrets are missing, CI can still produce a DMG for internal smoke testing, but a DMG downloaded from GitHub is expected to be blocked by Gatekeeper on other Macs with messages such as `“ThinkingKity” is damaged and can’t be opened`.
 
-The workflow validates and normalizes `APPLE_CERTIFICATE` before bundling. If validation fails:
-
-- `APPLE_CERTIFICATE is not valid base64` means the secret is not the raw base64 text of the exported `.p12`
-- `Mac verify error` or a decryption error from `openssl pkcs12` usually means `APPLE_CERTIFICATE_PASSWORD` does not match the `.p12` export password
-- `the .p12 does not contain a private key` means the certificate was exported without its matching private key and cannot be used for signing
-
-The explicit normalization step avoids a class of CI failures where OpenSSL can read a PKCS#12 bundle but macOS `security import` rejects that original bundle format.
+This keeps ThinkingKity aligned with the already-working `terax-ai` macOS release path instead of maintaining a custom certificate-import shim in this repository.
 
 After bundling, the macOS job also verifies the generated `.app` with `codesign --verify` and `spctl --assess`. A green release job therefore means the app was not only built, but also accepted by macOS code-signing and Gatekeeper checks on the CI runner.
 
