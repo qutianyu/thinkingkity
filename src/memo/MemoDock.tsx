@@ -398,7 +398,7 @@ export function MemoDock({ sidebarCollapsed = false }: MemoDockProps) {
       {open && createPortal(
         <aside
           className="memo-panel"
-          style={{ left: sidebarCollapsed ? 56 : 300 }}
+          style={{ left: sidebarCollapsed ? 56 : "var(--sidebar-expanded-width)" }}
           aria-label="便签面板"
         >
           <div className="memo-panel-header">

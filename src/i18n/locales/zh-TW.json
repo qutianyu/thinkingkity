@@ -61,6 +61,59 @@
 		"reasonManualSave": "手動儲存",
 		"reasonBeforeRestore": "復原前"
 	},
+	"about": {
+		"title": "關於 ThinkingKity",
+		"tagline": "把本機筆記、連結知識與 AI 協助放進同一個 Vault。",
+		"whatIsIt": "ThinkingKity 是什麼？",
+		"description": "ThinkingKity 是一個本機 Markdown Vault，用於筆記、連結知識與具備上下文的 AI 協助。",
+		"capabilities": "功能",
+		"featureNotes": "Markdown 筆記、雙向連結、反向連結與大綱",
+		"featureFormats": "JSONC、CSV、Mermaid、PDF、圖片與常見程式碼格式",
+		"featureAi": "可設定的 AI 助手與上下文檔案",
+		"featureSync": "可選 Git 同步，讓 Vault 內容可版本化",
+		"featureLocal": "以本機檔案為優先，敏感 AI 設定獨立保存",
+		"storageLabel": "資料位置",
+		"storageValue": "目前 Vault 資料夾",
+		"syncLabel": "同步",
+		"syncValue": "Git / 本機",
+		"aiLabel": "AI 設定",
+		"aiValue": ".thinkingkity/ai-config.json",
+		"checkUpdates": "檢查更新",
+		"currentVersion": "目前版本",
+		"latestVersion": "最新版本",
+		"updateChannel": "更新渠道",
+		"runtimePlatform": "目前平台",
+		"notChecked": "尚未檢查",
+		"checkFailed": "檢查失敗",
+		"noPublishedVersion": "尚無發布版本",
+		"openRepository": "開啟儲存庫",
+		"openReleases": "開啟發布頁",
+		"downloadForPlatform": "下載目前平台版本",
+		"runtimePlatforms": {
+			"web": "Web",
+			"macos": "macOS",
+			"windows": "Windows",
+			"linux": "Linux",
+			"android": "Android"
+		},
+		"updateChannels": {
+			"github": "GitHub Releases",
+			"android": "Android 發布渠道"
+		},
+		"updateNotes": {
+			"github": "目前會讀取最新 GitHub release 的更新清單，並選擇此平台的安裝包。",
+			"android": "目前會讀取最新 GitHub release 的更新清單，並選擇 Android 安裝包；後續可改由商店渠道取代。"
+		},
+		"updateStatus": {
+			"idle": "儲存庫：github.com/qutianyu/thinkingkity。請檢查 GitHub 上的最新 release。",
+			"checking": "正在從 GitHub 檢查最新 release。",
+			"current": "目前已是最新版本。",
+			"available": "發現新版本，且已找到此平台的安裝包。",
+			"unpublished": "尚未發布 release，因此沒有可供比較的遠端安裝包。",
+			"unsupported": "發現新版本，但最新 release 中沒有此平台的安裝包。",
+			"error": "無法檢查更新，請稍後再試或直接開啟發布頁。"
+		}
+	},
 	"editor": {
 		"save": "儲存",
 		"noFileOpen": "未開啟檔案，請從左側選擇或建立筆記",

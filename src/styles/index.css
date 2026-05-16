@@ -58,6 +58,11 @@
   --transition-slow: 300ms ease-in-out;
 
   --app-font-size: 16px;
+  --sidebar-expanded-width: 300px;
+}
+
+[data-app-runtime="desktop"] {
+  --sidebar-expanded-width: 250px;
 }
 
 /* ===== Dark Theme Overrides ===== */
@@ -662,8 +667,8 @@ h3 { font-size: 1.25rem; font-weight: 600; line-height: 1.4; }
 
 .sidebar-shell,
 .sidebar-rail {
-  width: 300px;
-  flex: 0 0 300px;
+  width: var(--sidebar-expanded-width);
+  flex: 0 0 var(--sidebar-expanded-width);
   background: var(--color-bg-sidebar);
   backdrop-filter: var(--glass-backdrop);
   -webkit-backdrop-filter: var(--glass-backdrop);
@@ -1145,9 +1150,37 @@ h3 { font-size: 1.25rem; font-weight: 600; line-height: 1.4; }
 }
 
 .vault-picker-modal {
-  width: 460px;
+  width: 560px;
   max-height: min(80vh, calc(100dvh - 32px));
   overflow: auto;
+}
+
+.vault-picker-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0 20px 10px;
+}
+
+.vault-picker-browser {
+  gap: 12px;
+}
+
+.vault-picker-use-folder {
+  padding-top: 15px;
+  padding-bottom: 15px;
+}
+
+.vault-picker-path {
+  max-width: 420px;
+}
+
+.vault-picker-divider {
+  margin: 2px 0;
+}
+
+.vault-picker-create-card {
+  padding: 16px;
 }
 
 .prompt-modal-header {
@@ -2017,6 +2050,11 @@ h3 { font-size: 1.25rem; font-weight: 600; line-height: 1.4; }
   min-height: 0;
 }
 
+.recovery-preview-pane {
+  display: flex;
+  flex-direction: column;
+}
+
 .recovery-list {
   overflow: auto;
   border: 1px solid var(--color-border-light);
@@ -2046,6 +2084,41 @@ h3 { font-size: 1.25rem; font-weight: 600; line-height: 1.4; }
 .recovery-list-item-active {
   background: var(--color-bg-hover);
   color: var(--color-text-primary);
+}
+
+.recovery-csv-preview {
+  min-height: 0;
+  flex: 1;
+  overflow: auto;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-editor);
+}
+
+.recovery-csv-preview table {
+  width: max-content;
+  min-width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.recovery-csv-preview td {
+  min-width: 96px;
+  max-width: 260px;
+  padding: 7px 9px;
+  border-right: 1px solid var(--color-border-light);
+  border-bottom: 1px solid var(--color-border-light);
+  color: var(--color-text-primary);
+  white-space: pre-wrap;
+  vertical-align: top;
+}
+
+.recovery-csv-preview tr:last-child td {
+  border-bottom: 0;
+}
+
+.recovery-csv-preview td:last-child {
+  border-right: 0;
 }
 
 .recovery-list-title {

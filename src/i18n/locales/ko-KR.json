@@ -61,6 +61,59 @@
 		"reasonManualSave": "수동 저장",
 		"reasonBeforeRestore": "복원 전"
 	},
+	"about": {
+		"title": "ThinkingKity 정보",
+		"tagline": "로컬 노트, 연결된 지식, AI 지원을 하나의 Vault에서.",
+		"whatIsIt": "ThinkingKity란?",
+		"description": "ThinkingKity는 노트, 연결된 지식, 문맥 기반 AI 지원을 위한 로컬 Markdown Vault입니다.",
+		"capabilities": "기능",
+		"featureNotes": "Markdown 노트, 위키 링크, 백링크, 개요",
+		"featureFormats": "JSONC, CSV, Mermaid, PDF, 이미지 및 일반 코드 형식",
+		"featureAi": "컨텍스트 파일을 사용하는 구성 가능한 AI 도우미",
+		"featureSync": "버전 관리되는 Vault 콘텐츠를 위한 선택적 Git 동기화",
+		"featureLocal": "로컬 파일 우선, 민감한 AI 설정은 별도로 저장",
+		"storageLabel": "저장소",
+		"storageValue": "현재 Vault 폴더",
+		"syncLabel": "동기화",
+		"syncValue": "Git / 로컬",
+		"aiLabel": "AI 설정",
+		"aiValue": ".thinkingkity/ai-config.json",
+		"checkUpdates": "업데이트 확인",
+		"currentVersion": "현재 버전",
+		"latestVersion": "최신 버전",
+		"updateChannel": "업데이트 채널",
+		"runtimePlatform": "실행 플랫폼",
+		"notChecked": "확인 안 됨",
+		"checkFailed": "확인 실패",
+		"noPublishedVersion": "게시된 버전 없음",
+		"openRepository": "저장소 열기",
+		"openReleases": "릴리스 열기",
+		"downloadForPlatform": "이 플랫폼용 다운로드",
+		"runtimePlatforms": {
+			"web": "Web",
+			"macos": "macOS",
+			"windows": "Windows",
+			"linux": "Linux",
+			"android": "Android"
+		},
+		"updateChannels": {
+			"github": "GitHub Releases",
+			"android": "Android 릴리스 채널"
+		},
+		"updateNotes": {
+			"github": "최신 GitHub release의 업데이트 매니페스트를 읽고 이 플랫폼용 패키지를 선택합니다.",
+			"android": "최신 GitHub release의 업데이트 매니페스트를 읽고 Android 패키지를 선택합니다. 이후 스토어 채널로 대체할 수 있습니다."
+		},
+		"updateStatus": {
+			"idle": "저장소: github.com/qutianyu/thinkingkity. GitHub에서 최신 release를 확인하세요.",
+			"checking": "GitHub에서 최신 release를 확인하는 중입니다.",
+			"current": "이미 최신 버전을 사용 중입니다.",
+			"available": "새 버전이 있으며 이 플랫폼용 패키지를 찾았습니다.",
+			"unpublished": "아직 게시된 release가 없어 비교할 원격 패키지가 없습니다.",
+			"unsupported": "새 버전이 있지만 최신 release에 이 플랫폼용 패키지가 없습니다.",
+			"error": "업데이트를 확인할 수 없습니다. 나중에 다시 시도하거나 릴리스를 직접 여세요."
+		}
+	},
 	"editor": {
 		"save": "저장",
 		"noFileOpen": "열린 파일이 없습니다. 사이드바에서 노트를 선택하거나 만드세요.",

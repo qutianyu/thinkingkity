@@ -61,6 +61,59 @@
 		"reasonManualSave": "手動保存",
 		"reasonBeforeRestore": "復元前"
 	},
+	"about": {
+		"title": "ThinkingKity について",
+		"tagline": "ローカルノート、つながる知識、AI 支援を 1 つの Vault に。",
+		"whatIsIt": "ThinkingKity とは",
+		"description": "ThinkingKity は、ノート、リンクされた知識、文脈に応じた AI 支援のためのローカル Markdown Vault です。",
+		"capabilities": "機能",
+		"featureNotes": "Markdown ノート、Wiki リンク、バックリンク、アウトライン",
+		"featureFormats": "JSONC、CSV、Mermaid、PDF、画像、一般的なコード形式",
+		"featureAi": "コンテキストファイルを使える設定可能な AI アシスタント",
+		"featureSync": "Vault 内容をバージョン管理するための任意の Git 同期",
+		"featureLocal": "ローカルファイル優先、機密性の高い AI 設定は別保存",
+		"storageLabel": "保存先",
+		"storageValue": "現在の Vault フォルダー",
+		"syncLabel": "同期",
+		"syncValue": "Git / ローカル",
+		"aiLabel": "AI 設定",
+		"aiValue": ".thinkingkity/ai-config.json",
+		"checkUpdates": "更新を確認",
+		"currentVersion": "現在のバージョン",
+		"latestVersion": "最新バージョン",
+		"updateChannel": "更新チャネル",
+		"runtimePlatform": "実行プラットフォーム",
+		"notChecked": "未確認",
+		"checkFailed": "確認に失敗",
+		"noPublishedVersion": "公開済みバージョンなし",
+		"openRepository": "リポジトリを開く",
+		"openReleases": "リリースを開く",
+		"downloadForPlatform": "このプラットフォーム用をダウンロード",
+		"runtimePlatforms": {
+			"web": "Web",
+			"macos": "macOS",
+			"windows": "Windows",
+			"linux": "Linux",
+			"android": "Android"
+		},
+		"updateChannels": {
+			"github": "GitHub Releases",
+			"android": "Android リリースチャネル"
+		},
+		"updateNotes": {
+			"github": "最新の GitHub release から更新マニフェストを読み込み、このプラットフォーム向けのパッケージを選択します。",
+			"android": "最新の GitHub release から更新マニフェストを読み込み、Android パッケージを選択します。将来的にはストアチャネルに置き換えられます。"
+		},
+		"updateStatus": {
+			"idle": "リポジトリ: github.com/qutianyu/thinkingkity。GitHub で最新 release を確認してください。",
+			"checking": "GitHub で最新 release を確認しています。",
+			"current": "現在のバージョンは最新です。",
+			"available": "新しいバージョンがあり、このプラットフォーム向けのパッケージが見つかりました。",
+			"unpublished": "まだ release が公開されていないため、比較できるリモートパッケージはありません。",
+			"unsupported": "新しいバージョンがありますが、最新 release にはこのプラットフォーム向けのパッケージがありません。",
+			"error": "更新を確認できませんでした。後でもう一度試すか、リリースを直接開いてください。"
+		}
+	},
 	"editor": {
 		"save": "保存",
 		"noFileOpen": "ファイルが開かれていません。サイドバーからノートを選択または作成してください。",

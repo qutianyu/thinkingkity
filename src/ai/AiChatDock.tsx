@@ -462,7 +462,7 @@ export function AiChatDock({ sidebarCollapsed = false }: AiChatDockProps) {
       {open && createPortal(
         <aside
           className={`ai-chat-panel ${expanded ? "ai-chat-panel-expanded" : ""}`}
-          style={expanded ? { left: sidebarCollapsed ? 56 : 300 } : undefined}
+          style={expanded ? { left: sidebarCollapsed ? 56 : "var(--sidebar-expanded-width)" } : undefined}
           aria-label={t("aiChat.panelLabel")}
         >
           <div className="ai-chat-panel-header">

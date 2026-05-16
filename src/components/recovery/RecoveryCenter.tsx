@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { History, RotateCcw, Trash2, X } from "lucide-react";
+import Papa from "papaparse";
 import { useTranslation } from "react-i18next";
 import {
   deleteTrashEntry,
@@ -39,6 +40,18 @@ function basename(path: string): string {
   return path.split(/[\\/]/).pop() || path;
 }
 
+function isCsvPath(path: string): boolean {
+  return path.toLowerCase().endsWith(".csv");
+}
+
+function parseCsvPreview(content: string): string[][] {
+  if (!content.trim()) return [];
+  const result = Papa.parse<string[]>(content, {
+    skipEmptyLines: false,
+  });
+  return result.data.map((row) => row.map((cell) => cell ?? ""));
+}
+
 export function RecoveryCenter({ filePath, onClose }: RecoveryCenterProps) {
   const { t } = useTranslation();
   const vaultPath = useVaultStore((s) => s.vaultPath);
@@ -52,6 +65,10 @@ export function RecoveryCenter({ filePath, onClose }: RecoveryCenterProps) {
   const [selectedSnapshot, setSelectedSnapshot] = useState<SnapshotEntry | null>(null);
   const [preview, setPreview] = useState("");
   const [loading, setLoading] = useState(false);
+  const csvPreviewRows =
+    selectedSnapshot && isCsvPath(selectedSnapshot.filePath)
+      ? parseCsvPreview(preview)
+      : null;
 
   const load = useCallback(async () => {
     if (!vaultPath) return;
@@ -142,8 +159,13 @@ export function RecoveryCenter({ filePath, onClose }: RecoveryCenterProps) {
   }, [t]);
 
   return (
-    <div className="recovery-overlay" role="dialog" aria-modal="true">
-      <div className="recovery-modal">
+    <div
+      className="recovery-overlay"
+      role="dialog"
+      aria-modal="true"
+      onClick={onClose}
+    >
+      <div className="recovery-modal" onClick={(event) => event.stopPropagation()}>
         <div className="recovery-header">
           <div>
             <div className="recovery-title">{t("recovery.title")}</div>
@@ -211,7 +233,27 @@ export function RecoveryCenter({ filePath, onClose }: RecoveryCenterProps) {
                   {t("recovery.restore")}
                 </button>
               </div>
-              <pre className="recovery-preview">{preview || t("recovery.selectSnapshot")}</pre>
+              {csvPreviewRows ? (
+                csvPreviewRows.length === 0 ? (
+                  <pre className="recovery-preview">{t("recovery.selectSnapshot")}</pre>
+                ) : (
+                  <div className="recovery-csv-preview">
+                    <table>
+                      <tbody>
+                        {csvPreviewRows.map((row, rowIndex) => (
+                          <tr key={rowIndex}>
+                            {row.map((cell, cellIndex) => (
+                              <td key={cellIndex}>{cell}</td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )
+              ) : (
+                <pre className="recovery-preview">{preview || t("recovery.selectSnapshot")}</pre>
+              )}
             </div>
           </div>
         ) : (

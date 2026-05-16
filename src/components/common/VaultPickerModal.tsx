@@ -168,7 +168,7 @@ export function VaultPickerModal({ openVaultPath, onClose }: VaultPickerModalPro
                 {t("vaultPicker.loading")}
               </div>
             ) : (
-              <div className="px-4 pb-2 flex flex-col gap-1.5">
+              <div className="vault-picker-list">
                 {workspaces.length === 0 && (
                   <div className="text-[13px] text-[var(--color-text-muted)] py-6 text-center">
                     {t("vaultPicker.noWorkspaces")}
@@ -206,11 +206,11 @@ export function VaultPickerModal({ openVaultPath, onClose }: VaultPickerModalPro
                 {t("vaultPicker.loading")}
               </div>
             ) : (
-              <div className="px-4 pb-2 flex flex-col gap-1.5">
+              <div className="vault-picker-list vault-picker-browser">
                 {/* Use this folder as vault */}
                 <button
                   onClick={() => openVaultPath(currentPath)}
-                  className="flex items-center gap-3 w-full px-4 py-3 rounded-[var(--radius-md)] border border-[var(--color-primary-30)] bg-[rgba(99,102,241,0.06)] text-left transition-all duration-200 hover:bg-[rgba(99,102,241,0.12)]"
+                  className="vault-picker-use-folder flex items-center gap-3 w-full px-4 py-3 rounded-[var(--radius-md)] border border-[var(--color-primary-30)] bg-[rgba(99,102,241,0.06)] text-left transition-all duration-200 hover:bg-[rgba(99,102,241,0.12)]"
                 >
                   <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--radius-md)] bg-[rgba(99,102,241,0.15)] text-[var(--color-primary)]">
                     <FolderOpen size={20} />
@@ -219,7 +219,7 @@ export function VaultPickerModal({ openVaultPath, onClose }: VaultPickerModalPro
                     <span className="text-[14px] font-semibold text-[var(--color-text-primary)]">
                       {t("vaultPicker.useFolder")}
                     </span>
-                    <span className="text-[11px] text-[var(--color-text-muted)] truncate">{currentPath}</span>
+                    <span className="vault-picker-path text-[11px] text-[var(--color-text-muted)] truncate">{currentPath}</span>
                   </span>
                 </button>
 
@@ -247,14 +247,14 @@ export function VaultPickerModal({ openVaultPath, onClose }: VaultPickerModalPro
                 ))}
 
                 {/* Divider */}
-                <div className="flex items-center gap-3 py-2">
+                <div className="vault-picker-divider flex items-center gap-3 py-2">
                   <div className="flex-1 h-px bg-[var(--color-border-light)]" />
                   <span className="text-[11px] text-[var(--color-text-muted)] uppercase tracking-wider">{t("vaultPicker.or")}</span>
                   <div className="flex-1 h-px bg-[var(--color-border-light)]" />
                 </div>
 
                 {/* Create new vault */}
-                <div className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-surface)] px-4 py-3.5">
+                <div className="vault-picker-create-card rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-surface)] px-4 py-3.5">
                   <div className="mb-3">
                     <span className="text-[14px] font-semibold text-[var(--color-text-primary)]">
                       {t("vaultPicker.createVault")}

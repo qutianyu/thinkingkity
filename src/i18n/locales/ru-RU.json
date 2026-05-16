@@ -61,6 +61,59 @@
 		"reasonManualSave": "Ручное сохранение",
 		"reasonBeforeRestore": "Перед восстановлением"
 	},
+	"about": {
+		"title": "О ThinkingKity",
+		"tagline": "Локальные заметки, связанные знания и помощь ИИ в одном Vault.",
+		"whatIsIt": "Что такое ThinkingKity?",
+		"description": "ThinkingKity — это локальный Markdown Vault для заметок, связанных знаний и контекстной помощи ИИ.",
+		"capabilities": "Возможности",
+		"featureNotes": "Markdown-заметки, wiki-ссылки, обратные ссылки и структура",
+		"featureFormats": "JSONC, CSV, Mermaid, PDF, изображения и распространенные форматы кода",
+		"featureAi": "Настраиваемый ИИ-ассистент с контекстными файлами",
+		"featureSync": "Необязательная Git-синхронизация для версионируемого содержимого Vault",
+		"featureLocal": "Сначала локальные файлы, чувствительные настройки ИИ хранятся отдельно",
+		"storageLabel": "Хранилище",
+		"storageValue": "Текущая папка Vault",
+		"syncLabel": "Синхронизация",
+		"syncValue": "Git / локально",
+		"aiLabel": "Настройки ИИ",
+		"aiValue": ".thinkingkity/ai-config.json",
+		"checkUpdates": "Проверить обновления",
+		"currentVersion": "Текущая версия",
+		"latestVersion": "Последняя версия",
+		"updateChannel": "Канал обновлений",
+		"runtimePlatform": "Платформа запуска",
+		"notChecked": "Не проверено",
+		"checkFailed": "Ошибка проверки",
+		"noPublishedVersion": "Нет опубликованной версии",
+		"openRepository": "Открыть репозиторий",
+		"openReleases": "Открыть релизы",
+		"downloadForPlatform": "Скачать для этой платформы",
+		"runtimePlatforms": {
+			"web": "Web",
+			"macos": "macOS",
+			"windows": "Windows",
+			"linux": "Linux",
+			"android": "Android"
+		},
+		"updateChannels": {
+			"github": "GitHub Releases",
+			"android": "Канал релизов Android"
+		},
+		"updateNotes": {
+			"github": "Читает манифест обновления из последнего GitHub release и выбирает пакет для этой платформы.",
+			"android": "Читает манифест обновления из последнего GitHub release и выбирает пакет Android. Позже его сможет заменить канал магазина."
+		},
+		"updateStatus": {
+			"idle": "Репозиторий: github.com/qutianyu/thinkingkity. Проверьте GitHub на наличие последнего release.",
+			"checking": "Проверяем последний release на GitHub.",
+			"current": "У вас уже установлена последняя версия.",
+			"available": "Доступна новая версия, и найден пакет для этой платформы.",
+			"unpublished": "Релиз еще не опубликован, поэтому нет удаленного пакета для сравнения.",
+			"unsupported": "Доступна новая версия, но в последнем release нет пакета для этой платформы.",
+			"error": "Не удалось проверить обновления. Повторите попытку позже или откройте релизы напрямую."
+		}
+	},
 	"editor": {
 		"save": "Сохранить",
 		"noFileOpen": "Файл не открыт. Выберите или создайте заметку на боковой панели.",

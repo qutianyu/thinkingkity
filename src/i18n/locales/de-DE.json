@@ -61,6 +61,59 @@
 		"reasonManualSave": "Manuelles Speichern",
 		"reasonBeforeRestore": "Vor Wiederherstellung"
 	},
+	"about": {
+		"title": "Über ThinkingKity",
+		"tagline": "Lokale Notizen, verknüpftes Wissen und KI-Unterstützung in einem Vault.",
+		"whatIsIt": "Was ist ThinkingKity?",
+		"description": "ThinkingKity ist ein lokaler Markdown-Vault für Notizen, verknüpftes Wissen und kontextbezogene KI-Unterstützung.",
+		"capabilities": "Funktionen",
+		"featureNotes": "Markdown-Notizen, Wiki-Links, Backlinks und Gliederung",
+		"featureFormats": "JSONC, CSV, Mermaid, PDF, Bilder und gängige Codeformate",
+		"featureAi": "Konfigurierbarer KI-Assistent mit Kontextdateien",
+		"featureSync": "Optionale Git-Synchronisierung für versionierte Vault-Inhalte",
+		"featureLocal": "Lokale Dateien zuerst, sensible KI-Einstellungen separat gespeichert",
+		"storageLabel": "Speicherort",
+		"storageValue": "Aktueller Vault-Ordner",
+		"syncLabel": "Synchronisierung",
+		"syncValue": "Git / lokal",
+		"aiLabel": "KI-Konfiguration",
+		"aiValue": ".thinkingkity/ai-config.json",
+		"checkUpdates": "Nach Updates suchen",
+		"currentVersion": "Aktuelle Version",
+		"latestVersion": "Neueste Version",
+		"updateChannel": "Update-Kanal",
+		"runtimePlatform": "Laufzeitplattform",
+		"notChecked": "Nicht geprüft",
+		"checkFailed": "Prüfung fehlgeschlagen",
+		"noPublishedVersion": "Keine veröffentlichte Version",
+		"openRepository": "Repository öffnen",
+		"openReleases": "Releases öffnen",
+		"downloadForPlatform": "Für diese Plattform herunterladen",
+		"runtimePlatforms": {
+			"web": "Web",
+			"macos": "macOS",
+			"windows": "Windows",
+			"linux": "Linux",
+			"android": "Android"
+		},
+		"updateChannels": {
+			"github": "GitHub Releases",
+			"android": "Android-Release-Kanal"
+		},
+		"updateNotes": {
+			"github": "Liest das Update-Manifest aus dem neuesten GitHub-Release und wählt das Paket für diese Plattform aus.",
+			"android": "Liest das Update-Manifest aus dem neuesten GitHub-Release und wählt das Android-Paket aus. Später kann ein Store-Kanal es ersetzen."
+		},
+		"updateStatus": {
+			"idle": "Repository: github.com/qutianyu/thinkingkity. Prüfen Sie GitHub auf das neueste Release.",
+			"checking": "GitHub wird auf das neueste Release geprüft.",
+			"current": "Sie verwenden bereits die neueste Version.",
+			"available": "Eine neuere Version ist verfügbar, und ein Paket für diese Plattform wurde gefunden.",
+			"unpublished": "Es wurde noch kein Release veröffentlicht, daher gibt es kein Remote-Paket zum Vergleichen.",
+			"unsupported": "Eine neuere Version ist verfügbar, aber das neueste Release enthält kein Paket für diese Plattform.",
+			"error": "Updates konnten nicht geprüft werden. Versuchen Sie es später erneut oder öffnen Sie die Releases direkt."
+		}
+	},
 	"editor": {
 		"save": "Speichern",
 		"noFileOpen": "Keine Datei geöffnet. Wählen oder erstellen Sie eine Notiz in der Seitenleiste.",

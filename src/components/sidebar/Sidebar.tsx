@@ -108,7 +108,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
   }
 
   return (
-    <div className="sidebar-shell flex flex-col w-[300px] border-r border-[var(--color-border)]">
+    <div className="sidebar-shell flex flex-col border-r border-[var(--color-border)]">
       <div className="sidebar-vault-header">
         <button
           onClick={() => navigate("/")}

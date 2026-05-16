@@ -137,6 +137,9 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     // Dirty tracking is path-scoped because multiple tabs can be open at once.
     if (isImageFile(path) || isPdfFile(path)) return;
     const { fileContents, tabs, lastEditedAt } = get();
+    // Some editors emit an initial change event while hydrating. Do not turn a
+    // clean tab dirty unless the serialized content actually changed.
+    if ((fileContents.get(path) ?? "") === content) return;
     const newMap = new Map(fileContents);
     newMap.set(path, content);
     const newEditedMap = new Map(lastEditedAt);

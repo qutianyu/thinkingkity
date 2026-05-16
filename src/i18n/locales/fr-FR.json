@@ -61,6 +61,59 @@
 		"reasonManualSave": "Enregistrement manuel",
 		"reasonBeforeRestore": "Avant restauration"
 	},
+	"about": {
+		"title": "À propos de ThinkingKity",
+		"tagline": "Notes locales, connaissances liées et assistance IA dans un seul Vault.",
+		"whatIsIt": "Qu’est-ce que ThinkingKity ?",
+		"description": "ThinkingKity est un Vault Markdown local pour les notes, les connaissances liées et l’assistance IA contextuelle.",
+		"capabilities": "Fonctionnalités",
+		"featureNotes": "Notes Markdown, liens wiki, backlinks et plan",
+		"featureFormats": "JSONC, CSV, Mermaid, PDF, images et formats de code courants",
+		"featureAi": "Assistant IA configurable avec fichiers de contexte",
+		"featureSync": "Synchronisation Git facultative pour le contenu versionné du Vault",
+		"featureLocal": "Fichiers locaux d’abord, paramètres IA sensibles stockés séparément",
+		"storageLabel": "Stockage",
+		"storageValue": "Dossier Vault actuel",
+		"syncLabel": "Synchronisation",
+		"syncValue": "Git / local",
+		"aiLabel": "Configuration IA",
+		"aiValue": ".thinkingkity/ai-config.json",
+		"checkUpdates": "Rechercher des mises à jour",
+		"currentVersion": "Version actuelle",
+		"latestVersion": "Dernière version",
+		"updateChannel": "Canal de mise à jour",
+		"runtimePlatform": "Plateforme d’exécution",
+		"notChecked": "Non vérifié",
+		"checkFailed": "Échec de la vérification",
+		"noPublishedVersion": "Aucune version publiée",
+		"openRepository": "Ouvrir le dépôt",
+		"openReleases": "Ouvrir les releases",
+		"downloadForPlatform": "Télécharger pour cette plateforme",
+		"runtimePlatforms": {
+			"web": "Web",
+			"macos": "macOS",
+			"windows": "Windows",
+			"linux": "Linux",
+			"android": "Android"
+		},
+		"updateChannels": {
+			"github": "GitHub Releases",
+			"android": "Canal de publication Android"
+		},
+		"updateNotes": {
+			"github": "Lit le manifeste de mise à jour de la dernière release GitHub et sélectionne le paquet pour cette plateforme.",
+			"android": "Lit le manifeste de mise à jour de la dernière release GitHub et sélectionne le paquet Android. Un canal de store pourra le remplacer plus tard."
+		},
+		"updateStatus": {
+			"idle": "Dépôt : github.com/qutianyu/thinkingkity. Vérifiez GitHub pour la dernière release.",
+			"checking": "Vérification de la dernière release sur GitHub.",
+			"current": "Vous utilisez déjà la dernière version.",
+			"available": "Une version plus récente est disponible et un paquet pour cette plateforme a été trouvé.",
+			"unpublished": "Aucune release n’est encore publiée, il n’y a donc aucun paquet distant à comparer.",
+			"unsupported": "Une version plus récente est disponible, mais la dernière release ne contient aucun paquet pour cette plateforme.",
+			"error": "Impossible de vérifier les mises à jour. Réessayez plus tard ou ouvrez directement les releases."
+		}
+	},
 	"editor": {
 		"save": "Enregistrer",
 		"noFileOpen": "Aucun fichier ouvert. Sélectionnez ou créez une note dans la barre latérale.",

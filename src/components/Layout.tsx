@@ -10,6 +10,7 @@ import { RecoveryCenter } from "./recovery/RecoveryCenter";
 import { AboutModal } from "./AboutPage";
 import { SyncButton, SyncToast } from "@/sync";
 import { isJsonPath, JSON_FILE_TYPE } from "@/json";
+import { isTauri } from "@/lib/tauriCommands";
 import { useVaultStore } from "@/stores/vaultStore";
 import { useFileTreeStore } from "@/stores/fileTreeStore";
 import { useEditorStore } from "@/stores/editorStore";
@@ -157,6 +158,18 @@ export function Layout() {
 
   useEffect(() => {
     loadRecentVaults();
+  }, []);
+
+  useEffect(() => {
+    const isDesktopApp =
+      isTauri() &&
+      (__APP_PLATFORM__ === "macos" ||
+        __APP_PLATFORM__ === "windows" ||
+        __APP_PLATFORM__ === "linux");
+    document.documentElement.dataset.appRuntime = isDesktopApp ? "desktop" : "default";
+    return () => {
+      delete document.documentElement.dataset.appRuntime;
+    };
   }, []);
 
   useEffect(() => {
