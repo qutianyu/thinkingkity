@@ -13,9 +13,12 @@ import { useLinkStore } from "@/md/links/linkStore";
 import { isImageFile, isPdfFile, isTextFile, isCodeFile, isMarkdownFile, isMermaidFile, isTkdocFile, getCodeLanguage, pathBasename } from "@/lib/tauriCommands";
 import { isJsonPath } from "@/json";
 import { CodeEditor } from "./CodeEditor";
+import { HtmlEditor } from "./HtmlEditor";
 import { MermaidEditor } from "./MermaidEditor";
 import { MilkdownEditor, LinkHoverPreview } from "@/md";
 import { TkdocEditor } from "@/tkdoc";
+import { parseTkdoc } from "@/tkdoc";
+import type { JSONContent } from "@tiptap/react";
 import { BacklinksPanel } from "@/md/BacklinksPanel";
 import { UnresolvedLinkDialog } from "@/md/UnresolvedLinkDialog";
 import { TabBar } from "./TabBar";
@@ -37,7 +40,7 @@ interface FrontmatterField {
   value: string | string[];
 }
 
-interface MarkdownHeading {
+interface DocumentHeading {
   id: string;
   index: number;
   level: number;
@@ -100,7 +103,17 @@ function serializeFrontmatter(fields: FrontmatterField[]): string {
   return `---\n${lines.join("\n")}\n---\n\n`;
 }
 
-function getMarkdownHeadings(markdown: string): MarkdownHeading[] {
+function getHeadingId(text: string, seen: Map<string, number>): string {
+  const baseId = text
+    .toLowerCase()
+    .replace(/[^a-z0-9\u4e00-\u9fa5]+/g, "-")
+    .replace(/^-|-$/g, "") || "heading";
+  const count = seen.get(baseId) ?? 0;
+  seen.set(baseId, count + 1);
+  return count === 0 ? baseId : `${baseId}-${count + 1}`;
+}
+
+function getMarkdownHeadings(markdown: string): DocumentHeading[] {
   const seen = new Map<string, number>();
   let headingIndex = 0;
   // Generate stable, GitHub-like ids for outline navigation inside the current document.
@@ -115,15 +128,8 @@ function getMarkdownHeadings(markdown: string): MarkdownHeading[] {
         .trim();
       if (!text) return null;
 
-      const baseId = text
-        .toLowerCase()
-        .replace(/[^a-z0-9\u4e00-\u9fa5]+/g, "-")
-        .replace(/^-|-$/g, "") || "heading";
-      const count = seen.get(baseId) ?? 0;
-      seen.set(baseId, count + 1);
-
       const heading = {
-        id: count === 0 ? baseId : `${baseId}-${count + 1}`,
+        id: getHeadingId(text, seen),
         index: headingIndex,
         level: match[1].length,
         line: lineIndex,
@@ -132,7 +138,38 @@ function getMarkdownHeadings(markdown: string): MarkdownHeading[] {
       headingIndex += 1;
       return heading;
     })
-    .filter((heading): heading is MarkdownHeading => heading !== null);
+    .filter((heading): heading is DocumentHeading => heading !== null);
+}
+
+function getTkdocNodeText(node: JSONContent): string {
+  if (typeof node.text === "string") return node.text;
+  return node.content?.map(getTkdocNodeText).join("") ?? "";
+}
+
+function getTkdocHeadings(content: string): DocumentHeading[] {
+  const parsed = parseTkdoc(content);
+  if (parsed.error) return [];
+  const seen = new Map<string, number>();
+  const headings: DocumentHeading[] = [];
+
+  const visit = (node: JSONContent) => {
+    if (node.type === "heading") {
+      const text = getTkdocNodeText(node).trim();
+      if (text) {
+        headings.push({
+          id: getHeadingId(text, seen),
+          index: headings.length,
+          level: Number(node.attrs?.level) || 1,
+          line: headings.length,
+          text,
+        });
+      }
+    }
+    node.content?.forEach(visit);
+  };
+
+  visit(parsed.document.content);
+  return headings;
 }
 
 function parseCsv(content: string): string[][] {
@@ -196,13 +233,19 @@ export function EditorArea({ sidebarCollapsed = false }: EditorAreaProps) {
   const isText = activeTabPath ? isTextFile(activeTabPath) : false;
   const isTkdoc = activeTabPath ? isTkdocFile(activeTabPath) : false;
   const isCode = activeTabPath ? isCodeFile(activeTabPath) : false;
+  const isHtml = activeTabPath ? /\.(html?)$/.test(activeTabPath.toLowerCase()) : false;
   const codeLang = activeTabPath ? getCodeLanguage(activeTabPath) : "text";
   const isImage = activeTabPath ? isImageFile(activeTabPath) : false;
   const isPdf = activeTabPath ? isPdfFile(activeTabPath) : false;
-  const headings = useMemo(
+  const markdownHeadings = useMemo(
     () => getMarkdownHeadings(frontmatterParts.body),
     [frontmatterParts.body],
   );
+  const tkdocHeadings = useMemo(
+    () => getTkdocHeadings(activeContent),
+    [activeContent],
+  );
+  const headings = isTkdoc ? tkdocHeadings : markdownHeadings;
   const editorScrollRef = useRef<HTMLDivElement>(null);
   const usesCodeEditor = isJson || isText || isCode || isMermaid || (isMarkdown && mode === "source");
 
@@ -254,7 +297,7 @@ export function EditorArea({ sidebarCollapsed = false }: EditorAreaProps) {
   );
 
   const scrollToHeading = useCallback(
-    (heading: MarkdownHeading) => {
+    (heading: DocumentHeading) => {
       if (mode === "source") {
         const scrollRoot = editorScrollRef.current;
         if (!scrollRoot) return;
@@ -269,7 +312,9 @@ export function EditorArea({ sidebarCollapsed = false }: EditorAreaProps) {
       const scrollRoot = editorScrollRef.current;
       if (!scrollRoot) return;
       const headingNodes = scrollRoot.querySelectorAll(
-        ".milkdown .ProseMirror h1, .milkdown .ProseMirror h2, .milkdown .ProseMirror h3, .milkdown .ProseMirror h4, .milkdown .ProseMirror h5, .milkdown .ProseMirror h6",
+        isTkdoc
+          ? ".tkdoc-editor .ProseMirror h1, .tkdoc-editor .ProseMirror h2, .tkdoc-editor .ProseMirror h3, .tkdoc-editor .ProseMirror h4, .tkdoc-editor .ProseMirror h5, .tkdoc-editor .ProseMirror h6"
+          : ".milkdown .ProseMirror h1, .milkdown .ProseMirror h2, .milkdown .ProseMirror h3, .milkdown .ProseMirror h4, .milkdown .ProseMirror h5, .milkdown .ProseMirror h6",
       );
       const target = headingNodes[heading.index] as HTMLElement | undefined;
       if (!target) return;
@@ -278,7 +323,7 @@ export function EditorArea({ sidebarCollapsed = false }: EditorAreaProps) {
         behavior: "smooth",
       });
     },
-    [frontmatterParts.body, frontmatterParts.frontmatter.length, mode],
+    [frontmatterParts.body, frontmatterParts.frontmatter.length, isTkdoc, mode],
   );
 
   // Perform heading scroll triggered by wiki link clicks
@@ -376,6 +421,12 @@ export function EditorArea({ sidebarCollapsed = false }: EditorAreaProps) {
               key={`${activeTabPath}:text`}
               content={activeContent}
               language="text"
+              onChange={(content) => updateContent(activeTabPath, content)}
+            />
+          ) : activeTabPath && isHtml ? (
+            <HtmlEditor
+              key={activeTabPath}
+              content={activeContent}
               onChange={(content) => updateContent(activeTabPath, content)}
             />
           ) : activeTabPath && isCode ? (
@@ -497,6 +548,20 @@ export function EditorArea({ sidebarCollapsed = false }: EditorAreaProps) {
             filePath={activeTabPath}
           />
         )}
+        {activeTabPath && isTkdoc && (
+          <MarkdownRightPanel
+            mode="rich"
+            headings={headings}
+            collapsed={outlineCollapsed}
+            panelTab="outline"
+            onModeChange={() => undefined}
+            onHeadingClick={scrollToHeading}
+            onToggleCollapsed={() => setOutlineCollapsed((value) => !value)}
+            onPanelTabChange={() => undefined}
+            filePath={activeTabPath}
+            variant="tkdoc"
+          />
+        )}
       </div>
       {unresolvedTarget && (
         <UnresolvedLinkDialog
@@ -523,16 +588,18 @@ function MarkdownRightPanel({
   onToggleCollapsed,
   onPanelTabChange,
   filePath,
+  variant = "markdown",
 }: {
   mode: EditorMode;
-  headings: MarkdownHeading[];
+  headings: DocumentHeading[];
   collapsed: boolean;
   panelTab: "outline" | "backlinks";
   onModeChange: (mode: EditorMode) => void;
-  onHeadingClick: (heading: MarkdownHeading) => void;
+  onHeadingClick: (heading: DocumentHeading) => void;
   onToggleCollapsed: () => void;
   onPanelTabChange: (tab: "outline" | "backlinks") => void;
   filePath: string;
+  variant?: "markdown" | "tkdoc";
 }) {
   if (collapsed) {
     return (
@@ -552,26 +619,30 @@ function MarkdownRightPanel({
   return (
     <aside className="markdown-outline">
       <div className="markdown-outline-tools">
-        <div className="editor-mode-switch" aria-label="Markdown editor mode">
-          <button
-            type="button"
-            onClick={() => onModeChange("rich")}
-            className={`editor-mode-button ${mode === "rich" ? "editor-mode-button-active" : ""}`}
-            title="Rich editor"
-            aria-pressed={mode === "rich"}
-          >
-            <FileText size={15} />
-          </button>
-          <button
-            type="button"
-            onClick={() => onModeChange("source")}
-            className={`editor-mode-button ${mode === "source" ? "editor-mode-button-active" : ""}`}
-            title="Source editor"
-            aria-pressed={mode === "source"}
-          >
-            <Code2 size={15} />
-          </button>
-        </div>
+        {variant === "markdown" ? (
+          <div className="editor-mode-switch" aria-label="Markdown editor mode">
+            <button
+              type="button"
+              onClick={() => onModeChange("rich")}
+              className={`editor-mode-button ${mode === "rich" ? "editor-mode-button-active" : ""}`}
+              title="Rich editor"
+              aria-pressed={mode === "rich"}
+            >
+              <FileText size={15} />
+            </button>
+            <button
+              type="button"
+              onClick={() => onModeChange("source")}
+              className={`editor-mode-button ${mode === "source" ? "editor-mode-button-active" : ""}`}
+              title="Source editor"
+              aria-pressed={mode === "source"}
+            >
+              <Code2 size={15} />
+            </button>
+          </div>
+        ) : (
+          <div className="markdown-outline-kicker">Outline</div>
+        )}
         <button
           type="button"
           className="markdown-outline-toggle"
@@ -581,24 +652,26 @@ function MarkdownRightPanel({
           <PanelRightClose size={15} />
         </button>
       </div>
-      <div className="markdown-outline-tabs">
-        <button
-          type="button"
-          className={`markdown-outline-tab ${panelTab === "outline" ? "markdown-outline-tab-active" : ""}`}
-          onClick={() => onPanelTabChange("outline")}
-        >
-          Outline
-        </button>
-        <button
-          type="button"
-          className={`markdown-outline-tab ${panelTab === "backlinks" ? "markdown-outline-tab-active" : ""}`}
-          onClick={() => onPanelTabChange("backlinks")}
-        >
-          <ArrowLeftRight size={12} />
-          Links
-        </button>
-      </div>
-      {panelTab === "outline" ? (
+      {variant === "markdown" && (
+        <div className="markdown-outline-tabs">
+          <button
+            type="button"
+            className={`markdown-outline-tab ${panelTab === "outline" ? "markdown-outline-tab-active" : ""}`}
+            onClick={() => onPanelTabChange("outline")}
+          >
+            Outline
+          </button>
+          <button
+            type="button"
+            className={`markdown-outline-tab ${panelTab === "backlinks" ? "markdown-outline-tab-active" : ""}`}
+            onClick={() => onPanelTabChange("backlinks")}
+          >
+            <ArrowLeftRight size={12} />
+            Links
+          </button>
+        </div>
+      )}
+      {variant === "tkdoc" || panelTab === "outline" ? (
         <OutlinePanel headings={headings} onHeadingClick={onHeadingClick} />
       ) : (
         <BacklinksPanel filePath={filePath} />
@@ -611,8 +684,8 @@ function OutlinePanel({
   headings,
   onHeadingClick,
 }: {
-  headings: MarkdownHeading[];
-  onHeadingClick: (heading: MarkdownHeading) => void;
+  headings: DocumentHeading[];
+  onHeadingClick: (heading: DocumentHeading) => void;
 }) {
   return (
     <div className="markdown-outline-list">
@@ -634,6 +707,7 @@ function OutlinePanel({
     </div>
   );
 }
+
 
 function CsvGridEditor({
   content,

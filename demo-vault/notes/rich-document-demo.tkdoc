@@ -1,0 +1,151 @@
+{
+  "version": 1,
+  "type": "tkdoc",
+  "content": {
+    "type": "doc",
+    "content": [
+      {
+        "type": "heading",
+        "attrs": { "level": 1 },
+        "content": [{ "type": "text", "text": "Rich Document Demo" }]
+      },
+      {
+        "type": "paragraph",
+        "content": [
+          { "type": "text", "text": "This .tkdoc file demonstrates ThinkingKity's structured rich-text editor. It is useful when a document needs stronger layout than plain Markdown while still living inside the same vault." }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": { "level": 2 },
+        "content": [{ "type": "text", "text": "Why use tkdoc?" }]
+      },
+      {
+        "type": "bulletList",
+        "content": [
+          {
+            "type": "listItem",
+            "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Create polished documents with headings, tables, images, and rich formatting." }] }]
+          },
+          {
+            "type": "listItem",
+            "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Keep assets inside the vault and sync them together with the rest of your notes." }] }]
+          },
+          {
+            "type": "listItem",
+            "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Use the right-side outline to jump through longer documents." }] }]
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": { "level": 2 },
+        "content": [{ "type": "text", "text": "Launch checklist" }]
+      },
+      {
+        "type": "taskList",
+        "content": [
+          {
+            "type": "taskItem",
+            "attrs": { "checked": true },
+            "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Draft the project brief" }] }]
+          },
+          {
+            "type": "taskItem",
+            "attrs": { "checked": true },
+            "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Collect screenshots and reference images" }] }]
+          },
+          {
+            "type": "taskItem",
+            "attrs": { "checked": false },
+            "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Share the final review copy" }] }]
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": { "level": 2 },
+        "content": [{ "type": "text", "text": "Status table" }]
+      },
+      {
+        "type": "table",
+        "content": [
+          {
+            "type": "tableRow",
+            "content": [
+              { "type": "tableHeader", "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Area" }] }] },
+              { "type": "tableHeader", "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Owner" }] }] },
+              { "type": "tableHeader", "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Status" }] }] }
+            ]
+          },
+          {
+            "type": "tableRow",
+            "content": [
+              { "type": "tableCell", "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Design" }] }] },
+              { "type": "tableCell", "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Mina" }] }] },
+              { "type": "tableCell", "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Ready" }] }] }
+            ]
+          },
+          {
+            "type": "tableRow",
+            "content": [
+              { "type": "tableCell", "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Content" }] }] },
+              { "type": "tableCell", "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Alex" }] }] },
+              { "type": "tableCell", "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "In review" }] }] }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": { "level": 2 },
+        "content": [{ "type": "text", "text": "Visual reference" }]
+      },
+      {
+        "type": "image",
+        "attrs": {
+          "src": "../assets/photo.jpg",
+          "alt": "Sample reference photo",
+          "title": null,
+          "width": null,
+          "height": null,
+          "widthPreset": "medium",
+          "align": "center"
+        }
+      },
+      {
+        "type": "paragraph",
+        "content": [
+          {
+            "type": "text",
+            "marks": [{ "type": "italic" }],
+            "text": "Tip: select the image to change its alignment or width from the toolbar."
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": { "level": 2 },
+        "content": [{ "type": "text", "text": "Next steps" }]
+      },
+      {
+        "type": "orderedList",
+        "attrs": { "start": 1, "type": null },
+        "content": [
+          {
+            "type": "listItem",
+            "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Use the toolbar to add another heading." }] }]
+          },
+          {
+            "type": "listItem",
+            "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Click inside the table and try the table control in the upper-left corner." }] }]
+          },
+          {
+            "type": "listItem",
+            "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Open the recovery center after saving to preview historical tkdoc snapshots." }] }]
+          }
+        ]
+      }
+    ]
+  }
+}

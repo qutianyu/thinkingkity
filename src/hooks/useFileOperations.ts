@@ -6,6 +6,8 @@ import {
   renameFile,
   moveToTrash,
   writeFile,
+  readFile,
+  readDirectory,
   pathBasename,
   pathParentDir,
   pathJoin,
@@ -15,7 +17,21 @@ import { useEditorStore } from "@/stores/editorStore";
 import { useVaultStore } from "@/stores/vaultStore";
 import { useDialogStore } from "@/stores/dialogStore";
 import { useJsonFileOperations } from "@/json/useJsonFileOperations";
-import { EMPTY_TKDOC_FILE } from "@/tkdoc";
+import { EMPTY_TKDOC_FILE, exportTkdocToHtml } from "@/tkdoc";
+
+function uniqueSiblingName(name: string, existingNames: Set<string>): string {
+  if (!existingNames.has(name)) return name;
+  const dotIndex = name.lastIndexOf(".");
+  const stem = dotIndex > 0 ? name.slice(0, dotIndex) : name;
+  const ext = dotIndex > 0 ? name.slice(dotIndex) : "";
+  let index = 1;
+  let candidate = `${stem}-${index}${ext}`;
+  while (existingNames.has(candidate)) {
+    index += 1;
+    candidate = `${stem}-${index}${ext}`;
+  }
+  return candidate;
+}
 
 export function useFileOperations() {
   const { t } = useTranslation();
@@ -167,6 +183,21 @@ export function useFileOperations() {
     [vaultPath, refreshTree, closeTab, showConfirm, t],
   );
 
+  const handleExportTkdocHtml = useCallback(
+    async (tkdocPath: string) => {
+      const source = await readFile(tkdocPath);
+      const fileName = pathBasename(tkdocPath);
+      const baseName = fileName.replace(/\.tkdoc$/i, "");
+      const parentDir = pathParentDir(tkdocPath);
+      const siblingNames = new Set((await readDirectory(parentDir)).map((entry) => entry.name));
+      const htmlFileName = uniqueSiblingName(`${baseName}.html`, siblingNames);
+      const htmlPath = pathJoin(parentDir, htmlFileName);
+      await writeFile(htmlPath, exportTkdocToHtml(source, baseName));
+      if (vaultPath) await refreshTree(vaultPath);
+    },
+    [refreshTree, vaultPath],
+  );
+
   return {
     handleNewFile,
     handleNewCsvFile,
@@ -176,5 +207,6 @@ export function useFileOperations() {
     handleNewFolder,
     handleRename,
     handleDelete,
+    handleExportTkdocHtml,
   };
 }

@@ -1,12 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
-import { ChevronRight, Folder, FolderOpen, FileText, FilePlus, FolderPlus, Pencil, Trash2, FileSpreadsheet, Image, File, Code, FolderSearch, History } from "lucide-react";
+import { ChevronRight, Folder, FolderOpen, FileText, FilePlus, FolderPlus, Pencil, Trash2, FileSpreadsheet, Image, File, Code, FolderSearch, History, FileCode2 } from "lucide-react";
 import type { FileEntry } from "@/types";
 import { useFileTreeStore } from "@/stores/fileTreeStore";
 import { useEditorStore } from "@/stores/editorStore";
 import { useFileOperations } from "@/hooks/useFileOperations";
-import { isImageFile, isPdfFile, isTextFile, isCodeFile, isMarkdownFile, isMermaidFile, revealInExplorer, isTauri } from "@/lib/tauriCommands";
+import { isImageFile, isPdfFile, isTextFile, isCodeFile, isMarkdownFile, isMermaidFile, isTkdocFile, revealInExplorer, isTauri } from "@/lib/tauriCommands";
 import { isJsonExtension, isJsonPath } from "@/json";
 import { getIconEntry } from "@/lib/fileIcons";
 import { FileTypePicker, CodeTypePicker } from "./FileActions";
@@ -18,7 +18,12 @@ interface FileTreeNodeProps {
   entry: FileEntry;
   depth: number;
   dropTarget: { path: string; position: DropPosition } | null;
-  onPointerDown: (e: React.PointerEvent<HTMLDivElement>, path: string, isDir: boolean) => void;
+  onPointerDown: (
+    e: React.PointerEvent<HTMLDivElement>,
+    path: string,
+    isDir: boolean,
+    onLongPress?: (clientX: number, clientY: number) => void,
+  ) => void;
 }
 
 export function FileTreeNode({ entry, depth, dropTarget, onPointerDown }: FileTreeNodeProps) {
@@ -29,7 +34,7 @@ export function FileTreeNode({ entry, depth, dropTarget, onPointerDown }: FileTr
   const loadChildren = useFileTreeStore((s) => s.loadChildren);
   const openFile = useEditorStore((s) => s.openFile);
   const activeTabPath = useEditorStore((s) => s.activeTabPath);
-  const { handleNewJsonFile, handleNewCodeFile, handleNewFolder, handleRename, handleDelete } =
+  const { handleNewJsonFile, handleNewCodeFile, handleNewFolder, handleRename, handleDelete, handleExportTkdocHtml } =
     useFileOperations();
   const [children, setChildren] = useState<FileEntry[]>([]);
   const [contextMenu, setContextMenu] = useState<{
@@ -53,11 +58,12 @@ export function FileTreeNode({ entry, depth, dropTarget, onPointerDown }: FileTr
   const isCsv = lowerName.endsWith(".csv");
   const isJson = isJsonPath(entry.path);
   const isText = isTextFile(entry.path);
+  const isTkdoc = isTkdocFile(entry.path);
   const isImageFileEntry = isImageFile(entry.path);
   const isPdf = isPdfFile(entry.path);
   const isCode = isCodeFile(entry.path);
   const isMermaid = isMermaidFile(entry.path);
-  const isOpenable = isMd || isCsv || isJson || isText || isCode || isMermaid || isImageFileEntry || isPdf;
+  const isOpenable = isMd || isCsv || isJson || isText || isTkdoc || isCode || isMermaid || isImageFileEntry || isPdf;
   const isActive = activeTabPath === entry.path;
   const dragSourcePath = useFileTreeStore((s) => s.dragSourcePath);
 
@@ -87,6 +93,10 @@ export function FileTreeNode({ entry, depth, dropTarget, onPointerDown }: FileTr
     setContextMenu({ x: e.clientX, y: e.clientY });
   };
 
+  const handleLongPress = useCallback((clientX: number, clientY: number) => {
+    setContextMenu({ x: clientX, y: clientY });
+  }, []);
+
   const closeContextMenu = () => setContextMenu(null);
 
   let dropClass = "";
@@ -107,7 +117,7 @@ export function FileTreeNode({ entry, depth, dropTarget, onPointerDown }: FileTr
         style={{ paddingLeft: `${depth * 18 + 12}px` }}
         onClick={handleClick}
         onContextMenu={handleContextMenu}
-        onPointerDown={(e) => onPointerDown(e, entry.path, entry.is_dir)}
+        onPointerDown={(e) => onPointerDown(e, entry.path, entry.is_dir, handleLongPress)}
       >
         {entry.is_dir ? (
           <>
@@ -273,6 +283,18 @@ export function FileTreeNode({ entry, depth, dropTarget, onPointerDown }: FileTr
               >
                 <History size={15} className="text-[var(--color-text-muted)] shrink-0" />
                 {t("recovery.fileHistory")}
+              </button>
+            )}
+            {isTkdoc && (
+              <button
+                className="menu-item"
+                onClick={async () => {
+                  await handleExportTkdocHtml(entry.path);
+                  closeContextMenu();
+                }}
+              >
+                <FileCode2 size={15} className="text-[var(--color-text-muted)] shrink-0" />
+                {t("contextMenu.exportTkdocHtml")}
               </button>
             )}
             {isTauri() && (

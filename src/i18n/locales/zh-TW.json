@@ -84,7 +84,7 @@
 		"storageLabel": "資料位置",
 		"storageValue": "目前 Vault 資料夾",
 		"syncLabel": "同步",
-		"syncValue": "Git / 本機",
+		"syncValue": "GitHub / 本機",
 		"aiLabel": "AI 設定",
 		"aiValue": ".thinkingkity/ai-config.json",
 		"checkUpdates": "檢查更新",

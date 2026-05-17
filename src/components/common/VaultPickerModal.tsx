@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { FolderOpen, RefreshCw, ArrowLeft, ChevronRight } from "lucide-react";
-import { readDirectory, createFolder, isTauri, pathBasename } from "@/lib/tauriCommands";
+import { readDirectory, createFolder, isTauri, pathBasename, pathJoin } from "@/lib/tauriCommands";
 
 interface VaultPickerModalProps {
   openVaultPath: (path: string) => Promise<void>;
@@ -23,14 +23,14 @@ async function fetchAllowedPaths(): Promise<string[]> {
   return res.json();
 }
 
-function sanitizeVaultName(name: string): string {
+function normalizeVaultName(name: string): string {
   return name
-    .toLowerCase()
-    .replace(/\s+/g, "-")
-    .replace(/[^a-z0-9\-_]/g, "")
+    .trim()
+    .replace(/[\\/]/g, "-")
+    .replace(/[:*?"<>|]/g, "-")
+    .replace(/\s+/g, " ")
     .replace(/-+/g, "-")
-    .replace(/^-|-$/g, "")
-    || "my-vault";
+    .replace(/[. ]+$/g, "");
 }
 
 export function VaultPickerModal({ openVaultPath, onClose }: VaultPickerModalProps) {
@@ -99,7 +99,15 @@ export function VaultPickerModal({ openVaultPath, onClose }: VaultPickerModalPro
     if (!nameValue.trim() || !currentPath || creating) return;
     setCreating(true);
     try {
-      const vaultPath = `${currentPath}/${sanitizeVaultName(nameValue)}`;
+      const vaultName = normalizeVaultName(nameValue);
+      if (!vaultName) {
+        throw new Error(t("vaultPicker.invalidName"));
+      }
+      const vaultPath = pathJoin(currentPath, vaultName);
+      const alreadyExists = entries.some((entry) => entry.name === vaultName);
+      if (alreadyExists) {
+        throw new Error(t("vaultPicker.alreadyExists", { name: vaultName }));
+      }
       await createFolder(vaultPath);
       await openVaultPath(vaultPath);
     } catch (e) {
@@ -255,11 +263,11 @@ export function VaultPickerModal({ openVaultPath, onClose }: VaultPickerModalPro
 
                 {/* Create new vault */}
                 <div className="vault-picker-create-card rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-surface)] px-4 py-3.5">
-                  <div className="mb-3">
+                  <div className="vault-picker-create-heading mb-3">
                     <span className="text-[14px] font-semibold text-[var(--color-text-primary)]">
                       {t("vaultPicker.createVault")}
                     </span>
-                    <span className="text-[11px] text-[var(--color-text-muted)] ml-2">{currentPath}/</span>
+                    <span className="vault-picker-create-parent text-[11px] text-[var(--color-text-muted)]">{currentPath}/</span>
                   </div>
                   <div className="vault-picker-create-row flex items-center gap-2">
                     <input

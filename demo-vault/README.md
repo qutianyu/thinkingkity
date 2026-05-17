@@ -20,6 +20,7 @@ This vault contains sample files across multiple languages and formats to showca
 | `todo.md` | Task list with nested checkboxes — links to project-plan |
 | `daily-journal.md` | Daily journal entry with wiki links to other notes |
 | `project-plan.md` | Project planning doc with milestones, Mermaid diagram, and backlinks |
+| `rich-document-demo.tkdoc` | Rich-text document demo with headings, task list, table, image, and outline |
 
 ### `code/` — Multi-language Source Code
 
@@ -84,6 +85,7 @@ This vault contains sample files across multiple languages and formats to showca
 | Extension(s) | Editor | Highlights |
 |-------------|--------|------------|
 | `.md` | Milkdown (rich) / CodeMirror (source) | WYSIWYG, frontmatter table, outline, two-way toggle |
+| `.tkdoc` | TipTap rich document editor | Headings, task lists, tables, images, outline |
 | `.csv` | Handsontable | Grid, sort, add/remove rows & columns |
 | `.mermaid` | Mermaid editor | Live preview, source/preview/split modes |
 | `.json` `.jsonc` `.yaml` `.toml` `.ini` `.properties` | CodeMirror | Syntax highlighting + bracket matching |

@@ -84,7 +84,7 @@
 		"storageLabel": "Хранилище",
 		"storageValue": "Текущая папка Vault",
 		"syncLabel": "Синхронизация",
-		"syncValue": "Git / локально",
+		"syncValue": "GitHub / локально",
 		"aiLabel": "Настройки ИИ",
 		"aiValue": ".thinkingkity/ai-config.json",
 		"checkUpdates": "Проверить обновления",

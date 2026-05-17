@@ -20,6 +20,8 @@ export function FileTree() {
     startY: number;
     isDragging: boolean;
     pointerId: number;
+    longPressTimer: number | null;
+    onLongPress?: (clientX: number, clientY: number) => void;
   } | null>(null);
 
   const ghostRef = useRef<HTMLDivElement | null>(null);
@@ -96,6 +98,10 @@ export function FileTree() {
     const dy = e.clientY - ds.startY;
 
     if (!ds.isDragging) {
+      if (ds.longPressTimer) {
+        window.clearTimeout(ds.longPressTimer);
+        ds.longPressTimer = null;
+      }
       if (Math.abs(dx) + Math.abs(dy) < 5) return;
       ds.isDragging = true;
       setDragSource(ds.sourcePath);
@@ -182,6 +188,9 @@ export function FileTree() {
     stopAutoScroll();
     setDragSource(null);
     setDropTarget(null);
+    if (dragStateRef.current?.longPressTimer) {
+      window.clearTimeout(dragStateRef.current.longPressTimer);
+    }
     dragStateRef.current = null;
   }, [setDragSource, setDropTarget, stopAutoScroll]);
 
@@ -200,8 +209,20 @@ export function FileTree() {
     };
   }, [handlePointerMove, handlePointerUp, handlePointerCancel]);
 
-  const handleItemPointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>, path: string, isDir: boolean) => {
+  const handleItemPointerDown = useCallback((
+    e: React.PointerEvent<HTMLDivElement>,
+    path: string,
+    isDir: boolean,
+    onLongPress?: (clientX: number, clientY: number) => void,
+  ) => {
     if (e.button !== 0) return;
+    const longPressTimer = window.setTimeout(() => {
+      const state = dragStateRef.current;
+      if (!state || state.isDragging) return;
+      state.longPressTimer = null;
+      state.onLongPress?.(state.startX, state.startY);
+      dragStateRef.current = null;
+    }, 500);
     dragStateRef.current = {
       sourcePath: path,
       sourceIsDir: isDir,
@@ -209,11 +230,16 @@ export function FileTree() {
       startY: e.clientY,
       isDragging: false,
       pointerId: e.pointerId,
+      longPressTimer,
+      onLongPress,
     };
   }, []);
 
   const handleContainerPointerUp = useCallback((e: React.PointerEvent) => {
     if (dragStateRef.current && !dragStateRef.current.isDragging) {
+      if (dragStateRef.current.longPressTimer) {
+        window.clearTimeout(dragStateRef.current.longPressTimer);
+      }
       dragStateRef.current = null;
     }
   }, []);
@@ -232,7 +258,7 @@ export function FileTree() {
           entry={node}
           depth={0}
           dropTarget={dropTarget}
-          onPointerDown={handleItemPointerDown}
+              onPointerDown={handleItemPointerDown}
         />
       ))}
     </div>

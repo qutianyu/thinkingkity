@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  FolderOpen, RefreshCw, ArrowLeft, Image, ChevronRight,
+  FolderOpen, RefreshCw, ArrowLeft, Image, ChevronRight, Video,
 } from "lucide-react";
 import { readDirectory, isImageFile, isTauri, pathBasename } from "@/lib/tauriCommands";
 
@@ -9,6 +9,7 @@ interface ImagePickerModalProps {
   vaultPath: string;
   onSelect: (filePath: string) => void;
   onClose: () => void;
+  kind?: "image" | "video";
 }
 
 interface DirEntry {
@@ -27,7 +28,11 @@ async function fetchAllowedPaths(): Promise<string[]> {
   return res.json();
 }
 
-export function ImagePickerModal({ vaultPath, onSelect, onClose }: ImagePickerModalProps) {
+function isVideoFile(name: string): boolean {
+  return /\.(mp4|webm|ogg|mov|m4v)$/i.test(name);
+}
+
+export function ImagePickerModal({ vaultPath, onSelect, onClose, kind = "image" }: ImagePickerModalProps) {
   const { t } = useTranslation();
   // null = showing workspace list, string = browsing a directory
   const [currentPath, setCurrentPath] = useState<string | null>(null);
@@ -57,7 +62,8 @@ export function ImagePickerModal({ vaultPath, onSelect, onClose }: ImagePickerMo
     setError(null);
     try {
       const all = await readDirectory(path);
-      const filtered = all.filter((e) => e.is_dir || isImageFile(e.name));
+      const isAllowedAsset = kind === "image" ? isImageFile : isVideoFile;
+      const filtered = all.filter((e) => e.is_dir || isAllowedAsset(e.name));
       setEntries(filtered.map((e) => ({ name: e.name, path: e.path, is_dir: e.is_dir })));
       setCurrentPath(path);
     } catch (e) {
@@ -99,27 +105,26 @@ export function ImagePickerModal({ vaultPath, onSelect, onClose }: ImagePickerMo
     <>
       <div className="dialog-backdrop fixed inset-0 z-50" onClick={onClose} />
       <div
-        className="prompt-modal fixed left-1/2 top-[10%] -translate-x-1/2 z-50"
-        style={{ width: 480, maxHeight: "75vh", overflow: "auto" }}
+        className="prompt-modal asset-picker-modal fixed left-1/2 top-[10%] -translate-x-1/2 z-50"
         role="dialog" aria-modal="true"
         onKeyDown={handleKeyDown}
       >
-        <div className="prompt-modal-header">
+        <div className="asset-picker-header">
           {!isWorkspaceList ? (
-            <button onClick={goBack} className="dialog-button dialog-button-secondary shrink-0" style={{ minWidth: 36, minHeight: 36, padding: 0 }}>
+            <button onClick={goBack} className="asset-picker-back" aria-label={t("imagePicker.back")}>
               <ArrowLeft size={16} />
             </button>
           ) : (
-            <div className="prompt-modal-icon" aria-hidden="true">
-              <Image size={18} />
+            <div className="asset-picker-kind-icon" aria-hidden="true">
+              {kind === "image" ? <Image size={18} /> : <Video size={18} />}
             </div>
           )}
-          <div className="prompt-modal-copy">
-            <h3 className="prompt-modal-title">
-              {isWorkspaceList ? t("imagePicker.title") : pathBasename(currentPath!)}
+          <div className="asset-picker-heading">
+            <h3 className="asset-picker-title">
+              {isWorkspaceList ? t(`imagePicker.${kind}Title`) : pathBasename(currentPath!)}
             </h3>
-            <p className="prompt-modal-description" style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-              {isWorkspaceList ? t("imagePicker.chooseWorkspace") : currentPath}
+            <p className="asset-picker-description">
+              {isWorkspaceList ? t(`imagePicker.${kind}ChooseWorkspace`) : currentPath}
             </p>
           </div>
         </div>
@@ -129,12 +134,12 @@ export function ImagePickerModal({ vaultPath, onSelect, onClose }: ImagePickerMo
         )}
 
         {loading ? (
-          <div className="flex items-center justify-center py-10 text-[13px] text-[var(--color-text-muted)]">
+          <div className="asset-picker-state">
             <RefreshCw size={16} className="animate-spin mr-2" />
             {t("imagePicker.loading")}
           </div>
         ) : (
-          <div className="px-4 pb-2 flex flex-col gap-1">
+          <div className="asset-picker-body">
             {/* Step 1: workspace list */}
             {isWorkspaceList && (
               <>
@@ -143,20 +148,23 @@ export function ImagePickerModal({ vaultPath, onSelect, onClose }: ImagePickerMo
                     {t("imagePicker.noWorkspaces")}
                   </p>
                 )}
+                {workspaces.length > 0 && (
+                  <div className="asset-picker-section-label">{t("imagePicker.workspaces")}</div>
+                )}
                 {workspaces.map((ws) => (
                   <button
                     key={ws}
                     onClick={() => browseDir(ws)}
-                    className="flex items-center gap-3 w-full px-4 py-3 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-surface)] text-left transition-all duration-200 hover:border-[var(--color-primary-30)] hover:bg-[var(--color-bg-hover)]"
+                    className="asset-picker-row asset-picker-workspace-row"
                   >
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--radius-md)] bg-[rgba(99,102,241,0.08)] text-[var(--color-primary)]">
+                    <span className="asset-picker-row-icon asset-picker-row-icon-workspace">
                       <FolderOpen size={20} />
                     </span>
-                    <span className="flex flex-col min-w-0 flex-1">
-                      <span className="text-[14px] font-semibold text-[var(--color-text-primary)]">{pathBasename(ws)}</span>
-                      <span className="text-[11px] text-[var(--color-text-muted)] truncate">{ws}</span>
+                    <span className="asset-picker-row-copy">
+                      <span className="asset-picker-row-title">{pathBasename(ws)}</span>
+                      <span className="asset-picker-row-path">{ws}</span>
                     </span>
-                    <ChevronRight size={16} className="text-[var(--color-text-muted)] shrink-0" />
+                    <ChevronRight size={16} className="asset-picker-chevron" />
                   </button>
                 ))}
               </>
@@ -167,29 +175,28 @@ export function ImagePickerModal({ vaultPath, onSelect, onClose }: ImagePickerMo
               <>
                 {entries.length === 0 && (
                   <p className="text-[13px] text-[var(--color-text-muted)] py-8 text-center">
-                    {t("imagePicker.empty")}
+                    {t(`imagePicker.${kind}Empty`)}
                   </p>
+                )}
+                {entries.length > 0 && (
+                  <div className="asset-picker-section-label">
+                    {t(`imagePicker.${kind}BrowseLabel`)}
+                  </div>
                 )}
                 {entries.map((d) => (
                   <button
                     key={d.path}
                     onClick={() => d.is_dir ? browseDir(d.path) : handleSelectImage(d.path)}
-                    className={`flex items-center gap-3 w-full px-4 py-3 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg-surface)] text-left transition-all duration-200 hover:border-[var(--color-primary-30)] hover:bg-[var(--color-bg-hover)] ${
-                      !d.is_dir ? "border-[var(--color-primary-30)]" : ""
-                    }`}
+                    className={`asset-picker-row ${d.is_dir ? "asset-picker-folder-row" : "asset-picker-file-row"}`}
                   >
-                    <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--radius-md)] ${
-                      d.is_dir
-                        ? "bg-[rgba(245,158,11,0.12)] text-[var(--color-folder)]"
-                        : "bg-[rgba(99,102,241,0.08)] text-[var(--color-primary)]"
-                    }`}>
-                      {d.is_dir ? <FolderOpen size={20} /> : <Image size={20} />}
+                    <span className={`asset-picker-row-icon ${d.is_dir ? "asset-picker-row-icon-folder" : "asset-picker-row-icon-file"}`}>
+                      {d.is_dir ? <FolderOpen size={20} /> : kind === "image" ? <Image size={20} /> : <Video size={20} />}
                     </span>
-                    <span className="flex flex-col min-w-0 flex-1">
-                      <span className="text-[14px] font-semibold text-[var(--color-text-primary)] truncate">{d.name}</span>
-                      <span className="text-[11px] text-[var(--color-text-muted)] truncate">{d.path}</span>
+                    <span className="asset-picker-row-copy">
+                      <span className="asset-picker-row-title">{d.name}</span>
+                      <span className="asset-picker-row-path">{d.path}</span>
                     </span>
-                    {d.is_dir && <ChevronRight size={16} className="text-[var(--color-text-muted)] shrink-0" />}
+                    {d.is_dir && <ChevronRight size={16} className="asset-picker-chevron" />}
                   </button>
                 ))}
               </>
@@ -197,7 +204,7 @@ export function ImagePickerModal({ vaultPath, onSelect, onClose }: ImagePickerMo
           </div>
         )}
 
-        <div className="prompt-modal-actions">
+        <div className="asset-picker-actions">
           <button onClick={onClose} className="dialog-button dialog-button-secondary">
             {t("dialog.cancel")}
           </button>

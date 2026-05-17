@@ -1,6 +1,4 @@
-import { copyFile, createFolder, pathBasename, pathJoin, readDirectory, writeFileBase64 } from "@/lib/tauriCommands";
-
-const ASSET_FILE_PREFIX = "tkdoc";
+import { copyFile, createFolder, pathBasename, pathJoin, readDirectory } from "@/lib/tauriCommands";
 
 function uniqueName(name: string, existingNames: Set<string>): string {
   if (!existingNames.has(name)) return name;
@@ -33,18 +31,5 @@ export async function copyTkdocAssetToVault(vaultPath: string, sourcePath: strin
   if (destinationPath !== sourcePath) {
     await copyFile(sourcePath, destinationPath);
   }
-  return destinationPath;
-}
-
-export async function saveTkdocFileAssetToVault(vaultPath: string, file: File): Promise<string> {
-  const extension = file.name.includes(".") ? file.name.split(".").pop() : undefined;
-  const preferredName = file.name || `${ASSET_FILE_PREFIX}-${Date.now()}${extension ? `.${extension}` : ""}`;
-  const destinationPath = await nextAssetPath(vaultPath, preferredName);
-  const dataUrl = await new Promise<string>((resolve) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.readAsDataURL(file);
-  });
-  await writeFileBase64(destinationPath, dataUrl);
   return destinationPath;
 }

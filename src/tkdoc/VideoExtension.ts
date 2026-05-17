@@ -3,7 +3,7 @@ import { Node, mergeAttributes } from "@tiptap/core";
 declare module "@tiptap/core" {
   interface Commands<ReturnType> {
     video: {
-      setVideo: (options: { src: string }) => ReturnType;
+      setVideo: (options: { src: string; "data-tkdoc-src"?: string }) => ReturnType;
     };
   }
 }
@@ -17,6 +17,7 @@ export const Video = Node.create({
   addAttributes() {
     return {
       src: { default: null },
+      "data-tkdoc-src": { default: null },
     };
   },
 
@@ -31,7 +32,7 @@ export const Video = Node.create({
   addCommands() {
     return {
       setVideo:
-        (options: { src: string }) =>
+        (options: { src: string; "data-tkdoc-src"?: string }) =>
         ({ commands }) =>
           commands.insertContent({
             type: this.name,

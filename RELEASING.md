@@ -8,7 +8,7 @@
 | Linux | Ready | GitHub Release AppImage and deb |
 | Windows | Ready | GitHub Release NSIS and MSI |
 | Web | Ready | GitHub Release Linux binary |
-| Android | CI build wired | Workflow artifact until signing is configured |
+| Android | CI build wired | GitHub Release APK/AAB for tag builds; configure signing before public distribution |
 
 ## Desktop release flow
 
@@ -67,14 +67,30 @@ Desktop builds inject the update identity at build time:
 
 `About` reads `latest.json` from the latest GitHub Release and uses those build-time values to choose the matching package entry.
 
-## Android follow-up
+## Android release signing
 
 The repository still ignores generated mobile projects under `src-tauri/gen/`. The Android workflow therefore initializes the Android project inside CI before building APK/AAB artifacts.
 
-This is enough for build verification, but not enough for public Android distribution:
+For tagged release builds, the workflow also generates `src-tauri/gen/android/keystore.properties` from GitHub Actions secrets and patches the generated Gradle app config before running `tauri android build`. This matches the signing flow documented by Tauri for Android release builds. Configure these repository secrets before pushing a release tag:
+
+| Secret | Purpose |
+| --- | --- |
+| `ANDROID_KEY_ALIAS` | Alias used when the upload key was created, for example `upload` |
+| `ANDROID_KEY_PASSWORD` | Password for the keystore/upload key |
+| `ANDROID_KEY_BASE64` | Base64-encoded contents of the `.jks` keystore file |
+
+Create the upload keystore locally once, keep it private, and export it to base64 before adding the secret:
+
+```bash
+keytool -genkey -v -keystore ~/upload-keystore.jks -keyalg RSA -keysize 2048 -validity 10000 -alias upload
+base64 -i ~/upload-keystore.jks | pbcopy
+```
+
+Manual `Android Build` runs remain unsigned smoke builds. Tagged release builds fail fast when the signing secrets are missing, so unsigned APK/AAB files are not accidentally attached to public GitHub Releases.
+
+Additional Android follow-up:
 
 1. Install the Android SDK locally before using `npm run init:android`, `npm run dev:android`, or `npm run build:android`.
-2. Configure Android signing before publishing packages outside CI artifacts.
-3. Once signing is configured, decide whether Android releases should be attached to GitHub Releases as APKs, uploaded to Google Play as AABs, or both.
+2. Decide whether Android releases should continue to be attached to GitHub Releases as APKs, uploaded to Google Play as AABs, or both.
 
 Android signing is intentionally separate from the desktop release flow because Android package distribution has its own keystore and store requirements.

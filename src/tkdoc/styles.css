@@ -1,5 +1,6 @@
 .tkdoc-shell {
-  width: min(100%, 980px);
+  position: relative;
+  width: 100%;
   min-height: calc(100vh - 120px);
   margin: 0 auto;
   padding: 24px 28px 42px;
@@ -37,7 +38,24 @@
   cursor: pointer;
 }
 
+.tkdoc-toolbar-text-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 7px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
 .tkdoc-toolbar-button:hover:not(:disabled),
+.tkdoc-toolbar-text-button:hover,
 .tkdoc-toolbar-button-active {
   background: var(--color-bg-hover);
   color: var(--color-text-primary);
@@ -57,6 +75,70 @@
   height: 18px;
   margin: 0 3px;
   background: var(--color-border-light);
+}
+
+.tkdoc-table-control {
+  position: absolute;
+  z-index: 4;
+}
+
+.tkdoc-table-control-trigger {
+  display: inline-flex;
+  width: 22px;
+  height: 22px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-bg-surface);
+  color: var(--color-text-secondary);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+}
+
+.tkdoc-table-control-trigger:hover {
+  border-color: var(--color-primary-30);
+  color: var(--color-primary);
+}
+
+.tkdoc-table-control-menu {
+  position: absolute;
+  top: 28px;
+  left: 0;
+  display: grid;
+  min-width: 160px;
+  gap: 2px;
+  padding: 6px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-surface);
+  box-shadow: var(--shadow-md);
+}
+
+.tkdoc-table-control-menu button {
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  padding: 7px 9px;
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.tkdoc-table-control-menu button:hover {
+  background: var(--color-bg-hover);
+  color: var(--color-text-primary);
+}
+
+.tkdoc-table-control-menu span {
+  height: 1px;
+  margin: 4px 2px;
+  background: var(--color-border-light);
+}
+
+.tkdoc-table-control-menu .tkdoc-table-control-danger {
+  color: var(--color-danger);
 }
 
 .tkdoc-editor .ProseMirror {
@@ -91,6 +173,25 @@
   margin: 0.7em 0;
 }
 
+.tkdoc-editor .ProseMirror ul[data-type="taskList"] {
+  list-style: none;
+  padding-left: 0;
+}
+
+.tkdoc-editor .ProseMirror ul[data-type="taskList"] li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.tkdoc-editor .ProseMirror ul[data-type="taskList"] li > label {
+  margin-top: 3px;
+}
+
+.tkdoc-editor .ProseMirror ul[data-type="taskList"] li > div {
+  flex: 1;
+}
+
 .tkdoc-editor .ProseMirror blockquote {
   padding-left: 14px;
   border-left: 3px solid var(--color-border);
@@ -107,6 +208,60 @@
 .tkdoc-editor .ProseMirror a {
   color: var(--color-primary);
   text-decoration: underline;
+}
+
+.tkdoc-editor .ProseMirror table {
+  width: 100%;
+  margin: 1em 0;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.tkdoc-editor .ProseMirror th,
+.tkdoc-editor .ProseMirror td {
+  min-width: 90px;
+  padding: 9px 11px;
+  border: 1px solid var(--color-border);
+  vertical-align: top;
+}
+
+.tkdoc-editor .ProseMirror th {
+  background: var(--color-bg-app);
+  font-weight: 650;
+}
+
+.tkdoc-editor .ProseMirror img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 1em 0;
+  border-radius: var(--radius-md);
+}
+
+.tkdoc-editor .ProseMirror img[data-align="center"] {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.tkdoc-editor .ProseMirror img[data-align="right"] {
+  margin-left: auto;
+  margin-right: 0;
+}
+
+.tkdoc-editor .ProseMirror img[data-width-preset="small"] {
+  width: min(280px, 100%);
+}
+
+.tkdoc-editor .ProseMirror img[data-width-preset="medium"] {
+  width: min(520px, 100%);
+}
+
+.tkdoc-preview .ProseMirror {
+  min-height: 0;
+  padding: 20px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
 }
 
 .tkdoc-invalid {

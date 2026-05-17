@@ -18,6 +18,7 @@ import { useDialogStore } from "@/stores/dialogStore";
 import { useEditorStore } from "@/stores/editorStore";
 import { useFileTreeStore } from "@/stores/fileTreeStore";
 import { useVaultStore } from "@/stores/vaultStore";
+import { TkdocPreview } from "@/tkdoc";
 
 type RecoveryTab = "history" | "trash";
 
@@ -46,6 +47,10 @@ function isCsvPath(path: string): boolean {
   return path.toLowerCase().endsWith(".csv");
 }
 
+function isTkdocPath(path: string): boolean {
+  return path.toLowerCase().endsWith(".tkdoc");
+}
+
 function parseCsvPreview(content: string): string[][] {
   if (!content.trim()) return [];
   const result = Papa.parse<string[]>(content, {
@@ -71,6 +76,7 @@ export function RecoveryCenter({ filePath, onClose }: RecoveryCenterProps) {
     selectedSnapshot && isCsvPath(selectedSnapshot.filePath)
       ? parseCsvPreview(preview)
       : null;
+  const isTkdocPreview = Boolean(selectedSnapshot && isTkdocPath(selectedSnapshot.filePath));
 
   const load = useCallback(async () => {
     if (!vaultPath) return;
@@ -285,7 +291,15 @@ export function RecoveryCenter({ filePath, onClose }: RecoveryCenterProps) {
                   {t("recovery.restore")}
                 </button>
               </div>
-              {csvPreviewRows ? (
+              {isTkdocPreview && selectedSnapshot ? (
+                preview ? (
+                  <div className="recovery-tkdoc-preview">
+                    <TkdocPreview filePath={selectedSnapshot.filePath} content={preview} />
+                  </div>
+                ) : (
+                  <pre className="recovery-preview">{t("recovery.selectSnapshot")}</pre>
+                )
+              ) : csvPreviewRows ? (
                 csvPreviewRows.length === 0 ? (
                   <pre className="recovery-preview">{t("recovery.selectSnapshot")}</pre>
                 ) : (

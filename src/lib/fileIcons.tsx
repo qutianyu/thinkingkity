@@ -30,6 +30,7 @@ import {
 
 import type { ComponentType, SVGProps } from "react";
 import { JSON_ICON_ENTRIES } from "@/json/icons";
+import { TkdocIcon } from "@/tkdoc/TkdocIcon";
 
 interface IconEntry {
   component: ComponentType<SVGProps<SVGSVGElement>>;
@@ -63,6 +64,7 @@ const EXT_ICON_MAP: Record<string, IconEntry> = {
   ...JSON_ICON_ENTRIES,
   ".md": { component: SiMarkdown, color: "#083FA1" },
   ".markdown": { component: SiMarkdown, color: "#083FA1" },
+  ".tkdoc": { component: TkdocIcon, color: "#6366F1" },
   ".yaml": { component: SiYaml, color: "#CB171E" },
   ".yml": { component: SiYaml, color: "#CB171E" },
   ".toml": { component: SiToml, color: "#9C4221" },

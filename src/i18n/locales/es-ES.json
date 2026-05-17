@@ -84,7 +84,7 @@
 		"storageLabel": "Almacenamiento",
 		"storageValue": "Carpeta actual del Vault",
 		"syncLabel": "Sincronización",
-		"syncValue": "Git / local",
+		"syncValue": "GitHub / local",
 		"aiLabel": "Configuración de IA",
 		"aiValue": ".thinkingkity/ai-config.json",
 		"checkUpdates": "Buscar actualizaciones",

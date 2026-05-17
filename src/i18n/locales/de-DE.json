@@ -84,7 +84,7 @@
 		"storageLabel": "Speicherort",
 		"storageValue": "Aktueller Vault-Ordner",
 		"syncLabel": "Synchronisierung",
-		"syncValue": "Git / lokal",
+		"syncValue": "GitHub / lokal",
 		"aiLabel": "KI-Konfiguration",
 		"aiValue": ".thinkingkity/ai-config.json",
 		"checkUpdates": "Nach Updates suchen",

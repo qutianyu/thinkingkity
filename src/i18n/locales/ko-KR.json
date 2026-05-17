@@ -84,7 +84,7 @@
 		"storageLabel": "저장소",
 		"storageValue": "현재 Vault 폴더",
 		"syncLabel": "동기화",
-		"syncValue": "Git / 로컬",
+		"syncValue": "GitHub / 로컬",
 		"aiLabel": "AI 설정",
 		"aiValue": ".thinkingkity/ai-config.json",
 		"checkUpdates": "업데이트 확인",
