@@ -151,6 +151,19 @@ function getTkdocHeadings(content: string): DocumentHeading[] {
   if (parsed.error) return [];
   const seen = new Map<string, number>();
   const headings: DocumentHeading[] = [];
+  const lines = content.split(/\r?\n/);
+  let nextHeadingLineSearchStart = 0;
+
+  const findNextHeadingLine = () => {
+    for (let index = nextHeadingLineSearchStart; index < lines.length; index += 1) {
+      if (/"type"\s*:\s*"heading"/.test(lines[index])) {
+        nextHeadingLineSearchStart = index + 1;
+        return index;
+      }
+    }
+
+    return headings.length;
+  };
 
   const visit = (node: JSONContent) => {
     if (node.type === "heading") {
@@ -160,7 +173,7 @@ function getTkdocHeadings(content: string): DocumentHeading[] {
           id: getHeadingId(text, seen),
           index: headings.length,
           level: Number(node.attrs?.level) || 1,
-          line: headings.length,
+          line: findNextHeadingLine(),
           text,
         });
       }
@@ -247,7 +260,12 @@ export function EditorArea({ sidebarCollapsed = false }: EditorAreaProps) {
   );
   const headings = isTkdoc ? tkdocHeadings : markdownHeadings;
   const editorScrollRef = useRef<HTMLDivElement>(null);
-  const usesCodeEditor = isJson || isText || isCode || isMermaid || (isMarkdown && mode === "source");
+  const usesCodeEditor =
+    isJson ||
+    isText ||
+    isCode ||
+    isMermaid ||
+    ((isMarkdown || isTkdoc) && mode === "source");
 
   // Listen for unresolved wiki link clicks
   const handleUnresolvedLink = useCallback((e: Event) => {
@@ -445,11 +463,18 @@ export function EditorArea({ sidebarCollapsed = false }: EditorAreaProps) {
               filePath={activeTabPath}
               vaultPath={vaultPath}
             />
-          ) : activeTabPath && isTkdoc ? (
+          ) : activeTabPath && isTkdoc && mode === "rich" ? (
             <TkdocEditor
               key={activeTabPath}
               filePath={activeTabPath}
               content={activeContent}
+              onChange={(content) => updateContent(activeTabPath, content)}
+            />
+          ) : activeTabPath && isTkdoc ? (
+            <CodeEditor
+              key={`${activeTabPath}:tkdoc-source`}
+              content={activeContent}
+              language="json"
               onChange={(content) => updateContent(activeTabPath, content)}
             />
           ) : activeTabPath && mode === "rich" ? (
@@ -550,11 +575,11 @@ export function EditorArea({ sidebarCollapsed = false }: EditorAreaProps) {
         )}
         {activeTabPath && isTkdoc && (
           <MarkdownRightPanel
-            mode="rich"
+            mode={mode}
             headings={headings}
             collapsed={outlineCollapsed}
             panelTab="outline"
-            onModeChange={() => undefined}
+            onModeChange={setMode}
             onHeadingClick={scrollToHeading}
             onToggleCollapsed={() => setOutlineCollapsed((value) => !value)}
             onPanelTabChange={() => undefined}
@@ -619,30 +644,29 @@ function MarkdownRightPanel({
   return (
     <aside className="markdown-outline">
       <div className="markdown-outline-tools">
-        {variant === "markdown" ? (
-          <div className="editor-mode-switch" aria-label="Markdown editor mode">
-            <button
-              type="button"
-              onClick={() => onModeChange("rich")}
-              className={`editor-mode-button ${mode === "rich" ? "editor-mode-button-active" : ""}`}
-              title="Rich editor"
-              aria-pressed={mode === "rich"}
-            >
-              <FileText size={15} />
-            </button>
-            <button
-              type="button"
-              onClick={() => onModeChange("source")}
-              className={`editor-mode-button ${mode === "source" ? "editor-mode-button-active" : ""}`}
-              title="Source editor"
-              aria-pressed={mode === "source"}
-            >
-              <Code2 size={15} />
-            </button>
-          </div>
-        ) : (
-          <div className="markdown-outline-kicker">Outline</div>
-        )}
+        <div
+          className="editor-mode-switch"
+          aria-label={variant === "markdown" ? "Markdown editor mode" : "Tkdoc editor mode"}
+        >
+          <button
+            type="button"
+            onClick={() => onModeChange("rich")}
+            className={`editor-mode-button ${mode === "rich" ? "editor-mode-button-active" : ""}`}
+            title={variant === "markdown" ? "Rich editor" : "Rendered editor"}
+            aria-pressed={mode === "rich"}
+          >
+            <FileText size={15} />
+          </button>
+          <button
+            type="button"
+            onClick={() => onModeChange("source")}
+            className={`editor-mode-button ${mode === "source" ? "editor-mode-button-active" : ""}`}
+            title="Source editor"
+            aria-pressed={mode === "source"}
+          >
+            <Code2 size={15} />
+          </button>
+        </div>
         <button
           type="button"
           className="markdown-outline-toggle"
